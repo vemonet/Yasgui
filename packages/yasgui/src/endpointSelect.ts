@@ -104,6 +104,8 @@ export class EndpointSelect extends EventEmitter {
           //show everything when we've got an empty search string
           return true;
         }
+        //show everything when the search string is equal to the currently selected endpoint
+        if (query === this.value) return true;
         return splitSearchString(query).every((m) => record.indexOf(m) >= 0);
       },
       data: {
