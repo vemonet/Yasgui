@@ -29,6 +29,7 @@ export interface PersistentConfig {
   pageSize?: number;
   compact?: boolean;
   isEllipsed?: boolean;
+  renderHtml?: boolean;
 }
 
 type DataRow = [number, ...(Parser.BindingValue | "")[]];
@@ -49,6 +50,7 @@ export default class Table implements Plugin<PluginConfig> {
   private tableSizeField: HTMLSelectElement | undefined;
   private tableCompactSwitch: HTMLInputElement | undefined;
   private tableEllipseSwitch: HTMLInputElement | undefined;
+  private tableRenderHtmlSwitch: HTMLInputElement | undefined;
   private tableResizer:
     | {
         reset: (options: {
@@ -143,12 +145,19 @@ export default class Table implements Plugin<PluginConfig> {
   }
   private formatLiteral(literalBinding: Parser.BindingValue, prefixes?: { [key: string]: string }) {
     let stringRepresentation = sanitize(escape(literalBinding.value));
+
     // Return now when in compact mode.
     if (this.persistentConfig.compact) return stringRepresentation;
 
     if (literalBinding["xml:lang"]) {
       stringRepresentation = `"${stringRepresentation}"<sup>@${literalBinding["xml:lang"]}</sup>`;
     } else if (literalBinding.datatype) {
+      if (
+        this.persistentConfig.renderHtml &&
+        literalBinding.datatype === "http://www.w3.org/1999/02/22-rdf-syntax-ns#HTML"
+      ) {
+        return sanitize(literalBinding.value);
+      }
       const dataType = this.getUriLinkFromBinding({ type: "uri", value: literalBinding.datatype }, prefixes);
       stringRepresentation = `"${stringRepresentation}"<sup>^^${dataType}</sup>`;
     }
@@ -314,6 +323,14 @@ export default class Table implements Plugin<PluginConfig> {
     this.draw(this.persistentConfig);
     this.yasr.storePluginConfig("table", this.persistentConfig);
   };
+  private handleSetRenderHtmlToggle = (event: Event) => {
+    // Store in persistentConfig
+    this.persistentConfig.renderHtml = (event.target as HTMLInputElement).checked;
+    // Update the table
+    this.draw(this.persistentConfig);
+    this.yasr.storePluginConfig("table", this.persistentConfig);
+  };
+
   /**
    * Draws controls on each update
    */
@@ -328,6 +345,8 @@ export default class Table implements Plugin<PluginConfig> {
     const switchComponent = document.createElement("label");
     const textComponent = document.createElement("span");
     textComponent.innerText = "Simple view";
+    toggleWrapper.title =
+      "Simple view hides the row numbers and presents the results as they are, without additional styling";
     addClass(textComponent, "label");
     switchComponent.appendChild(textComponent);
     addClass(switchComponent, "switch");
@@ -344,6 +363,7 @@ export default class Table implements Plugin<PluginConfig> {
     const ellipseSwitchComponent = document.createElement("label");
     const ellipseTextComponent = document.createElement("span");
     ellipseTextComponent.innerText = "Ellipse";
+    ellipseToggleWrapper.title = "Shorten long text content in the table cells";
     addClass(ellipseTextComponent, "label");
     ellipseSwitchComponent.appendChild(ellipseTextComponent);
     addClass(ellipseSwitchComponent, "switch");
@@ -354,6 +374,23 @@ export default class Table implements Plugin<PluginConfig> {
     ellipseSwitchComponent.appendChild(this.tableEllipseSwitch);
     this.tableEllipseSwitch.defaultChecked = this.persistentConfig.isEllipsed !== false;
     this.tableControls.appendChild(ellipseToggleWrapper);
+
+    // Render HTML switch
+    const renderHtmlToggleWrapper = document.createElement("div");
+    const renderHtmlSwitchComponent = document.createElement("label");
+    const renderHtmlTextComponent = document.createElement("span");
+    renderHtmlTextComponent.innerText = "Render HTML";
+    renderHtmlToggleWrapper.title = "Render HTML content in the table for cell with datatype rdf:HTML";
+    addClass(renderHtmlTextComponent, "label");
+    renderHtmlSwitchComponent.appendChild(renderHtmlTextComponent);
+    addClass(renderHtmlSwitchComponent, "switch");
+    renderHtmlToggleWrapper.appendChild(renderHtmlSwitchComponent);
+    this.tableRenderHtmlSwitch = document.createElement("input");
+    renderHtmlSwitchComponent.addEventListener("change", this.handleSetRenderHtmlToggle);
+    this.tableRenderHtmlSwitch.type = "checkbox";
+    renderHtmlSwitchComponent.appendChild(this.tableRenderHtmlSwitch);
+    this.tableRenderHtmlSwitch.defaultChecked = this.persistentConfig.renderHtml !== false;
+    this.tableControls.appendChild(renderHtmlToggleWrapper);
 
     // Create table filter
     this.tableFilterField = document.createElement("input");
