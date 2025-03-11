@@ -1,4 +1,5 @@
 tsconfig-webpack.tsbuildinfo
 node_modules
 build
+dist
 yarn.lock
