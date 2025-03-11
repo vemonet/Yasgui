@@ -176,76 +176,76 @@ export class Completer extends EventEmitter {
   public autocomplete(fromAutoShow: boolean) {
     //this part goes before the autoshow check, as we _would_ like notification showing to indicate a user can press ctrl-space
     if (!this.isValidPosition()) return false;
-    const previousCompletionItem = this.yasqe.state.completionActive;
+    // const previousCompletionItem = this.yasqe.state.completionActive;
 
-    // Showhint by defaults takes the autocomplete start position (the location of the cursor at the time of starting the autocompletion).
-    const cursor = this.yasqe.getDoc().getCursor();
-    if (
-      // When the cursor goes before current completionItem (e.g. using arrow keys), it would close the autocompletions.
-      // We want the autocompletion to be active at whatever point we are in the token, so let's modify this start pos with the start pos of the token
-      previousCompletionItem &&
-      cursor.sticky && // Is undefined at the end of the token, otherwise it is set as either "before" or "after" (The movement of the cursor)
-      cursor.ch !== previousCompletionItem.startPos.ch
-    ) {
-      this.yasqe.state.completionActive.startPos = cursor;
-    } else if (previousCompletionItem && !cursor.sticky && cursor.ch < previousCompletionItem.startPos.ch) {
-      // A similar thing happens when pressing backspace, CodeMirror will close this autocomplete when 'startLen' changes downward
-      cursor.sticky = previousCompletionItem.startPos.sticky;
-      this.yasqe.state.completionActive.startPos.ch = cursor.ch;
-      this.yasqe.state.completionActive.startLen--;
-    }
-    if (
-      fromAutoShow && // from autoShow, i.e. this gets called each time the editor content changes
-      (!this.config.autoShow || this.yasqe.state.completionActive) // Don't show  and don't create a new instance when its already active
-    ) {
-      return false;
-    }
+    // // Showhint by defaults takes the autocomplete start position (the location of the cursor at the time of starting the autocompletion).
+    // const cursor = this.yasqe.getDoc().getCursor();
+    // if (
+    //   // When the cursor goes before current completionItem (e.g. using arrow keys), it would close the autocompletions.
+    //   // We want the autocompletion to be active at whatever point we are in the token, so let's modify this start pos with the start pos of the token
+    //   previousCompletionItem &&
+    //   cursor.sticky && // Is undefined at the end of the token, otherwise it is set as either "before" or "after" (The movement of the cursor)
+    //   cursor.ch !== previousCompletionItem.startPos.ch
+    // ) {
+    //   this.yasqe.state.completionActive.startPos = cursor;
+    // } else if (previousCompletionItem && !cursor.sticky && cursor.ch < previousCompletionItem.startPos.ch) {
+    //   // A similar thing happens when pressing backspace, CodeMirror will close this autocomplete when 'startLen' changes downward
+    //   cursor.sticky = previousCompletionItem.startPos.sticky;
+    //   this.yasqe.state.completionActive.startPos.ch = cursor.ch;
+    //   this.yasqe.state.completionActive.startLen--;
+    // }
+    // if (
+    //   fromAutoShow && // from autoShow, i.e. this gets called each time the editor content changes
+    //   (!this.config.autoShow || this.yasqe.state.completionActive) // Don't show  and don't create a new instance when its already active
+    // ) {
+    //   return false;
+    // }
 
-    const getHints: HintFn = () => {
-      return this.getHints(this.yasqe.getCompleteToken()).then((list) => {
-        const cur = this.yasqe.getDoc().getCursor();
-        const token: AutocompletionToken = this.yasqe.getCompleteToken();
-        const hintResult = {
-          list: list,
-          from: <Position>{
-            line: cur.line,
-            ch: token.start,
-          },
-          to: <Position>{
-            line: cur.line,
-            ch: token.end,
-          },
-        };
-        CodeMirror.on(hintResult, "shown", () => {
-          this.yasqe.emit("autocompletionShown", (this.yasqe as any).state.completionActive.widget);
-        });
-        CodeMirror.on(hintResult, "close", () => {
-          this.yasqe.emit("autocompletionClose");
-        });
-        return hintResult;
-      });
-    };
+    // const getHints: HintFn = () => {
+    //   return this.getHints(this.yasqe.getCompleteToken()).then((list) => {
+    //     const cur = this.yasqe.getDoc().getCursor();
+    //     const token: AutocompletionToken = this.yasqe.getCompleteToken();
+    //     const hintResult = {
+    //       list: list,
+    //       from: <Position>{
+    //         line: cur.line,
+    //         ch: token.start,
+    //       },
+    //       to: <Position>{
+    //         line: cur.line,
+    //         ch: token.end,
+    //       },
+    //     };
+    //     CodeMirror.on(hintResult, "shown", () => {
+    //       this.yasqe.emit("autocompletionShown", (this.yasqe as any).state.completionActive.widget);
+    //     });
+    //     CodeMirror.on(hintResult, "close", () => {
+    //       this.yasqe.emit("autocompletionClose");
+    //     });
+    //     return hintResult;
+    //   });
+    // };
 
-    getHints.async = false; //in their code, async means using a callback
-    //we always return a promise, which should be properly handled regardless of this val
-    var hintConfig: HintConfig = {
-      closeCharacters: /[\s>"]/,
-      completeSingle: false,
-      hint: getHints,
-      container: this.yasqe.rootEl,
-      // Override these actions back to use their default function
-      // Otherwise these would navigate to the start/end of the suggestion list, while this can also be accomplished with PgUp and PgDn
-      extraKeys: {
-        Home: (yasqe, event) => {
-          yasqe.getDoc().setCursor({ ch: 0, line: event.data.from.line });
-        },
-        End: (yasqe, event) => {
-          yasqe.getDoc().setCursor({ ch: yasqe.getLine(event.data.to.line).length, line: event.data.to.line });
-        },
-      },
-      ...this.yasqe.config.hintConfig,
-    };
-    this.yasqe.showHint(hintConfig);
+    // getHints.async = false; //in their code, async means using a callback
+    // //we always return a promise, which should be properly handled regardless of this val
+    // var hintConfig: HintConfig = {
+    //   closeCharacters: /[\s>"]/,
+    //   completeSingle: false,
+    //   hint: getHints,
+    //   container: this.yasqe.rootEl,
+    //   // Override these actions back to use their default function
+    //   // Otherwise these would navigate to the start/end of the suggestion list, while this can also be accomplished with PgUp and PgDn
+    //   extraKeys: {
+    //     Home: (yasqe, event) => {
+    //       yasqe.getDoc().setCursor({ ch: 0, line: event.data.from.line });
+    //     },
+    //     End: (yasqe, event) => {
+    //       yasqe.getDoc().setCursor({ ch: yasqe.getLine(event.data.to.line).length, line: event.data.to.line });
+    //     },
+    //   },
+    //   ...this.yasqe.config.hintConfig,
+    // };
+    // this.yasqe.showHint(hintConfig);
     return true;
   }
 }

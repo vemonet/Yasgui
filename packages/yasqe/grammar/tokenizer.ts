@@ -1,4 +1,4 @@
-import CodeMirror from "codemirror";
+// import CodeMirror from "codemirror";
 export interface State {
   tokenize: (stream: CodeMirror.StringStream, state: State) => string;
   inLiteral: "SINGLE" | "DOUBLE" | undefined;

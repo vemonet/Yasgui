@@ -1,12 +1,12 @@
 require("./scss/yasqe.scss");
 require("./scss/buttons.scss");
-import { findFirstPrefixLine } from "./prefixFold";
+// TODO: import { findFirstPrefixLine } from "./prefixFold";
 import { getPrefixesFromQuery, addPrefixes, removePrefixes, Prefixes } from "./prefixUtils";
 import { getPreviousNonWsToken, getNextNonWsToken, getCompleteToken } from "./tokenUtils";
 import * as sparql11Mode from "../grammar/tokenizer";
 import { Storage as YStorage } from "@zazuko/yasgui-utils";
 import * as queryString from "query-string";
-import tooltip from "./tooltip";
+// TODO: import tooltip from "./tooltip";
 import { drawSvgStringAsElement, addClass, removeClass } from "@zazuko/yasgui-utils";
 import * as Sparql from "./sparql";
 import * as imgs from "./imgs";
@@ -14,8 +14,17 @@ import * as Autocompleter from "./autocompleters";
 import { merge, escape } from "lodash-es";
 
 import getDefaults from "./defaults";
-import CodeMirror from "./CodeMirror";
+// import CodeMirror from "./CodeMirror";
 import { YasqeAjaxConfig } from "./sparql";
+import { EditorState } from "@codemirror/state";
+import { EditorView, keymap } from "@codemirror/view";
+import { defaultKeymap } from "@codemirror/commands";
+import { SparqlLanguage, sparql } from "codemirror-lang-sparql";
+import { indentWithTab } from "@codemirror/commands";
+import { search } from "@codemirror/search";
+import { linter, lintGutter } from "@codemirror/lint";
+// import { sparqlLinter } from "./extensions/sparql-linter";
+import { basicSetup } from "codemirror";
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): void;
@@ -42,7 +51,8 @@ export interface Yasqe {
   on(eventName: string, handler: () => void): void;
 }
 
-export class Yasqe extends CodeMirror {
+// https://github.com/aatauil/sparql-editor/blob/master/src/index.ts
+export class Yasqe {
   private static storageNamespace = "triply";
   public autocompleters: { [name: string]: Autocompleter.Completer | undefined } = {};
   private prevQueryValid = false;
@@ -57,57 +67,183 @@ export class Yasqe extends CodeMirror {
   public storage: YStorage;
   public config: Config;
   public persistentConfig: PersistentConfig | undefined;
+  private cmView: EditorView;
   constructor(parent: HTMLElement, conf: PartialConfig = {}) {
-    super();
+    // super();
     if (!parent) throw new Error("No parent passed as argument. Dont know where to draw YASQE");
     this.rootEl = document.createElement("div");
     this.rootEl.className = "yasqe";
     parent.appendChild(this.rootEl);
     this.config = merge({}, Yasqe.defaults, conf);
+
     //inherit codemirror props
-    const cm = (CodeMirror as any)(this.rootEl, this.config);
+    // const cm = (CodeMirror as any)(this.rootEl, this.config);
+
+    this.cmView = new EditorView({
+      // state: startState,
+      // parent: document.body
+      doc: "SELECT * WHERE { ?s ?p ?o . } LIMIT 10",
+      extensions: [
+        // keymap.of(defaultKeymap),
+        basicSetup,
+        // keymap.of([indentWithTab]),
+        // sparql(),
+        // search({ top: true }),
+        // lintGutter(),
+        // linter(sparqlLinter),
+      ],
+      parent: this.rootEl,
+    });
+
     //Assign our functions to the cm object. This is needed, as some functions (like the ctrl-enter callback)
     //get the original cm as argument, and not yasqe
-    for (const key of Object.getOwnPropertyNames(Yasqe.prototype)) {
-      cm[key] = (<any>Yasqe.prototype)[key].bind(this);
-    }
+    // for (const key of Object.getOwnPropertyNames(Yasqe.prototype)) {
+    //   cm[key] = (<any>Yasqe.prototype)[key].bind(this);
+    // }
     //Also assign the codemirror functions to our object, so we can easily use those
-    Object.assign(this, CodeMirror.prototype, cm);
+    // Object.assign(this, CodeMirror.prototype, cm);
 
     //Do some post processing
     this.storage = new YStorage(Yasqe.storageNamespace);
-    this.drawButtons();
-    const storageId = this.getStorageId();
-    // this.getWrapperElement
-    if (storageId) {
-      const persConf = this.storage.get<any>(storageId);
-      if (persConf && typeof persConf === "string") {
-        this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight }; // Migrate to object based localstorage
-      } else {
-        this.persistentConfig = persConf;
-      }
-      if (!this.persistentConfig)
-        this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
-      if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
-    }
-    this.config.autocompleters.forEach((c) => this.enableCompleter(c).then(() => {}, console.warn));
-    if (this.config.consumeShareLink) {
-      this.config.consumeShareLink(this);
-      //and: add a hash listener!
-      window.addEventListener("hashchange", this.handleHashChange);
-    }
-    this.checkSyntax();
-    // Size codemirror to the
-    if (this.persistentConfig && this.persistentConfig.editorHeight) {
-      this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
-    } else if (this.config.editorHeight) {
-      this.getWrapperElement().style.height = this.config.editorHeight;
-    }
+    // this.drawButtons();
+    // const storageId = this.getStorageId();
+    // // this.getWrapperElement
+    // if (storageId) {
+    //   const persConf = this.storage.get<any>(storageId);
+    //   if (persConf && typeof persConf === "string") {
+    //     this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight }; // Migrate to object based localstorage
+    //   } else {
+    //     this.persistentConfig = persConf;
+    //   }
+    //   if (!this.persistentConfig)
+    //     this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
+    //   if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
+    // }
+    // // TODO: this.config.autocompleters.forEach((c) => this.enableCompleter(c).then(() => {}, console.warn));
+    // if (this.config.consumeShareLink) {
+    //   this.config.consumeShareLink(this);
+    //   //and: add a hash listener!
+    //   window.addEventListener("hashchange", this.handleHashChange);
+    // }
+    // this.checkSyntax();
+    // // Size codemirror to the
+    // if (this.persistentConfig && this.persistentConfig.editorHeight) {
+    //   // this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
+    // } else if (this.config.editorHeight) {
+    //   // this.getWrapperElement().style.height = this.config.editorHeight;
+    // }
 
-    if (this.config.resizeable) this.drawResizer();
-    if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
-    this.registerEventListeners();
+    // if (this.config.resizeable) this.drawResizer();
+    // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
+    // this.registerEventListeners();
   }
+
+  public getValue = () => {
+    return this.cmView.state.doc.toString();
+  };
+
+  public setValue = (value: string) => {
+    this.cmView.dispatch({ changes: { from: 0, to: this.cmView.state.doc.length, insert: value } });
+  };
+
+  public getTokenAt = (pos: Position, precise?: boolean) => {
+    const lineState = this.cmView.state.doc.line(pos.line + 1);
+    const doc = this.cmView.state.doc.toString();
+
+    // Get the line text
+    const line = lineState.text;
+
+    // Calculate the absolute position
+    const lineStart = lineState.from;
+    const absolutePos = lineStart + Math.min(pos.ch, line.length);
+
+    // Get the token at this position
+    // This is a simplified implementation as CodeMirror 6 handles tokens differently
+    // than CodeMirror 5. For a full implementation, you would need to use
+    // the language parser and syntax tree from CM6
+
+    // For now, return a basic token object
+    const token: Token = {
+      start: pos.ch,
+      end: pos.ch,
+      string: line.charAt(pos.ch) || "",
+      type: null,
+      state: {} as TokenizerState,
+    };
+
+    // // Try to get more context about the token type
+    // // This is simplified - a real implementation would use the language's tokenizer
+    // const tree = this.cmView.state.field(sparql().language.field);
+    // if (tree) {
+    //   const node = tree.resolveInner(absolutePos, 1);
+    //   if (node) {
+    //     token.type = node.type.name;
+
+    //     // Find token boundaries
+    //     let start = absolutePos;
+    //     while (start > lineStart && /\w/.test(doc.charAt(start - 1))) start--;
+
+    //     let end = absolutePos;
+    //     while (end < lineStart + line.length && /\w/.test(doc.charAt(end))) end++;
+
+    //     token.start = start - lineStart;
+    //     token.end = end - lineStart;
+    //     token.string = line.slice(token.start, token.end);
+    //   }
+    // }
+
+    return token;
+  };
+  public getDoc = () => {
+    return {
+      getCursor: (pos?: string) => {
+        const selection = this.cmView.state.selection.main;
+        return {
+          line: this.cmView.state.doc.lineAt(pos === "start" ? selection.from : selection.to).number - 1,
+          ch: pos === "start" ? selection.from : selection.to,
+        };
+      },
+      getSelection: () => {
+        return this.cmView.state.sliceDoc(this.cmView.state.selection.main.from, this.cmView.state.selection.main.to);
+      },
+      getLine: (line: number) => {
+        return this.cmView.state.doc.line(line + 1).text;
+      },
+      lineCount: () => {
+        return this.cmView.state.doc.lines;
+      },
+      somethingSelected: () => {
+        return !this.cmView.state.selection.main.empty;
+      },
+      replaceRange: (text: string, from: any, to: any) => {
+        const fromPos = typeof from.line === "number" ? this.cmView.state.doc.line(from.line + 1).from + from.ch : from;
+        const toPos = typeof to.line === "number" ? this.cmView.state.doc.line(to.line + 1).from + to.ch : to;
+        this.cmView.dispatch({ changes: { from: fromPos, to: toPos, insert: text } });
+      },
+      indexFromPos: (pos: Position) => {
+        return this.cmView.state.doc.line(pos.line + 1).from + pos.ch;
+      },
+      posFromIndex: (index: number) => {
+        const line = this.cmView.state.doc.lineAt(index);
+        return {
+          line: line.number - 1,
+          ch: index - line.from,
+        };
+      },
+      lastLine: () => {
+        return this.cmView.state.doc.lines - 1;
+      },
+    };
+  };
+
+  public getWrapperElement = () => {
+    return this.cmView.dom;
+  };
+
+  public refresh = () => {
+    this.cmView.requestMeasure();
+  };
+
   private handleHashChange = () => {
     this.config.consumeShareLink?.(this);
   };
@@ -169,7 +305,7 @@ export class Yasqe extends CodeMirror {
    * Generic IDE functions
    */
   public emit(event: string, ...data: any[]) {
-    CodeMirror.signal(this, event, this, ...data);
+    // TODO: CodeMirror.signal(this, event, this, ...data);
   }
 
   public getStorageId(getter?: Config["persistenceId"]): string | undefined {
@@ -181,7 +317,7 @@ export class Yasqe extends CodeMirror {
   private drawButtons() {
     const buttons = document.createElement("div");
     buttons.className = "yasqe_buttons";
-    this.getWrapperElement().appendChild(buttons);
+    // TODO: this.getWrapperElement().appendChild(buttons);
 
     if (this.config.pluginButtons) {
       const pluginButtons = this.config.pluginButtons();
@@ -364,6 +500,7 @@ export class Yasqe extends CodeMirror {
   private doDrag(event: MouseEvent) {
     this.getWrapperElement().style.height = this.calculateDragOffset(event, this.rootEl) + "px";
   }
+
   private stopDrag() {
     document.documentElement.removeEventListener("mousemove", this.doDrag, false);
     document.documentElement.removeEventListener("mouseup", this.stopDrag, false);
@@ -377,11 +514,22 @@ export class Yasqe extends CodeMirror {
     this.refresh();
   }
   public duplicateLine() {
-    const cur = this.getDoc().getCursor();
-    if (cur) {
-      const line = this.getDoc().getLine(cur.line);
-      this.getDoc().replaceRange(line + "\n" + line, { ch: 0, line: cur.line }, { ch: line.length, line: cur.line });
-    }
+    const cur = this.cmView.state.selection.main.head;
+    const line = this.cmView.state.doc.lineAt(cur);
+    const lineText = line.text;
+
+    this.cmView.dispatch({
+      changes: {
+        from: line.from,
+        to: line.to,
+        insert: lineText + "\n" + lineText,
+      },
+    });
+
+    // if (cur) {
+    //   const line = this.getDoc().getLine(cur.line);
+    //   this.getDoc().replaceRange(line + "\n" + line, { ch: 0, line: cur.line }, { ch: line.length, line: cur.line });
+    // }
   }
   private updateQueryButton(status?: "valid" | "error") {
     if (!this.queryBtn) return;
@@ -433,7 +581,8 @@ export class Yasqe extends CodeMirror {
    * Get SPARQL query props
    */
   public getQueryType() {
-    return this.getOption("queryType");
+    // TODO: return this.getOption("queryType");
+    return "SELECT";
   }
   public getQueryMode(): "update" | "query" {
     switch (this.getQueryType()) {
@@ -456,15 +605,16 @@ export class Yasqe extends CodeMirror {
     //not, we might get outdated info from the current query (creating loops such
     //as https://github.com/TriplyDB/YASGUI/issues/84)
     //on caveat: this function won't work when query is invalid (i.e. when typing)
-    const token: Token = this.getTokenAt(
-      { line: this.getDoc().lastLine(), ch: this.getDoc().getLine(this.getDoc().lastLine()).length },
-      true
-    );
-    const vars: string[] = [];
-    for (var v in token.state.variables) {
-      vars.push(v);
-    }
-    return vars.sort();
+    // TODO: const token: Token = this.getTokenAt(
+    //   { line: this.getDoc().lastLine(), ch: this.getDoc().getLine(this.getDoc().lastLine()).length },
+    //   true
+    // );
+    // const vars: string[] = [];
+    // for (var v in token.state.variables) {
+    //   vars.push(v);
+    // }
+    // return vars.sort();
+    return [];
   }
 
   /**
@@ -565,16 +715,16 @@ export class Yasqe extends CodeMirror {
         );
       } else {
         // Not all lines are commented, so add comments
-        this.getDoc().replaceRange("#", {
-          line: i,
-          ch: 0,
-        });
+        // TODO: this.getDoc().replaceRange("#", {
+        //   line: i,
+        //   ch: 0,
+        // });
       }
     }
   }
 
   public autoformat() {
-    if (!this.getDoc().somethingSelected()) this.execCommand("selectAll");
+    // TODO: if (!this.getDoc().somethingSelected()) this.execCommand("selectAll");
     const from = this.getDoc().getCursor("start");
 
     var to: Position = {
@@ -589,14 +739,14 @@ export class Yasqe extends CodeMirror {
     const res = this.autoformatSelection(absStart, absEnd);
 
     // Replace and auto-indent the range
-    this.operation(() => {
-      this.getDoc().replaceRange(res, from, to);
-      var startLine = this.getDoc().posFromIndex(absStart).line;
-      var endLine = this.getDoc().posFromIndex(absStart + res.length).line;
-      for (var i = startLine; i <= endLine; i++) {
-        this.indentLine(i, "smart");
-      }
-    });
+    // TODO: this.operation(() => {
+    //   this.getDoc().replaceRange(res, from, to);
+    //   var startLine = this.getDoc().posFromIndex(absStart).line;
+    //   var endLine = this.getDoc().posFromIndex(absStart + res.length).line;
+    //   for (var i = startLine; i <= endLine; i++) {
+    //     this.indentLine(i, "smart");
+    //   }
+    // });
   }
   //values in the form of {?var: 'value'}, or [{?var: 'value'}]
   public getQueryWithValues(values: string | { [varName: string]: string } | Array<{ [varName: string]: string }>) {
@@ -668,7 +818,7 @@ export class Yasqe extends CodeMirror {
   public checkSyntax() {
     this.queryValid = true;
 
-    this.clearGutter("gutterErrorBar");
+    // TODO: this.clearGutter("gutterErrorBar");
 
     var state: TokenizerState;
     for (var l = 0; l < this.getDoc().lineCount(); ++l) {
@@ -680,44 +830,45 @@ export class Yasqe extends CodeMirror {
         precise = true;
       }
 
-      var token: Token = this.getTokenAt(
-        {
-          line: l,
-          ch: this.getDoc().getLine(l).length,
-        },
-        precise
-      );
-      var state = token.state;
-      this.setOption("queryType", state.queryType);
-      if (state.OK == false) {
-        if (!this.config.syntaxErrorCheck) {
-          //the library we use already marks everything as being an error. Overwrite this class attribute.
-          const els = this.getWrapperElement().querySelectorAll(".sp-error");
-          for (let i = 0; i < els.length; i++) {
-            var el: any = els[i];
-            if (el.style) el.style.color = "black";
-          }
-          //we don't want the gutter error, so return
-          return;
-        }
-        const warningEl = drawSvgStringAsElement(imgs.warning);
-        if (state.errorMsg) {
-          tooltip(this, warningEl, escape(token.state.errorMsg));
-        } else if (state.possibleCurrent && state.possibleCurrent.length > 0) {
-          var expectedEncoded: string[] = [];
-          state.possibleCurrent.forEach(function (expected) {
-            expectedEncoded.push("<strong style='text-decoration:underline'>" + escape(expected) + "</strong>");
-          });
-          tooltip(this, warningEl, "This line is invalid. Expected: " + expectedEncoded.join(", "));
-        }
-        // warningEl.style.marginTop = "2px";
-        // warningEl.style.marginLeft = "2px";
-        warningEl.className = "parseErrorIcon";
-        this.setGutterMarker(l, "gutterErrorBar", warningEl);
+      // TODO:
+      // var token: Token = this.getTokenAt(
+      //   {
+      //     line: l,
+      //     ch: this.getDoc().getLine(l).length,
+      //   },
+      //   precise
+      // );
+      // var state = token.state;
+      // this.setOption("queryType", state.queryType);
+      // if (state.OK == false) {
+      //   if (!this.config.syntaxErrorCheck) {
+      //     //the library we use already marks everything as being an error. Overwrite this class attribute.
+      //     const els = this.getWrapperElement().querySelectorAll(".sp-error");
+      //     for (let i = 0; i < els.length; i++) {
+      //       var el: any = els[i];
+      //       if (el.style) el.style.color = "black";
+      //     }
+      //     //we don't want the gutter error, so return
+      //     return;
+      //   }
+      //   const warningEl = drawSvgStringAsElement(imgs.warning);
+      //   if (state.errorMsg) {
+      //     tooltip(this, warningEl, escape(token.state.errorMsg));
+      //   } else if (state.possibleCurrent && state.possibleCurrent.length > 0) {
+      //     var expectedEncoded: string[] = [];
+      //     state.possibleCurrent.forEach(function (expected) {
+      //       expectedEncoded.push("<strong style='text-decoration:underline'>" + escape(expected) + "</strong>");
+      //     });
+      //     tooltip(this, warningEl, "This line is invalid. Expected: " + expectedEncoded.join(", "));
+      //   }
+      //   // warningEl.style.marginTop = "2px";
+      //   // warningEl.style.marginLeft = "2px";
+      //   warningEl.className = "parseErrorIcon";
+      //   this.setGutterMarker(l, "gutterErrorBar", warningEl);
 
-        this.queryValid = false;
-        break;
-      }
+      //   this.queryValid = false;
+      //   break;
+      // }
     }
   }
   /**
@@ -800,9 +951,9 @@ export class Yasqe extends CodeMirror {
    * Prefix management
    */
   public collapsePrefixes(collapse = true) {
-    const firstPrefixLine = findFirstPrefixLine(this);
-    if (firstPrefixLine === undefined) return; //nothing to collapse
-    this.foldCode(firstPrefixLine, (<any>CodeMirror).fold.prefix, collapse ? "fold" : "unfold");
+    // const firstPrefixLine = findFirstPrefixLine(this);
+    // if (firstPrefixLine === undefined) return; //nothing to collapse
+    // this.foldCode(firstPrefixLine, (<any>CodeMirror).fold.prefix, collapse ? "fold" : "unfold");
   }
 
   public getPrefixesFromQuery(): Prefixes {
@@ -875,7 +1026,10 @@ export class Yasqe extends CodeMirror {
   }
 
   public expandEditor() {
-    this.setSize(null, "100%");
+    if (this.cmView && this.cmView.dom) {
+      this.cmView.dom.style.height = "100%";
+      this.cmView.requestMeasure();
+    }
   }
 
   public destroy() {
@@ -895,7 +1049,7 @@ export class Yasqe extends CodeMirror {
    * Statics
    */
   static Sparql = Sparql;
-  static runMode = (<any>CodeMirror).runMode;
+  // static runMode = (<any>CodeMirror).runMode;
   static clearStorage() {
     const storage = new YStorage(Yasqe.storageNamespace);
     storage.removeNamespace();
@@ -923,7 +1077,7 @@ export class Yasqe extends CodeMirror {
     if (enable && Yasqe.defaults.autocompleters.indexOf(name) < 0) Yasqe.defaults.autocompleters.push(name);
   }
 }
-(<any>Object).assign(CodeMirror.prototype, Yasqe.prototype);
+// (<any>Object).assign(CodeMirror.prototype, Yasqe.prototype);
 
 export type TokenizerState = sparql11Mode.State;
 export type Position = CodeMirror.Position;
@@ -1048,8 +1202,8 @@ export interface PersistentConfig {
 
 //Need to assign our prototype to codemirror's, as some of the callbacks (e.g. the keymap opts)
 //give us a cm doc, instead of a yasqe + cm doc
-Autocompleter.completers.forEach((c) => {
-  Yasqe.registerAutocompleter(c);
-});
+// Autocompleter.completers.forEach((c) => {
+//   Yasqe.registerAutocompleter(c);
+// });
 
 export default Yasqe;

@@ -117,7 +117,7 @@ export class Tab extends EventEmitter {
     this.yasgui.tabElements.selectTab(this.persistentJson.id);
     if (this.yasqe) {
       this.yasqe.refresh();
-      if (this.yasgui.config.autofocus) this.yasqe.focus();
+      // TODO: if (this.yasgui.config.autofocus) this.yasqe.focus();
     }
     if (this.yasr) {
       this.yasr.refresh();

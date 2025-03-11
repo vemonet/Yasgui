@@ -25,7 +25,7 @@ SELECT * WHERE {
     lineNumbers: true,
     lineWrapping: true,
     foldGutter: {
-      rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix),
+      // rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix),
     },
     collapsePrefixesOnLoad: false,
     gutters: ["gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
@@ -86,7 +86,7 @@ SELECT * WHERE {
       },
       Esc: function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
-        yasqe.getInputField().blur();
+        // TODO: yasqe.getInputField().blur();
       },
     },
 
