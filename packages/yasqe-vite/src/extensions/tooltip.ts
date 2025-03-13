@@ -42,14 +42,14 @@ export const wordHover = hoverTooltip((view, pos, side) => {
           <div style="display: inline-block; padding: 2px 4px; background-color: #e0e0e0; color: black; border-radius: 4px; font-size: small; margin-bottom: 8px;">${
             selection?.type
           }</div>
-          <div style="font-weight: medium; margin-bottom: 8px;">${selection?.description}</div>
+          <div style="font-weight: medium; margin-bottom: 8px;">${selection?.info}</div>
           <pre style="display: block; background-color: #eaeaea; padding: 6px; border-radius: 3px; margin-bottom: 8px;">${selection?.example
             .replace(/</g, "&lt;")
             .replace(/>/g, "&gt;")}</pre>
           <hr style="border: none; border-top: 1px solid #ddd; margin: 12px 0;">
           <a href="${
             selection.link
-          }" target="_blank" rel="noopener noreferrer" style="color: #007acc; text-decoration: none; margin-top: 8px;">${selectionName} Documentation</a>
+          }" target="_blank" rel="noopener noreferrer" style="color: #007acc; text-decoration: none; margin-top: 8px;">${selectionName} documentation</a>
         </div>
       `;
       const dom = document.createElement("div");

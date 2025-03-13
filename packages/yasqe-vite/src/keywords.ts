@@ -1,7 +1,7 @@
 interface DictionaryEntry {
   type: string;
   label: string;
-  description: string;
+  info: string;
   example: string;
   link: string;
   boost: number;
@@ -15,7 +15,7 @@ export const dictionary: Dictionary = {
   BASE: {
     type: "keyword",
     label: "BASE",
-    description: `The BASE keyword defines the Base IRI used to resolve relative IRIs`,
+    info: `The BASE keyword defines the Base IRI used to resolve relative IRIs`,
     example: `BASE <http://example.org/book/>`,
     link: "https://www.w3.org/TR/rdf-sparql-query/#relIRIs",
     boost: 10,
@@ -23,7 +23,7 @@ export const dictionary: Dictionary = {
   PREFIX: {
     type: "keyword",
     label: "PREFIX",
-    description: `The PREFIX keyword associates a prefix label with an IRI`,
+    info: `The PREFIX keyword associates a prefix label with an IRI`,
     example: `PREFIX book: <http://example.org/book/>`,
     link: "https://www.w3.org/TR/rdf-sparql-query/#prefNames",
     boost: 10,
@@ -31,7 +31,7 @@ export const dictionary: Dictionary = {
   SELECT: {
     type: "keyword",
     label: "SELECT",
-    description: `The SELECT clause identifies the variables to appear in the query results`,
+    info: `The SELECT clause identifies the variables to appear in the query results`,
     example: `SELECT ?title WHERE {
   <http://example.org/book/book1> <http://purl.org/dc/elements/1.1/title> ?title .
 }`,
@@ -41,7 +41,7 @@ export const dictionary: Dictionary = {
   CONSTRUCT: {
     type: "keyword",
     label: "CONSTRUCT",
-    description: `The CONSTRUCT query form returns a single RDF graph specified by a graph template`,
+    info: `The CONSTRUCT query form returns a single RDF graph specified by a graph template`,
     example: `CONSTRUCT { ?s ?p ?o } WHERE {
   GRAPH <http://example.org/aGraph> { ?s ?p ?o } .
 }`,
@@ -51,7 +51,7 @@ export const dictionary: Dictionary = {
   DESCRIBE: {
     type: "keyword",
     label: "DESCRIBE",
-    description: `The DESCRIBE form returns a single result RDF graph containing RDF data about resources`,
+    info: `The DESCRIBE form returns a single result RDF graph containing RDF data about resources`,
     example: `DESCRIBE <http://example.org/book/book1> WHERE {
   <http://example.org/book/book1> ?p ?o .
 }`,
@@ -61,7 +61,7 @@ export const dictionary: Dictionary = {
   WHERE: {
     type: "keyword",
     label: "WHERE",
-    description: "The WHERE clause defines the graph pattern to match against the RDF data",
+    info: "The WHERE clause defines the graph pattern to match against the RDF data",
     example: `SELECT ?title WHERE {
   <http://example.org/book/book1> <http://purl.org/dc/elements/1.1/title> ?title .
 }`,
@@ -71,7 +71,7 @@ export const dictionary: Dictionary = {
   DISTINCT: {
     type: "keyword",
     label: "DISTINCT",
-    description: "The DISTINCT keyword specifies that only distinct results are to be returned",
+    info: "The DISTINCT keyword specifies that only distinct results are to be returned",
     example: `SELECT DISTINCT ?title
 WHERE {
   ?book <http://purl.org/dc/elements/1.1/title> ?title .
@@ -82,7 +82,7 @@ WHERE {
   REDUCED: {
     type: "keyword",
     label: "REDUCED",
-    description: "The REDUCED keyword specifies that duplicate results should be removed",
+    info: "The REDUCED keyword specifies that duplicate results should be removed",
     example: `SELECT REDUCED ?title
 WHERE {
   ?book <http://purl.org/dc/elements/1.1/title> ?title .
@@ -93,7 +93,7 @@ WHERE {
   STR: {
     type: "method",
     label: "STR",
-    description: `The STR function returns the lexical form of a literal as a string`,
+    info: `The STR function returns the lexical form of a literal as a string`,
     example: `STR(?x)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-str",
     boost: 1,
@@ -101,7 +101,7 @@ WHERE {
   LANG: {
     type: "method",
     label: "LANG",
-    description: `The LANG function returns the language tag of a literal`,
+    info: `The LANG function returns the language tag of a literal`,
     example: `LANG(?x)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-lang",
     boost: 1,
@@ -109,7 +109,7 @@ WHERE {
   LANGMATCHES: {
     type: "method",
     label: "LANGMATCHES",
-    description: `The LANGMATCHES function tests whether a language tag matches a language range`,
+    info: `The LANGMATCHES function tests whether a language tag matches a language range`,
     example: `LANGMATCHES(LANG(?x), 'en')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-langMatches",
     boost: 1,
@@ -117,7 +117,7 @@ WHERE {
   DATATYPE: {
     type: "method",
     label: "DATATYPE",
-    description: `The DATATYPE function returns the datatype IRI of a literal`,
+    info: `The DATATYPE function returns the datatype IRI of a literal`,
     example: `DATATYPE(?x)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-datatype",
     boost: 1,
@@ -125,7 +125,7 @@ WHERE {
   ASK: {
     type: "keyword",
     label: "ASK",
-    description: `The ASK keyword is used for boolean queries, returns true or false`,
+    info: `The ASK keyword is used for boolean queries, returns true or false`,
     example: `ASK { ?s ?p ?o }`,
     link: "https://www.w3.org/TR/rdf-sparql-query/#ask",
     boost: 10,
@@ -133,7 +133,7 @@ WHERE {
   BOUND: {
     type: "method",
     label: "BOUND",
-    description: `The BOUND function tests whether a variable is bound to a value`,
+    info: `The BOUND function tests whether a variable is bound to a value`,
     example: `FILTER(BOUND(?x))`,
     link: "https://www.w3.org/TR/sparql11-query/#func-bound",
     boost: 1,
@@ -141,7 +141,7 @@ WHERE {
   IRI: {
     type: "method",
     label: "IRI",
-    description: `The IRI function creates an IRI from a string`,
+    info: `The IRI function creates an IRI from a string`,
     example: `IRI('http://example.org/book/book1')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-iri",
     boost: 1,
@@ -149,7 +149,7 @@ WHERE {
   URI: {
     type: "method",
     label: "URI",
-    description: `The URI function is used to construct an IRI from a string`,
+    info: `The URI function is used to construct an IRI from a string`,
     example: `URI('http://example.com/resource')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-uri",
     boost: 1,
@@ -157,7 +157,7 @@ WHERE {
   BNODE: {
     type: "method",
     label: "BNODE",
-    description: `The BNODE function generates a blank node with a specified label`,
+    info: `The BNODE function generates a blank node with a specified label`,
     example: `BNODE('node1')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-bnode",
     boost: 1,
@@ -165,7 +165,7 @@ WHERE {
   RAND: {
     type: "method",
     label: "RAND",
-    description: `The RAND function returns a random number between 0 and 1`,
+    info: `The RAND function returns a random number between 0 and 1`,
     example: `RAND()`,
     link: "https://www.w3.org/TR/sparql11-query/#func-rand",
     boost: 1,
@@ -173,7 +173,7 @@ WHERE {
   ABS: {
     type: "method",
     label: "ABS",
-    description: `The ABS function returns the absolute value of a numeric expression`,
+    info: `The ABS function returns the absolute value of a numeric expression`,
     example: `ABS(-5)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-abs",
     boost: 1,
@@ -181,7 +181,7 @@ WHERE {
   CEIL: {
     type: "method",
     label: "CEIL",
-    description: `The CEIL function returns the smallest integer greater than or equal to a numeric expression`,
+    info: `The CEIL function returns the smallest integer greater than or equal to a numeric expression`,
     example: `CEIL(4.5)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-ceil",
     boost: 1,
@@ -189,7 +189,7 @@ WHERE {
   FLOOR: {
     type: "method",
     label: "FLOOR",
-    description: `The FLOOR function returns the largest integer less than or equal to a numeric expression`,
+    info: `The FLOOR function returns the largest integer less than or equal to a numeric expression`,
     example: `FLOOR(4.5)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-floor",
     boost: 1,
@@ -197,7 +197,7 @@ WHERE {
   ROUND: {
     type: "method",
     label: "ROUND",
-    description: `The ROUND function rounds a numeric expression to the nearest integer`,
+    info: `The ROUND function rounds a numeric expression to the nearest integer`,
     example: `ROUND(4.5)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-round",
     boost: 1,
@@ -205,7 +205,7 @@ WHERE {
   CONCAT: {
     type: "method",
     label: "CONCAT",
-    description: `The CONCAT function concatenates two or more strings`,
+    info: `The CONCAT function concatenates two or more strings`,
     example: `CONCAT('Hello', 'World')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-concat",
     boost: 1,
@@ -213,7 +213,7 @@ WHERE {
   STRLEN: {
     type: "method",
     label: "STRLEN",
-    description: `The STRLEN function returns the length of a string`,
+    info: `The STRLEN function returns the length of a string`,
     example: `STRLEN('Hello')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-strlen",
     boost: 1,
@@ -221,7 +221,7 @@ WHERE {
   UCASE: {
     type: "method",
     label: "UCASE",
-    description: `The UCASE function returns the uppercase form of a string`,
+    info: `The UCASE function returns the uppercase form of a string`,
     example: `UCASE('hello')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-ucase",
     boost: 1,
@@ -229,7 +229,7 @@ WHERE {
   LCASE: {
     type: "method",
     label: "LCASE",
-    description: `The LCASE function returns the lowercase form of a string`,
+    info: `The LCASE function returns the lowercase form of a string`,
     example: `LCASE('HELLO')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-lcase",
     boost: 1,
@@ -237,7 +237,7 @@ WHERE {
   ENCODE_FOR_URI: {
     type: "method",
     label: "ENCODE_FOR_URI",
-    description: `The ENCODE_FOR_URI function encodes a string for use in a URI`,
+    info: `The ENCODE_FOR_URI function encodes a string for use in a URI`,
     example: `ENCODE_FOR_URI('http://example.com/path with spaces')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-encode-for-uri",
     boost: 1,
@@ -245,7 +245,7 @@ WHERE {
   CONTAINS: {
     type: "method",
     label: "CONTAINS",
-    description: "The CONTAINS function checks if a string contains another string",
+    info: "The CONTAINS function checks if a string contains another string",
     example: `CONTAINS(?name, "Doe")`,
     link: "https://www.w3.org/TR/sparql11-query/#func-contains",
     boost: 1,
@@ -253,7 +253,7 @@ WHERE {
   STRSTARTS: {
     type: "method",
     label: "STRSTARTS",
-    description: "The STRSTARTS function checks if a string starts with another string",
+    info: "The STRSTARTS function checks if a string starts with another string",
     example: `STRSTARTS(?name, "Joh")`,
     link: "https://www.w3.org/TR/sparql11-query/#func-strstarts",
     boost: 1,
@@ -261,8 +261,7 @@ WHERE {
   STRBEFORE: {
     type: "method",
     label: "STRBEFORE",
-    description:
-      "The STRBEFORE function returns the substring of a string that occurs before the first occurrence of another string",
+    info: "The STRBEFORE function returns the substring of a string that occurs before the first occurrence of another string",
     example: `STRBEFORE(?name, "Doe")`,
     link: "https://www.w3.org/TR/sparql11-query/#func-strbefore",
     boost: 1,
@@ -270,8 +269,7 @@ WHERE {
   STRAFTER: {
     type: "method",
     label: "STRAFTER",
-    description:
-      "The STRAFTER function returns the substring of a string that occurs after the first occurrence of another string",
+    info: "The STRAFTER function returns the substring of a string that occurs after the first occurrence of another string",
     example: `STRAFTER(?name, "John ")`,
     link: "https://www.w3.org/TR/sparql11-query/#func-strafter",
     boost: 1,
@@ -279,7 +277,7 @@ WHERE {
   YEAR: {
     type: "method",
     label: "YEAR",
-    description: "The YEAR function extracts the year component of a date",
+    info: "The YEAR function extracts the year component of a date",
     example: `YEAR(?date)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-year",
     boost: 1,
@@ -287,7 +285,7 @@ WHERE {
   MONTH: {
     type: "method",
     label: "MONTH",
-    description: "The MONTH function extracts the month component of a date",
+    info: "The MONTH function extracts the month component of a date",
     example: `MONTH(?date)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-month",
     boost: 1,
@@ -295,7 +293,7 @@ WHERE {
   DAY: {
     type: "method",
     label: "DAY",
-    description: "The DAY function extracts the day component of a date",
+    info: "The DAY function extracts the day component of a date",
     example: `DAY(?date)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-day",
     boost: 1,
@@ -303,7 +301,7 @@ WHERE {
   HOURS: {
     type: "method",
     label: "HOURS",
-    description: "The HOURS function extracts the hours component of a time",
+    info: "The HOURS function extracts the hours component of a time",
     example: `HOURS(?time)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-hours",
     boost: 1,
@@ -311,7 +309,7 @@ WHERE {
   MINUTES: {
     type: "method",
     label: "MINUTES",
-    description: "The MINUTES function extracts the minutes component of a time",
+    info: "The MINUTES function extracts the minutes component of a time",
     example: `MINUTES(?time)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-minutes",
     boost: 1,
@@ -319,7 +317,7 @@ WHERE {
   SECONDS: {
     type: "method",
     label: "SECONDS",
-    description: "The SECONDS function extracts the seconds component of a time",
+    info: "The SECONDS function extracts the seconds component of a time",
     example: `SECONDS(?time)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-seconds",
     boost: 1,
@@ -327,7 +325,7 @@ WHERE {
   TIMEZONE: {
     type: "method",
     label: "TIMEZONE",
-    description: "The TIMEZONE function extracts the timezone component of a dateTime",
+    info: "The TIMEZONE function extracts the timezone component of a dateTime",
     example: `TIMEZONE(?dateTime)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-timezone",
     boost: 1,
@@ -335,7 +333,7 @@ WHERE {
   TZ: {
     type: "method",
     label: "TZ",
-    description: "The TZ function extracts the timezone component of a dateTime",
+    info: "The TZ function extracts the timezone component of a dateTime",
     example: `TZ(?dateTime)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-tz",
     boost: 1,
@@ -343,7 +341,7 @@ WHERE {
   NOW: {
     type: "method",
     label: "NOW",
-    description: "The NOW function returns the current dateTime",
+    info: "The NOW function returns the current dateTime",
     example: `NOW()`,
     link: "https://www.w3.org/TR/sparql11-query/#func-now",
     boost: 1,
@@ -351,7 +349,7 @@ WHERE {
   UUID: {
     type: "method",
     label: "UUID",
-    description: "Generates a UUID (universally unique identifier) string.",
+    info: "Generates a UUID (universally unique identifier) string.",
     example: `UUID()`,
     link: "https://www.w3.org/TR/sparql11-query/#func-uuid",
     boost: 1,
@@ -359,7 +357,7 @@ WHERE {
   STRUUID: {
     type: "method",
     label: "STRUUID",
-    description: "Generates a UUID string.",
+    info: "Generates a UUID string.",
     example: `STRUUID()`,
     link: "https://www.w3.org/TR/sparql11-query/#func-struuid",
     boost: 1,
@@ -367,7 +365,7 @@ WHERE {
   MD5: {
     type: "method",
     label: "MD5",
-    description: "Returns the MD5 hash of the argument string.",
+    info: "Returns the MD5 hash of the argument string.",
     example: `MD5('example')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-md5",
     boost: 1,
@@ -375,7 +373,7 @@ WHERE {
   SHA1: {
     type: "method",
     label: "SHA1",
-    description: "Returns the SHA1 hash of the argument string.",
+    info: "Returns the SHA1 hash of the argument string.",
     example: `SHA1('example')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-sha1",
     boost: 1,
@@ -383,7 +381,7 @@ WHERE {
   SHA256: {
     type: "method",
     label: "SHA256",
-    description: "Returns the SHA256 hash of the argument string.",
+    info: "Returns the SHA256 hash of the argument string.",
     example: `SHA256('example')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-sha256",
     boost: 1,
@@ -391,7 +389,7 @@ WHERE {
   SHA384: {
     type: "method",
     label: "SHA384",
-    description: "Returns the SHA384 hash of the argument string.",
+    info: "Returns the SHA384 hash of the argument string.",
     example: `SHA384('example')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-sha384",
     boost: 1,
@@ -399,7 +397,7 @@ WHERE {
   SHA512: {
     type: "method",
     label: "SHA512",
-    description: "Returns the SHA512 hash of the argument string.",
+    info: "Returns the SHA512 hash of the argument string.",
     example: `SHA512('example')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-sha512",
     boost: 1,
@@ -407,7 +405,7 @@ WHERE {
   COALESCE: {
     type: "method",
     label: "COALESCE",
-    description: "Returns the first argument that is not an error.",
+    info: "Returns the first argument that is not an error.",
     example: `COALESCE(?name, 'N/A')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-coalesce",
     boost: 1,
@@ -415,7 +413,7 @@ WHERE {
   IF: {
     type: "method",
     label: "IF",
-    description: "Returns the second argument if the first argument is true, otherwise the third argument.",
+    info: "Returns the second argument if the first argument is true, otherwise the third argument.",
     example: `IF(?age > 18, 'Adult', 'Child')`,
     link: "https://www.w3.org/TR/sparql11-query/#func-if",
     boost: 1,
@@ -423,7 +421,7 @@ WHERE {
   STRLANG: {
     type: "method",
     label: "STRLANG",
-    description: "Returns the language tag of a literal",
+    info: "Returns the language tag of a literal",
     example: `STRLANG("Hello, World!", "en")`,
     link: "https://www.w3.org/TR/sparql11-query/#func-strlang",
     boost: 1,
@@ -431,7 +429,7 @@ WHERE {
   STRDT: {
     type: "method",
     label: "STRDT",
-    description: "Returns a literal with an IRI as the datatype",
+    info: "Returns a literal with an IRI as the datatype",
     example: `STRDT("2.71828", <http://www.w3.org/2001/XMLSchema#double>)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-strdt",
     boost: 1,
@@ -439,7 +437,7 @@ WHERE {
   SAMETERM: {
     type: "method",
     label: "SAMETERM",
-    description: "Checks whether two RDF terms are the same",
+    info: "Checks whether two RDF terms are the same",
     example: `SAMETERM(?x, ?y)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-sameTerm",
     boost: 1,
@@ -447,7 +445,7 @@ WHERE {
   ISIRI: {
     type: "method",
     label: "ISIRI",
-    description: "Checks whether a term is an IRI",
+    info: "Checks whether a term is an IRI",
     example: `ISIRI(?x)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-isIRI",
     boost: 1,
@@ -455,7 +453,7 @@ WHERE {
   ISURI: {
     type: "method",
     label: "ISURI",
-    description: "Checks whether a term is a URI",
+    info: "Checks whether a term is a URI",
     example: `ISURI(?x)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-isIRI",
     boost: 1,
@@ -463,7 +461,7 @@ WHERE {
   ISBLANK: {
     type: "method",
     label: "ISBLANK",
-    description: "Checks whether a term is a blank node",
+    info: "Checks whether a term is a blank node",
     example: `ISBLANK(?x)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-isBlank",
     boost: 1,
@@ -471,7 +469,7 @@ WHERE {
   ISLITERAL: {
     type: "method",
     label: "ISLITERAL",
-    description: "Checks whether a term is a literal",
+    info: "Checks whether a term is a literal",
     example: `ISLITERAL(?x)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-isLiteral",
     boost: 1,
@@ -479,7 +477,7 @@ WHERE {
   ISNUMERIC: {
     type: "method",
     label: "ISNUMERIC",
-    description: "Checks whether a literal is a numeric value",
+    info: "Checks whether a literal is a numeric value",
     example: `ISNUMERIC("42"^^<http://www.w3.org/2001/XMLSchema#integer>)`,
     link: "https://www.w3.org/TR/sparql11-query/#func-isNumeric",
     boost: 1,
@@ -487,7 +485,7 @@ WHERE {
   COUNT: {
     type: "method",
     label: "COUNT",
-    description: "Returns the number of solutions for a group or entire query",
+    info: "Returns the number of solutions for a group or entire query",
     example: `SELECT (COUNT(?x) AS ?count)
 WHERE {
   ?x ?y ?z
@@ -498,7 +496,7 @@ WHERE {
   SUM: {
     type: "method",
     label: "SUM",
-    description: "Returns the sum of the values of an expression for a group or entire query",
+    info: "Returns the sum of the values of an expression for a group or entire query",
     example: `SELECT (SUM(?price) AS ?totalPrice)
 WHERE {
   ?product <http://example.com/price> ?price
@@ -509,7 +507,7 @@ WHERE {
   MIN: {
     type: "method",
     label: "MIN",
-    description: "Returns the minimum value of an expression for a group or entire query",
+    info: "Returns the minimum value of an expression for a group or entire query",
     example: `SELECT (MIN(?price) AS ?minPrice)
 WHERE {
   ?product <http://example.com/price> ?price
@@ -520,7 +518,7 @@ WHERE {
   MAX: {
     type: "method",
     label: "MAX",
-    description: `Returns the maximum value of the group for the given expression`,
+    info: `Returns the maximum value of the group for the given expression`,
     example: `SELECT (MAX(?age) AS ?maxAge)
 WHERE {
   ?person foaf:age ?age .
@@ -531,7 +529,7 @@ WHERE {
   AVG: {
     type: "method",
     label: "AVG",
-    description: `Returns the average value of the group for the given expression`,
+    info: `Returns the average value of the group for the given expression`,
     example: `SELECT (AVG(?age) AS ?averageAge)
 WHERE {
   ?person foaf:age ?age .
@@ -542,7 +540,7 @@ WHERE {
   SAMPLE: {
     type: "method",
     label: "SAMPLE",
-    description: `Returns an arbitrary value of the group for the given expression`,
+    info: `Returns an arbitrary value of the group for the given expression`,
     example: `SELECT (SAMPLE(?name) AS ?sampleName)
 WHERE {
   ?person foaf:name ?name .
@@ -553,7 +551,7 @@ WHERE {
   GROUP_CONCAT: {
     type: "method",
     label: "GROUP_CONCAT",
-    description: `Concatenates the values of the group for the given expression using a separator`,
+    info: `Concatenates the values of the group for the given expression using a separator`,
     example: `SELECT ?person (GROUP_CONCAT(?name; separator=",") AS ?names)
 WHERE {
   ?person foaf:name ?name .
@@ -565,7 +563,7 @@ GROUP BY ?person`,
   SEPARATOR: {
     type: "keyword",
     label: "SEPARATOR",
-    description: `Specifies the separator to be used with the GROUP_CONCAT function`,
+    info: `Specifies the separator to be used with the GROUP_CONCAT function`,
     example: `SELECT ?person (GROUP_CONCAT(?name; separator=" / ") AS ?names)
 WHERE {
   ?person foaf:name ?name .
@@ -577,7 +575,7 @@ GROUP BY ?person`,
   SUBSTR: {
     type: "method",
     label: "SUBSTR",
-    description: `Returns a substring of the given string expression`,
+    info: `Returns a substring of the given string expression`,
     example: `SELECT (SUBSTR(?title, 1, 5) AS ?shortTitle)
 WHERE {
   ?book dc:title ?title .
@@ -588,7 +586,7 @@ WHERE {
   REPLACE: {
     type: "method",
     label: "REPLACE",
-    description: `Replaces a portion of the given string expression with another string`,
+    info: `Replaces a portion of the given string expression with another string`,
     example: `SELECT (REPLACE(?title, " ", "_") AS ?modifiedTitle)
 WHERE {
   ?book dc:title ?title .
@@ -599,7 +597,7 @@ WHERE {
   REGEX: {
     type: "method",
     label: "REGEX",
-    description: `Matches a string expression against a regular expression`,
+    info: `Matches a string expression against a regular expression`,
     example: `SELECT ?person
 WHERE {
   ?person foaf:name ?name .
@@ -611,7 +609,7 @@ WHERE {
   EXISTS: {
     type: "keyword",
     label: "EXISTS",
-    description: `Tests whether a subquery returns any solutions`,
+    info: `Tests whether a subquery returns any solutions`,
     example: `SELECT ?person
 WHERE {
   ?person foaf:name ?name .
@@ -623,7 +621,7 @@ WHERE {
   NOT: {
     type: "keyword",
     label: "NOT",
-    description: "The NOT keyword negates a boolean expression",
+    info: "The NOT keyword negates a boolean expression",
     example: `FILTER NOT EXISTS { ?x a :Person }`,
     link: "https://www.w3.org/TR/sparql11-query/#negation",
     boost: 10,
@@ -631,7 +629,7 @@ WHERE {
   IN: {
     type: "keyword",
     label: "IN",
-    description: "The IN keyword tests if a value is contained in a set of values",
+    info: "The IN keyword tests if a value is contained in a set of values",
     example: `?x foaf:name ?name .
 FILTER(?name IN ('Alice', 'Bob'))`,
     link: "https://www.w3.org/TR/sparql11-query/#func-in",
@@ -640,7 +638,7 @@ FILTER(?name IN ('Alice', 'Bob'))`,
   "GROUP BY": {
     type: "keyword",
     label: "BY",
-    description: "The GROUP BY keyword is used to group query results",
+    info: "The GROUP BY keyword is used to group query results",
     example: `SELECT ?name (COUNT(?book) AS ?count)
 WHERE {
   ?book dc:creator ?author .
@@ -653,7 +651,7 @@ GROUP BY ?name`,
   HAVING: {
     type: "keyword",
     label: "HAVING",
-    description: "The HAVING keyword is used to filter the results of a GROUP BY clause",
+    info: "The HAVING keyword is used to filter the results of a GROUP BY clause",
     example: `SELECT ?name (COUNT(?book) AS ?count)
 WHERE {
   ?book dc:creator ?author .
@@ -667,7 +665,7 @@ HAVING(COUNT(?book) > 5)`,
   "ORDER BY": {
     type: "keyword",
     label: "BY",
-    description: "The ORDER BY keyword is used to specify the order of the query results",
+    info: "The ORDER BY keyword is used to specify the order of the query results",
     example: `SELECT ?name
 WHERE {
   ?person foaf:name ?name .
@@ -679,7 +677,7 @@ ORDER BY ?name`,
   ASC: {
     type: "keyword",
     label: "ASC",
-    description: "The ASC keyword is used to sort results in ascending order",
+    info: "The ASC keyword is used to sort results in ascending order",
     example: `SELECT ?name
 WHERE {
   ?person foaf:name ?name .
@@ -691,7 +689,7 @@ ORDER BY ASC(?name)`,
   DESC: {
     type: "keyword",
     label: "DESC",
-    description: "The DESC keyword is used to sort results in descending order.",
+    info: "The DESC keyword is used to sort results in descending order.",
     example: `SELECT ?name
 WHERE {
   ?person foaf:name ?name .
@@ -703,7 +701,7 @@ ORDER BY DESC(?name)`,
   LIMIT: {
     type: "keyword",
     label: "LIMIT",
-    description: "The LIMIT keyword is used to limit the number of results returned by a query.",
+    info: "The LIMIT keyword is used to limit the number of results returned by a query.",
     example: `SELECT ?person WHERE {
   ?person foaf:name ?name .
 } LIMIT 10`,
@@ -713,8 +711,7 @@ ORDER BY DESC(?name)`,
   OFFSET: {
     type: "keyword",
     label: "OFFSET",
-    description:
-      "The OFFSET keyword is used to skip a certain number of results before returning the remaining results.",
+    info: "The OFFSET keyword is used to skip a certain number of results before returning the remaining results.",
     example: `SELECT ?person
 WHERE {
   ?person foaf:name ?name .
@@ -726,7 +723,7 @@ OFFSET 10`,
   VALUES: {
     type: "keyword",
     label: "VALUES",
-    description: "The VALUES keyword is used to specify a set of specific values for variables in a query.",
+    info: "The VALUES keyword is used to specify a set of specific values for variables in a query.",
     example: `SELECT ?name
 WHERE {
   ?person foaf:name ?name .
@@ -738,7 +735,7 @@ WHERE {
   UNDEF: {
     type: "keyword",
     label: "UNDEF",
-    description: "The UNDEF keyword is used to explicitly set a variable to be undefined.",
+    info: "The UNDEF keyword is used to explicitly set a variable to be undefined.",
     example: `SELECT ?name
 WHERE {
   ?person foaf:name ?name .
@@ -750,7 +747,7 @@ WHERE {
   UNION: {
     type: "keyword",
     label: "UNION",
-    description: "The UNION keyword is used to combine the results of two or more queries.",
+    info: "The UNION keyword is used to combine the results of two or more queries.",
     example: `SELECT ?name
 WHERE {
   { ?person foaf:name ?name . }
@@ -763,8 +760,7 @@ WHERE {
   OPTIONAL: {
     type: "keyword",
     label: "OPTIONAL",
-    description:
-      "The OPTIONAL keyword is used to specify optional patterns in a query. If a pattern is optional and cannot be matched, the query will still return results.",
+    info: "The OPTIONAL keyword is used to specify optional patterns in a query. If a pattern is optional and cannot be matched, the query will still return results.",
     example: `SELECT ?person ?email
 WHERE {
   ?person foaf:name ?name .
@@ -776,7 +772,7 @@ WHERE {
   MINUS: {
     type: "keyword",
     label: "MINUS",
-    description: "The MINUS keyword is used to subtract the results of one query from the results of another query.",
+    info: "The MINUS keyword is used to subtract the results of one query from the results of another query.",
     example: `SELECT ?person
 WHERE {
   ?person foaf:name ?name .
@@ -788,7 +784,7 @@ WHERE {
   GRAPH: {
     type: "keyword",
     label: "GRAPH",
-    description: "The GRAPH keyword is used to specify a named graph in a query.",
+    info: "The GRAPH keyword is used to specify a named graph in a query.",
     example: `SELECT ?name WHERE {
   GRAPH <http://example.org/graph> { ?person foaf:name ?name . }
 }`,
@@ -798,7 +794,7 @@ WHERE {
   SERVICE: {
     type: "keyword",
     label: "SERVICE",
-    description: "The SERVICE keyword is used to query a remote SPARQL endpoint as part of a federated query.",
+    info: "The SERVICE keyword is used to query a remote SPARQL endpoint as part of a federated query.",
     example: `SELECT ?book ?title
 WHERE {
   SERVICE <http://example.org/sparql> { ?book dct:title ?title }
@@ -809,7 +805,7 @@ WHERE {
   SILENT: {
     type: "keyword",
     label: "SILENT",
-    description: "The SILENT keyword is used to suppress errors and warnings that arise from executing a query. ",
+    info: "The SILENT keyword is used to suppress errors and warnings that arise from executing a query. ",
     example: `INSERT DATA SILENT {
   http://example.org/subject http://example.org/predicate 'object'
 }`,
@@ -819,7 +815,7 @@ WHERE {
   FILTER: {
     type: "keyword",
     label: "FILTER",
-    description: "The FILTER keyword is used to restrict results based on a set of conditions.",
+    info: "The FILTER keyword is used to restrict results based on a set of conditions.",
     example: `SELECT ?person
 WHERE {
   ?person foaf:name ?name .
@@ -831,8 +827,7 @@ WHERE {
   BIND: {
     type: "keyword",
     label: "BIND",
-    description:
-      "The BIND keyword is used to assign a value to a variable, allowing it to be used in the rest of the query.",
+    info: "The BIND keyword is used to assign a value to a variable, allowing it to be used in the rest of the query.",
     example: `SELECT ?name ?age
 WHERE {
   ?person foaf:name ?name .
@@ -844,7 +839,7 @@ WHERE {
   AS: {
     type: "keyword",
     label: "AS",
-    description: "The AS keyword is used to create an alias for a variable or expression.",
+    info: "The AS keyword is used to create an alias for a variable or expression.",
     example: `SELECT ?name AS ?fullName
 WHERE {
   ?person foaf:firstName ?name .
@@ -857,7 +852,7 @@ WHERE {
   FROM: {
     type: "keyword",
     label: "FROM",
-    description: "The FROM keyword is used to specify the graph or dataset to be queried in a SPARQL query.",
+    info: "The FROM keyword is used to specify the graph or dataset to be queried in a SPARQL query.",
     example: `SELECT ?name
 WHERE {
   GRAPH http://example.org/data { ?person foaf:name ?name }
@@ -868,7 +863,7 @@ WHERE {
   NAMED: {
     type: "keyword",
     label: "NAMED",
-    description: "The NAMED keyword is used to specify a named graph in a SPARQL query.",
+    info: "The NAMED keyword is used to specify a named graph in a SPARQL query.",
     example: `SELECT ?name
 WHERE {
   GRAPH http://example.org/data { ?person foaf:name ?name }
@@ -880,7 +875,7 @@ WHERE {
   LOAD: {
     type: "keyword",
     label: "LOAD",
-    description: "The LOAD keyword is used to load data into a graph in a SPARQL endpoint.",
+    info: "The LOAD keyword is used to load data into a graph in a SPARQL endpoint.",
     example: `LOAD http://example.org/data.rdf INTO GRAPH http://example.org/data`,
     link: "https://www.w3.org/TR/sparql11-update/#load",
     boost: 10,
@@ -888,7 +883,7 @@ WHERE {
   INTO: {
     type: "keyword",
     label: "INTO",
-    description: "The INTO keyword is used to specify the graph or dataset to load data into.",
+    info: "The INTO keyword is used to specify the graph or dataset to load data into.",
     example: `LOAD http://example.org/data.rdf INTO GRAPH http://example.org/data`,
     link: "https://www.w3.org/TR/sparql11-update/#load",
     boost: 10,
@@ -896,7 +891,7 @@ WHERE {
   TO: {
     type: "keyword",
     label: "TO",
-    description: "Specifies the endpoint to send the query results to",
+    info: "Specifies the endpoint to send the query results to",
     example: `SELECT ?s ?p ?o
 WHERE {
   ?s ?p ?o .
@@ -908,7 +903,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   CLEAR: {
     type: "keyword",
     label: "CLEAR",
-    description: "Clears the default graph or named graphs specified in the graph iri list",
+    info: "Clears the default graph or named graphs specified in the graph iri list",
     example: `CLEAR DEFAULT`,
     link: "https://www.w3.org/TR/sparql11-update/#clear",
     boost: 10,
@@ -916,7 +911,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   DROP: {
     type: "keyword",
     label: "DROP",
-    description: "Removes the specified graphs from the dataset",
+    info: "Removes the specified graphs from the dataset",
     example: `DROP GRAPH http://example.org/graph1`,
     link: "https://www.w3.org/TR/sparql11-update/#drop",
     boost: 10,
@@ -924,7 +919,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   CREATE: {
     type: "keyword",
     label: "CREATE",
-    description: "Creates a new graph in the dataset",
+    info: "Creates a new graph in the dataset",
     example: `CREATE GRAPH http://example.org/newGraph`,
     link: "https://www.w3.org/TR/sparql11-update/#create",
     boost: 10,
@@ -932,7 +927,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   ADD: {
     type: "keyword",
     label: "ADD",
-    description: "Adds triples to the specified graph",
+    info: "Adds triples to the specified graph",
     example: `ADD DATA http://example.org/graph1 {
   http://example.org/subject http://example.org/predicate http://example.org/object
 }`,
@@ -942,7 +937,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   MOVE: {
     type: "keyword",
     label: "MOVE",
-    description: "Moves the specified graph to a new graph",
+    info: "Moves the specified graph to a new graph",
     example: `MOVE GRAPH http://example.org/oldGraph TO http://example.org/newGraph`,
     link: "https://www.w3.org/TR/sparql11-update/#move",
     boost: 10,
@@ -950,7 +945,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   COPY: {
     type: "keyword",
     label: "COPY",
-    description: "Copies the specified graph to a new graph",
+    info: "Copies the specified graph to a new graph",
     example: `COPY GRAPH http://example.org/oldGraph TO http://example.org/newGraph`,
     link: "https://www.w3.org/TR/sparql11-update/#copy",
     boost: 10,
@@ -958,7 +953,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   INSERT: {
     type: "keyword",
     label: "INSERT",
-    description: "Inserts data into the specified graph",
+    info: "Inserts data into the specified graph",
     example: `INSERT DATA {
   http://example.org/subject http://example.org/predicate http://example.org/object
 }`,
@@ -968,7 +963,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   DATA: {
     type: "keyword",
     label: "DATA",
-    description: "Specifies the data to be inserted or deleted",
+    info: "Specifies the data to be inserted or deleted",
     example: `INSERT DATA {
   http://example.org/subject http://example.org/predicate http://example.org/object
 }`,
@@ -978,7 +973,7 @@ LIMIT 10 TO http://example.org/my-endpoint`,
   DELETE: {
     type: "keyword",
     label: "DELETE",
-    description: "Deletes data from the specified graph",
+    info: "Deletes data from the specified graph",
     example: `DELETE {
   http://example.org/subject http://example.org/predicate http://example.org/object
 }
@@ -991,7 +986,7 @@ WHERE {
   WITH: {
     type: "keyword",
     label: "WITH",
-    description: "Specifies additional RDF dataset to query over",
+    info: "Specifies additional RDF dataset to query over",
     example: `WITH <http://example.org/bookStore>
 SELECT ?book
 WHERE {
@@ -1003,7 +998,7 @@ WHERE {
   DEFAULT: {
     type: "keyword",
     label: "DEFAULT",
-    description: "Sets a default graph or named graph to be queried when no FROM or FROM NAMED clauses are present",
+    info: "Sets a default graph or named graph to be queried when no FROM or FROM NAMED clauses are present",
     example: `SELECT ?book
 WHERE {
   ?book rdf:type <http://example.org/Book> .
@@ -1014,7 +1009,7 @@ WHERE {
   ALL: {
     type: "keyword",
     label: "ALL",
-    description: "Returns all solutions",
+    info: "Returns all solutions",
     example: `SELECT ?person
 WHERE {
   ?person foaf:name ?name .
@@ -1025,7 +1020,7 @@ WHERE {
   USING: {
     type: "keyword",
     label: "USING",
-    description: "Specifies the named graphs to be queried",
+    info: "Specifies the named graphs to be queried",
     example: `USING <http://example.org/graph1>
 SELECT ?book
 WHERE {
