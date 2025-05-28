@@ -4,7 +4,7 @@ $minTabHeight: 35px;
     .sortable-placeholder {
       min-width: 100px;
       min-height: $minTabHeight;
-      border: 2px dotted lighten(#555, 20);
+      border: 2px dotted color-mix(in srgb, #555, white 20%);
     }
     display: flex;
     flex-wrap: wrap;
@@ -39,11 +39,11 @@ $minTabHeight: 35px;
     .tab {
       position: relative;
       $activeColor: #337ab7;
-      $hoverColor: lighten($activeColor, 30);
+      $hoverColor: color-mix(in srgb, $activeColor, white 30%);
 
       .loader {
         display: none;
-        background-color: lighten(#555, 50);
+        background-color: color-mix(in srgb, #555, white 50%);
         height: 2px;
         position: absolute;
         bottom: 0;
@@ -99,7 +99,7 @@ $minTabHeight: 35px;
       }
       a {
         font-weight: 600;
-        color: lighten(#555, 20);
+        color: color-mix(in srgb, #555, white 20%);
         font-size: 15px;
         line-height: 1.5rem;
         font-weight: 500;
