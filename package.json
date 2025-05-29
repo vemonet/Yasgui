@@ -65,8 +65,8 @@
     "html-webpack-plugin": "^5.5.4",
     "mini-css-extract-plugin": "^2.7.6",
     "mocha": "^10.2.0",
-    "sass-embedded": "^1.69.5",
-    "node-static": "^0.7.11"
+    "node-static": "^0.7.11",
+    "sass-embedded": "^1.69.5"
   },
   "bundlesize": [
     {

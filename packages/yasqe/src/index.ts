@@ -12,10 +12,15 @@ import * as Sparql from "./sparql";
 import * as imgs from "./imgs";
 import * as Autocompleter from "./autocompleters";
 import { merge, escape } from "lodash-es";
+import { editor } from "monaco-editor";
+import { LanguageClientWrapper, MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper";
+import * as monaco from "monaco-editor";
+import { buildWrapperConfig } from "./editor/config";
 
 import getDefaults from "./defaults";
 import CodeMirror from "./CodeMirror";
 import { YasqeAjaxConfig } from "./sparql";
+import { backends } from "./editor/backends";
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): void;
@@ -57,56 +62,206 @@ export class Yasqe extends CodeMirror {
   public storage: YStorage;
   public config: Config;
   public persistentConfig: PersistentConfig | undefined;
+  public languageClientWrapper: any;
+  public editor: editor.IStandaloneCodeEditor | undefined; // Monaco editor instance, will be set in initialize
+
+  public async initEditor(el: HTMLElement, conf: PartialConfig = {}) {
+    const wrapper = new MonacoEditorLanguageClientWrapper();
+    const wrapperConfig = await buildWrapperConfig(el, "SELECT * WHERE { ?s ?p ?o }");
+    await wrapper.initAndStart(wrapperConfig);
+    this.languageClientWrapper = wrapper.getLanguageClientWrapper("sparql");
+    this.editor = wrapper.getEditor();
+    console.log("editor initialized", editor);
+    // TODO: fix height definition
+    el.style.height = "500px";
+
+    // Add backend SPARQL endpoints
+    for (const conf of backends) {
+      this.languageClientWrapper
+        .getLanguageClient()!
+        .sendRequest("qlueLs/addBackend", conf)
+        .catch((err) => {
+          console.error(err);
+        });
+      this.languageClientWrapper
+        .getLanguageClient()!
+        .sendRequest("qlueLs/updateDefaultBackend", conf.backend.name)
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+
+    // TODO: enable these
+    // monaco.editor.onDidChangeMarkers(() => {
+    //     markers = monaco.editor.getModelMarkers({});
+    // });
+    // this.editor?.getModel()!.onDidChangeContent(() => {
+    //     content = wrapper?.getEditor()!.getModel()!.getValue();
+    // });
+    // this.editor?.onDidChangeCursorPosition((e) => {
+    //     cursorOffset = wrapper?.getEditor()!.getModel()!.getOffsetAt(e.position);
+    // });
+    // Add commands for editor actions
+    monaco.editor.addCommand({
+      id: "triggerNewCompletion",
+      run: () => {
+        this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
+      },
+    });
+
+    monaco.editor.addCommand({
+      id: "jumpToNextPosition",
+      run: () => {
+        this.languageClientWrapper
+          ?.getLanguageClient()!
+          .sendRequest("textDocument/formatting", {
+            textDocument: { uri: this.editor?.getModel()?.uri.toString() },
+            options: {
+              tabSize: 2,
+              insertSpaces: true,
+            },
+          })
+          .then((response: any) => {
+            const edits = response.map((edit: any) => {
+              return {
+                range: {
+                  startLineNumber: edit.range.start.line + 1,
+                  startColumn: edit.range.start.character + 1,
+                  endLineNumber: edit.range.end.line + 1,
+                  endColumn: edit.range.end.character + 1,
+                },
+                text: edit.newText,
+              };
+            });
+            this.editor?.getModel()!.applyEdits(edits);
+
+            const cursorPosition = this.editor?.getPosition();
+            if (cursorPosition) {
+              this.languageClientWrapper
+                ?.getLanguageClient()!
+                .sendRequest("qlueLs/jump", {
+                  textDocument: { uri: this.editor?.getModel()?.uri.toString() },
+                  position: {
+                    line: cursorPosition?.lineNumber - 1,
+                    character: cursorPosition?.column - 1,
+                  },
+                })
+                .then((response: any) => {
+                  if (response) {
+                    const newCursorPosition = {
+                      lineNumber: response.position.line + 1,
+                      column: response.position.character + 1,
+                    };
+                    if (response.insertAfter) {
+                      this.editor?.executeEdits("jumpToNextPosition", [
+                        {
+                          range: new monaco.Range(
+                            newCursorPosition.lineNumber,
+                            newCursorPosition.column,
+                            newCursorPosition.lineNumber,
+                            newCursorPosition.column
+                          ),
+                          text: response.insertAfter,
+                        },
+                      ]);
+                    }
+                    this.editor?.setPosition(newCursorPosition, "jumpToNextPosition");
+                    if (response.insertBefore) {
+                      this.editor?.getModel()?.applyEdits([
+                        {
+                          range: new monaco.Range(
+                            newCursorPosition.lineNumber,
+                            newCursorPosition.column,
+                            newCursorPosition.lineNumber,
+                            newCursorPosition.column
+                          ),
+                          text: response.insertBefore,
+                        },
+                      ]);
+                    }
+                    this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
+                  }
+                });
+            }
+          });
+        this.editor?.trigger("jumpToNextPosition", "editor.action.formatDocument", {});
+        console.log("jump to next location");
+      },
+    });
+    monaco.editor.addKeybindingRule({
+      command: "jumpToNextPosition",
+      keybinding: monaco.KeyMod.Alt | monaco.KeyCode.KeyN,
+    });
+    wrapper.getEditor()!.addAction({
+      id: "Execute Query",
+      label: "Execute",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+      contextMenuGroupId: "navigation",
+      contextMenuOrder: 1.5,
+      run: (editor, ...args) => {
+        const encoded_query = encodeURIComponent(editor.getModel()?.getValue()).replaceAll("%20", "+");
+        window.open(`https://qlever.cs.uni-freiburg.de/${this.getBackend().slug}/?query=${encoded_query}`);
+      },
+    });
+  }
+
+  public getBackend() {
+    return backends.find((backendConf) => backendConf.default)!.backend;
+  }
+
   constructor(parent: HTMLElement, conf: PartialConfig = {}) {
     super();
     if (!parent) throw new Error("No parent passed as argument. Dont know where to draw YASQE");
     this.rootEl = document.createElement("div");
     this.rootEl.className = "yasqe";
     parent.appendChild(this.rootEl);
-    this.config = merge({}, Yasqe.defaults, conf);
-    //inherit codemirror props
-    const cm = (CodeMirror as any)(this.rootEl, this.config);
-    //Assign our functions to the cm object. This is needed, as some functions (like the ctrl-enter callback)
-    //get the original cm as argument, and not yasqe
-    for (const key of Object.getOwnPropertyNames(Yasqe.prototype)) {
-      cm[key] = (<any>Yasqe.prototype)[key].bind(this);
-    }
-    //Also assign the codemirror functions to our object, so we can easily use those
-    Object.assign(this, CodeMirror.prototype, cm);
 
-    //Do some post processing
-    this.storage = new YStorage(Yasqe.storageNamespace);
-    this.drawButtons();
-    const storageId = this.getStorageId();
-    // this.getWrapperElement
-    if (storageId) {
-      const persConf = this.storage.get<any>(storageId);
-      if (persConf && typeof persConf === "string") {
-        this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight }; // Migrate to object based localstorage
-      } else {
-        this.persistentConfig = persConf;
-      }
-      if (!this.persistentConfig)
-        this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
-      if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
-    }
-    this.config.autocompleters.forEach((c) => this.enableCompleter(c).then(() => {}, console.warn));
-    if (this.config.consumeShareLink) {
-      this.config.consumeShareLink(this);
-      //and: add a hash listener!
-      window.addEventListener("hashchange", this.handleHashChange);
-    }
-    this.checkSyntax();
-    // Size codemirror to the
-    if (this.persistentConfig && this.persistentConfig.editorHeight) {
-      this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
-    } else if (this.config.editorHeight) {
-      this.getWrapperElement().style.height = this.config.editorHeight;
-    }
+    this.initEditor(this.rootEl);
 
-    if (this.config.resizeable) this.drawResizer();
-    if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
-    this.registerEventListeners();
+    // this.config = merge({}, Yasqe.defaults, conf);
+    // //inherit codemirror props
+    // const cm = (CodeMirror as any)(this.rootEl, this.config);
+    // //Assign our functions to the cm object. This is needed, as some functions (like the ctrl-enter callback)
+    // //get the original cm as argument, and not yasqe
+    // for (const key of Object.getOwnPropertyNames(Yasqe.prototype)) {
+    //   cm[key] = (<any>Yasqe.prototype)[key].bind(this);
+    // }
+    // //Also assign the codemirror functions to our object, so we can easily use those
+    // Object.assign(this, CodeMirror.prototype, cm);
+
+    // //Do some post processing
+    // this.storage = new YStorage(Yasqe.storageNamespace);
+    // this.drawButtons();
+    // const storageId = this.getStorageId();
+    // // this.getWrapperElement
+    // if (storageId) {
+    //   const persConf = this.storage.get<any>(storageId);
+    //   if (persConf && typeof persConf === "string") {
+    //     this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight }; // Migrate to object based localstorage
+    //   } else {
+    //     this.persistentConfig = persConf;
+    //   }
+    //   if (!this.persistentConfig)
+    //     this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
+    //   if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
+    // }
+    // this.config.autocompleters.forEach((c) => this.enableCompleter(c).then(() => {}, console.warn));
+    // if (this.config.consumeShareLink) {
+    //   this.config.consumeShareLink(this);
+    //   //and: add a hash listener!
+    //   window.addEventListener("hashchange", this.handleHashChange);
+    // }
+    // this.checkSyntax();
+    // // Size codemirror to the
+    // if (this.persistentConfig && this.persistentConfig.editorHeight) {
+    //   this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
+    // } else if (this.config.editorHeight) {
+    //   this.getWrapperElement().style.height = this.config.editorHeight;
+    // }
+
+    // if (this.config.resizeable) this.drawResizer();
+    // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
+    // this.registerEventListeners();
   }
   private handleHashChange = () => {
     this.config.consumeShareLink?.(this);

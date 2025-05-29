@@ -205,6 +205,8 @@ export const genericConfig: webpack.Configuration = {
           /node_modules\/column-resizer/g,
           //rdf-string is missing source maps. Exclude to avoid warnings
           /\/rdf-string\//g,
+          //vscode-textmate is missing source maps. Exclude to avoid warnings
+          /\/vscode-textmate\//g,
         ],
         use: ["source-map-loader"],
         enforce: "pre",
