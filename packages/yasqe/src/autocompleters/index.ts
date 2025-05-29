@@ -2,8 +2,8 @@ import { default as Yasqe, Token, Hint, Position, Config, HintFn, HintConfig } f
 import Trie from "../trie";
 import { EventEmitter } from "events";
 import { take } from "lodash-es";
-const CodeMirror = require("codemirror");
-require("./show-hint.scss");
+// const CodeMirror = require("codemirror");
+import "./show-hint.scss";
 export interface CompleterConfig {
   onInitialize?: (this: CompleterConfig, yasqe: Yasqe) => void; //allows for e.g. registering event listeners in yasqe, like the prefix autocompleter does
   isValidCompletionPosition: (yasqe: Yasqe) => boolean;
@@ -216,12 +216,12 @@ export class Completer extends EventEmitter {
             ch: token.end,
           },
         };
-        CodeMirror.on(hintResult, "shown", () => {
-          this.yasqe.emit("autocompletionShown", (this.yasqe as any).state.completionActive.widget);
-        });
-        CodeMirror.on(hintResult, "close", () => {
-          this.yasqe.emit("autocompletionClose");
-        });
+        // CodeMirror.on(hintResult, "shown", () => {
+        //   this.yasqe.emit("autocompletionShown", (this.yasqe as any).state.completionActive.widget);
+        // });
+        // CodeMirror.on(hintResult, "close", () => {
+        //   this.yasqe.emit("autocompletionClose");
+        // });
         return hintResult;
       });
     };

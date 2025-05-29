@@ -1,4 +1,4 @@
-require("source-map-support/register");
+import "source-map-support/register";
 import * as puppeteer from "puppeteer";
 
 import * as path from "path";

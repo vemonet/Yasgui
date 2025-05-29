@@ -1,8 +1,8 @@
 import Yasgui from "./";
 import TabContextMenu from "./TabContextMenu";
 import { hasClass, addClass, removeClass } from "@zazuko/yasgui-utils";
-const sortablejs = require("sortablejs");
-require("./TabElements.scss");
+import sortablejs from "sortablejs";
+import "./TabElements.scss";
 export interface TabList {}
 export class TabListEl {
   private tabList: TabList;

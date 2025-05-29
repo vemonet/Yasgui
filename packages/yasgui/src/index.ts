@@ -10,8 +10,8 @@ import TabElements from "./TabElements";
 import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@zazuko/yasqe";
 import { default as Yasr, Config as YasrConfig } from "@zazuko/yasr";
 import { addClass, removeClass } from "@zazuko/yasgui-utils";
-require("./index.scss");
-require("@zazuko/yasr/src/scss/global.scss");
+import "./index.scss";
+// import "@zazuko/yasr/src/scss/global.scss";
 if (window) {
   //We're storing yasqe and yasr as a member of Yasgui, but _also_ in the window
   //That way, we dont have to tweak e.g. pro plugins to register themselves to both

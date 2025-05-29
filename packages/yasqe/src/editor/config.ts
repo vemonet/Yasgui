@@ -1,3 +1,4 @@
+import languageServerWorkerUrl from "./languageServer.worker?worker&url";
 import { configureDefaultWorkerFactory } from "monaco-editor-wrapper/workers/workerLoaders";
 import { sparqlTextmateGrammar, sparqlLanguageConfig, sparqlTheme } from "./sparqlTheme";
 import type { WrapperConfig } from "monaco-editor-wrapper";
@@ -7,7 +8,8 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
   // Use the external worker file instead of creating from blob
   const workerPromise: Promise<Worker> = new Promise((resolve, reject) => {
     try {
-      const instance = new Worker(new URL("./languageServer.worker.ts", import.meta.url), {
+      // const instance = new Worker(new URL("./languageServer.worker.ts", import.meta.url), {
+      const instance = new Worker(new URL(languageServerWorkerUrl, window.location.origin), {
         name: "Language Server",
         type: "module",
       });
@@ -135,7 +137,7 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
             ],
             themes: [
               {
-                id: "dark-sparql-theme",
+                // id: "dark-sparql-theme",
                 label: "SPARQL Custom Theme",
                 uiTheme: "vs-dark",
                 path: "./sparql-theme.json",

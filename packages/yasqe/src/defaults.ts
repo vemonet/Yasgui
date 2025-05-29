@@ -10,7 +10,7 @@ import * as queryString from "query-string";
 export default function get() {
   const prefixCcApi =
     (window.location.protocol.indexOf("http") === 0 ? "//" : "http://") + "prefix.cc/popular/all.file.json";
-  const CodeMirror = require("codemirror");
+  // const CodeMirror = require("codemirror");
   const config: Omit<Config, "requestConfig"> = {
     mode: "sparql11",
     value: `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -25,7 +25,7 @@ SELECT * WHERE {
     lineNumbers: true,
     lineWrapping: true,
     foldGutter: {
-      rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix),
+      // rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix),
     },
     collapsePrefixesOnLoad: false,
     gutters: ["gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
@@ -85,8 +85,8 @@ SELECT * WHERE {
         yasqe.query().catch(() => {}); //catch this to avoid unhandled rejection
       },
       Esc: function (_yasqe: any) {
-        const yasqe: Yasqe = _yasqe;
-        yasqe.getInputField().blur();
+        // const yasqe: Yasqe = _yasqe;
+        // yasqe.getInputField().blur();
       },
     },
 

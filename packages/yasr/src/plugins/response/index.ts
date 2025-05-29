@@ -1,20 +1,20 @@
 /**
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
-import { Plugin } from "../";
+import type { Plugin } from "../";
 import Yasr from "../../";
-require("./index.scss");
-const CodeMirror = require("codemirror");
-require("codemirror/addon/fold/foldcode.js");
-require("codemirror/addon/fold/foldgutter.js");
-require("codemirror/addon/fold/xml-fold.js");
-require("codemirror/addon/fold/brace-fold.js");
+import "./index.scss";
+// const CodeMirror = require("codemirror");
+// require("codemirror/addon/fold/foldcode.js");
+// require("codemirror/addon/fold/foldgutter.js");
+// require("codemirror/addon/fold/xml-fold.js");
+// require("codemirror/addon/fold/brace-fold.js");
 
-require("codemirror/addon/edit/matchbrackets.js");
-require("codemirror/mode/xml/xml.js");
+// require("codemirror/addon/edit/matchbrackets.js");
+// require("codemirror/mode/xml/xml.js");
 
-require("codemirror/mode/javascript/javascript.js");
-require("codemirror/lib/codemirror.css");
+// require("codemirror/mode/javascript/javascript.js");
+// require("codemirror/lib/codemirror.css");
 import { drawSvgStringAsElement, addClass, removeClass, drawFontAwesomeIconAsSvg } from "@zazuko/yasgui-utils";
 import * as faAlignIcon from "@fortawesome/free-solid-svg-icons/faAlignLeft";
 import { DeepReadonly } from "ts-essentials";
@@ -30,7 +30,7 @@ export default class Response implements Plugin<PluginConfig> {
   helpReference = "https://triply.cc/docs/yasgui#response";
   private config: DeepReadonly<PluginConfig>;
   private overLay: HTMLDivElement | undefined;
-  private cm: CodeMirror.Editor | undefined;
+  private cm: undefined;
   constructor(yasr: Yasr) {
     this.yasr = yasr;
     this.config = Response.defaults;
@@ -92,7 +92,7 @@ export default class Response implements Plugin<PluginConfig> {
       codemirrorOpts.mode = { name: "javascript", json: true };
     }
 
-    this.cm = CodeMirror(this.yasr.resultsEl, codemirrorOpts);
+    // this.cm = CodeMirror(this.yasr.resultsEl, codemirrorOpts);
     // Don't show less originally we've already set the value in the codemirrorOpts
     if (lines.length > config.maxLines) this.showLess(false);
   }
@@ -110,7 +110,7 @@ export default class Response implements Plugin<PluginConfig> {
   showLess(setValue = true) {
     if (!this.cm) return;
     // Add overflow
-    addClass(this.cm.getWrapperElement(), "overflow");
+    // addClass(this.cm.getWrapperElement(), "overflow");
 
     // Remove old instance
     if (this.overLay) {
@@ -148,21 +148,21 @@ export default class Response implements Plugin<PluginConfig> {
 
     overlayContent.appendChild(downloadButton);
     this.overLay.appendChild(overlayContent);
-    this.cm.getWrapperElement().appendChild(this.overLay);
-    if (setValue) {
-      this.cm.setValue(this.limitData(this.yasr.results?.getOriginalResponseAsString() || ""));
-    }
+    // this.cm.getWrapperElement().appendChild(this.overLay);
+    // if (setValue) {
+    //   this.cm.setValue(this.limitData(this.yasr.results?.getOriginalResponseAsString() || ""));
+    // }
   }
   /**
    * Render the raw response full length
    */
   showMore() {
     if (!this.cm) return;
-    removeClass(this.cm.getWrapperElement(), "overflow");
+    // removeClass(this.cm.getWrapperElement(), "overflow");
     this.overLay?.remove();
     this.overLay = undefined;
-    this.cm.setValue(this.yasr.results?.getOriginalResponseAsString() || "");
-    this.cm.refresh();
+    // this.cm.setValue(this.yasr.results?.getOriginalResponseAsString() || "");
+    // this.cm.refresh();
   }
   public static defaults: PluginConfig = {
     maxLines: 30,

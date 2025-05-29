@@ -1,4 +1,4 @@
-import init, { init_language_server, listen } from "qlue-ls";
+import init, { init_language_server, listen } from "qlue-ls?init";
 
 init().then(() => {
   // Connection Worker <-> Language Server(WASM)
