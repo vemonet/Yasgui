@@ -3,7 +3,7 @@
  */
 import { Plugin } from "../";
 import Yasr from "../../";
-require("./index.scss");
+import "./index.scss";
 const CodeMirror = require("codemirror");
 require("codemirror/addon/fold/foldcode.js");
 require("codemirror/addon/fold/foldgutter.js");

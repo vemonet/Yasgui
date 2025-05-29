@@ -3,7 +3,7 @@ import Trie from "../trie";
 import { EventEmitter } from "events";
 import { take } from "lodash-es";
 const CodeMirror = require("codemirror");
-require("./show-hint.scss");
+import "./show-hint.scss";
 export interface CompleterConfig {
   onInitialize?: (this: CompleterConfig, yasqe: Yasqe) => void; //allows for e.g. registering event listeners in yasqe, like the prefix autocompleter does
   isValidCompletionPosition: (yasqe: Yasqe) => boolean;

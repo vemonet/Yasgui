@@ -135,7 +135,7 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
             ],
             themes: [
               {
-                id: "dark-sparql-theme",
+                id: "vs-dark",
                 label: "SPARQL Custom Theme",
                 uiTheme: "vs-dark",
                 path: "./sparql-theme.json",
