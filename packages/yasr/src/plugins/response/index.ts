@@ -72,29 +72,34 @@ export default class Response implements Plugin<PluginConfig> {
       ...persistentConfig,
     };
     // When the original response is empty, use an empty string
-    let value = this.yasr.results?.getOriginalResponseAsString() || "";
-    const lines = value.split("\n");
-    if (lines.length > config.maxLines) {
-      value = lines.slice(0, config.maxLines).join("\n");
-    }
+    console.log(
+      "Drawing response plugin with config",
+      this.yasr.results?.getOriginalResponseAsString(),
+      this.yasr.results
+    );
+    // let value = this.yasr.results?.getOriginalResponseAsString() || "";
+    // const lines = value.split("\n");
+    // if (lines.length > config.maxLines) {
+    //   value = lines.slice(0, config.maxLines).join("\n");
+    // }
 
-    const codemirrorOpts: Partial<CodeMirror.EditorConfiguration> = {
-      readOnly: true,
-      lineNumbers: true,
-      lineWrapping: true,
-      foldGutter: true,
-      gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
-      value: value,
-      extraKeys: { Tab: false },
-    };
-    const mode = this.yasr.results?.getType();
-    if (mode === "json") {
-      codemirrorOpts.mode = { name: "javascript", json: true };
-    }
+    // const codemirrorOpts: Partial<CodeMirror.EditorConfiguration> = {
+    //   readOnly: true,
+    //   lineNumbers: true,
+    //   lineWrapping: true,
+    //   foldGutter: true,
+    //   gutters: ["CodeMirror-linenumbers", "CodeMirror-foldgutter"],
+    //   value: value,
+    //   extraKeys: { Tab: false },
+    // };
+    // const mode = this.yasr.results?.getType();
+    // if (mode === "json") {
+    //   codemirrorOpts.mode = { name: "javascript", json: true };
+    // }
 
-    this.cm = CodeMirror(this.yasr.resultsEl, codemirrorOpts);
-    // Don't show less originally we've already set the value in the codemirrorOpts
-    if (lines.length > config.maxLines) this.showLess(false);
+    // this.cm = CodeMirror(this.yasr.resultsEl, codemirrorOpts);
+    // // Don't show less originally we've already set the value in the codemirrorOpts
+    // if (lines.length > config.maxLines) this.showLess(false);
   }
   private limitData(value: string) {
     const lines = value.split("\n");

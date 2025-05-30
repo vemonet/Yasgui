@@ -91,6 +91,7 @@ class Parser {
   private executionTime: number | undefined;
 
   constructor(responseOrObject: Parser.ResponseSummary | QueryResponse | Error | any, executionTime?: number) {
+    // console.log("Parser constructor", responseOrObject, executionTime);
     if (responseOrObject.executionTime) this.executionTime = responseOrObject.executionTime;
     if (executionTime) this.executionTime = executionTime; // Parameter has priority
     if (responseOrObject instanceof Error) {

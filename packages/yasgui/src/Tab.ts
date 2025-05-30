@@ -116,8 +116,8 @@ export class Tab extends EventEmitter {
     addClass(this.rootEl, "active");
     this.yasgui.tabElements.selectTab(this.persistentJson.id);
     if (this.yasqe) {
-      this.yasqe.refresh();
-      if (this.yasgui.config.autofocus) this.yasqe.focus();
+      // this.yasqe.refresh();
+      // if (this.yasgui.config.autofocus) this.yasqe.focus();
     }
     if (this.yasr) {
       this.yasr.refresh();
@@ -384,8 +384,10 @@ export class Tab extends EventEmitter {
     this.emit("change", this, this.persistentJson);
   };
   handleYasqeQuery = (yasqe: Yasqe) => {
+    // TODO: after migrating to qlue-ls, we now get the query request as yasqe param
+    // console.log("handleYasqeQuery", typeof yasqe, yasqe);
     //the blur event might not have fired (e.g. when pressing ctrl-enter). So, we'd like to persist the query as well if needed
-    if (yasqe.getValue() !== this.persistentJson.yasqe.value) {
+    if (typeof yasqe.getValue === "function" && yasqe.getValue() !== this.persistentJson.yasqe.value) {
       this.persistentJson.yasqe.value = yasqe.getValue();
       this.emit("change", this, this.persistentJson);
     }
@@ -407,7 +409,7 @@ export class Tab extends EventEmitter {
   handleAutocompletionClose = (_yasqe: Yasqe) => {
     this.emit("autocompletionClose", this);
   };
-  handleQueryResponse = (_yasqe: Yasqe, response: any, duration: number) => {
+  handleQueryResponse = (response: any, duration: number) => {
     this.emit("queryResponse", this);
     if (!this.yasr) throw new Error("Resultset visualizer not initialized. Cannot draw results");
     this.yasr.setResponse(response, duration);

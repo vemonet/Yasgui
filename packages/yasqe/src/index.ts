@@ -1,16 +1,17 @@
 import "./scss/yasqe.scss";
 import "./scss/buttons.scss";
+import { EventEmitter } from "events";
 import { findFirstPrefixLine } from "./prefixFold";
 import { getPrefixesFromQuery, addPrefixes, removePrefixes, Prefixes } from "./prefixUtils";
 import { getPreviousNonWsToken, getNextNonWsToken, getCompleteToken } from "./tokenUtils";
 import * as sparql11Mode from "../grammar/tokenizer";
 import { Storage as YStorage } from "@zazuko/yasgui-utils";
 import * as queryString from "query-string";
-import tooltip from "./tooltip";
+// import tooltip from "./tooltip";
 import { drawSvgStringAsElement, addClass, removeClass } from "@zazuko/yasgui-utils";
 import * as Sparql from "./sparql";
 import * as imgs from "./imgs";
-import * as Autocompleter from "./autocompleters";
+// import * as Autocompleter from "./autocompleters";
 import { merge, escape } from "lodash-es";
 import { editor } from "monaco-editor";
 import { LanguageClientWrapper, MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper";
@@ -18,38 +19,38 @@ import * as monaco from "monaco-editor";
 import { buildWrapperConfig } from "./editor/config";
 
 import getDefaults from "./defaults";
-import CodeMirror from "./CodeMirror";
+// import CodeMirror from "./CodeMirror";
 import { YasqeAjaxConfig } from "./sparql";
 import { backends } from "./editor/backends";
 
 export interface Yasqe {
-  on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): void;
-  off(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): void;
-  on(eventName: "queryAbort", handler: (instance: Yasqe, req: Request) => void): void;
-  off(eventName: "queryAbort", handler: (instance: Yasqe, req: Request) => void): void;
-  on(eventName: "queryResponse", handler: (instance: Yasqe, response: any, duration: number) => void): void;
-  off(eventName: "queryResponse", handler: (instance: Yasqe, response: any, duration: number) => void): void;
+  on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
+  off(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
+  on(eventName: "queryAbort", handler: (instance: Yasqe, req: Request) => void): this;
+  off(eventName: "queryAbort", handler: (instance: Yasqe, req: Request) => void): this;
+  on(eventName: "queryResponse", handler: (instance: Yasqe, response: any, duration: number) => void): this;
+  off(eventName: "queryResponse", handler: (instance: Yasqe, response: any, duration: number) => void): this;
   showHint: (conf: HintConfig) => void;
-  on(eventName: "error", handler: (instance: Yasqe) => void): void;
-  off(eventName: "error", handler: (instance: Yasqe) => void): void;
-  on(eventName: "blur", handler: (instance: Yasqe) => void): void;
-  off(eventName: "blur", handler: (instance: Yasqe) => void): void;
-  on(eventName: "queryBefore", handler: (instance: Yasqe, config: YasqeAjaxConfig) => void): void;
-  off(eventName: "queryBefore", handler: (instance: Yasqe, config: YasqeAjaxConfig) => void): void;
-  on(eventName: "queryResults", handler: (instance: Yasqe, results: any, duration: number) => void): void;
-  off(eventName: "queryResults", handler: (instance: Yasqe, results: any, duration: number) => void): void;
-  on(eventName: "autocompletionShown", handler: (instance: Yasqe, widget: any) => void): void;
-  off(eventName: "autocompletionShown", handler: (instance: Yasqe, widget: any) => void): void;
-  on(eventName: "autocompletionClose", handler: (instance: Yasqe) => void): void;
-  off(eventName: "autocompletionClose", handler: (instance: Yasqe) => void): void;
-  on(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): void;
-  off(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): void;
-  on(eventName: string, handler: () => void): void;
+  on(eventName: "error", handler: (instance: Yasqe) => void): this;
+  off(eventName: "error", handler: (instance: Yasqe) => void): this;
+  on(eventName: "blur", handler: (instance: Yasqe) => void): this;
+  off(eventName: "blur", handler: (instance: Yasqe) => void): this;
+  on(eventName: "queryBefore", handler: (instance: Yasqe, config: YasqeAjaxConfig) => void): this;
+  off(eventName: "queryBefore", handler: (instance: Yasqe, config: YasqeAjaxConfig) => void): this;
+  on(eventName: "queryResults", handler: (instance: Yasqe, results: any, duration: number) => void): this;
+  off(eventName: "queryResults", handler: (instance: Yasqe, results: any, duration: number) => void): this;
+  on(eventName: "autocompletionShown", handler: (instance: Yasqe, widget: any) => void): this;
+  off(eventName: "autocompletionShown", handler: (instance: Yasqe, widget: any) => void): this;
+  on(eventName: "autocompletionClose", handler: (instance: Yasqe) => void): this;
+  off(eventName: "autocompletionClose", handler: (instance: Yasqe) => void): this;
+  on(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): this;
+  off(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): this;
+  on(eventName: string, handler: () => void): this;
 }
 
-export class Yasqe extends CodeMirror {
+export class Yasqe extends EventEmitter {
   private static storageNamespace = "triply";
-  public autocompleters: { [name: string]: Autocompleter.Completer | undefined } = {};
+  // public autocompleters: { [name: string]: Autocompleter.Completer | undefined } = {};
   private prevQueryValid = false;
   public queryValid = true;
   public lastQueryDuration: number | undefined;
@@ -67,11 +68,10 @@ export class Yasqe extends CodeMirror {
 
   public async initEditor(el: HTMLElement, conf: PartialConfig = {}) {
     const wrapper = new MonacoEditorLanguageClientWrapper();
-    const wrapperConfig = await buildWrapperConfig(el, "SELECT * WHERE { ?s ?p ?o }");
+    const wrapperConfig = await buildWrapperConfig(el, this.config.value);
     await wrapper.initAndStart(wrapperConfig);
     this.languageClientWrapper = wrapper.getLanguageClientWrapper("sparql");
     this.editor = wrapper.getEditor();
-    console.log("editor initialized", editor);
     // TODO: fix height definition
     el.style.height = "500px";
 
@@ -80,13 +80,13 @@ export class Yasqe extends CodeMirror {
       this.languageClientWrapper
         .getLanguageClient()!
         .sendRequest("qlueLs/addBackend", conf)
-        .catch((err) => {
+        .catch((err: any) => {
           console.error(err);
         });
       this.languageClientWrapper
         .getLanguageClient()!
         .sendRequest("qlueLs/updateDefaultBackend", conf.backend.name)
-        .catch((err) => {
+        .catch((err: any) => {
           console.error(err);
         });
     }
@@ -134,7 +134,6 @@ export class Yasqe extends CodeMirror {
               };
             });
             this.editor?.getModel()!.applyEdits(edits);
-
             const cursorPosition = this.editor?.getPosition();
             if (cursorPosition) {
               this.languageClientWrapper
@@ -199,14 +198,26 @@ export class Yasqe extends CodeMirror {
       contextMenuGroupId: "navigation",
       contextMenuOrder: 1.5,
       run: (editor, ...args) => {
-        const encoded_query = encodeURIComponent(editor.getModel()?.getValue()).replaceAll("%20", "+");
-        window.open(`https://qlever.cs.uni-freiburg.de/${this.getBackend().slug}/?query=${encoded_query}`);
+        // run_query(this.getBackend().url, this.getValue())
+        this.query().catch(() => {}); //catch this to avoid unhandled rejection
       },
     });
   }
 
   public getBackend() {
     return backends.find((backendConf) => backendConf.default)!.backend;
+  }
+
+  public getValue(): string {
+    return this.editor?.getValue() || "";
+  }
+
+  public setValue(newValue: string) {
+    this.editor?.setValue(newValue);
+  }
+
+  public getWrapperElement(): HTMLDivElement {
+    return this.rootEl;
   }
 
   constructor(parent: HTMLElement, conf: PartialConfig = {}) {
@@ -216,9 +227,10 @@ export class Yasqe extends CodeMirror {
     this.rootEl.className = "yasqe";
     parent.appendChild(this.rootEl);
 
+    this.config = merge({}, Yasqe.defaults, conf);
+
     this.initEditor(this.rootEl);
 
-    // this.config = merge({}, Yasqe.defaults, conf);
     // //inherit codemirror props
     // const cm = (CodeMirror as any)(this.rootEl, this.config);
     // //Assign our functions to the cm object. This is needed, as some functions (like the ctrl-enter callback)
@@ -229,28 +241,29 @@ export class Yasqe extends CodeMirror {
     // //Also assign the codemirror functions to our object, so we can easily use those
     // Object.assign(this, CodeMirror.prototype, cm);
 
-    // //Do some post processing
-    // this.storage = new YStorage(Yasqe.storageNamespace);
-    // this.drawButtons();
-    // const storageId = this.getStorageId();
-    // // this.getWrapperElement
-    // if (storageId) {
-    //   const persConf = this.storage.get<any>(storageId);
-    //   if (persConf && typeof persConf === "string") {
-    //     this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight }; // Migrate to object based localstorage
-    //   } else {
-    //     this.persistentConfig = persConf;
-    //   }
-    //   if (!this.persistentConfig)
-    //     this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
-    //   if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
-    // }
+    //Do some post processing
+    this.storage = new YStorage(Yasqe.storageNamespace);
+    this.drawButtons();
+    const storageId = this.getStorageId();
+    // this.getWrapperElement
+    if (storageId) {
+      const persConf = this.storage.get<any>(storageId);
+      if (persConf && typeof persConf === "string") {
+        this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight }; // Migrate to object based localstorage
+      } else {
+        this.persistentConfig = persConf;
+      }
+      if (!this.persistentConfig)
+        this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
+      if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
+    }
+
     // this.config.autocompleters.forEach((c) => this.enableCompleter(c).then(() => {}, console.warn));
-    // if (this.config.consumeShareLink) {
-    //   this.config.consumeShareLink(this);
-    //   //and: add a hash listener!
-    //   window.addEventListener("hashchange", this.handleHashChange);
-    // }
+    if (this.config.consumeShareLink) {
+      this.config.consumeShareLink(this);
+      //and: add a hash listener!
+      window.addEventListener("hashchange", this.handleHashChange);
+    }
     // this.checkSyntax();
     // // Size codemirror to the
     // if (this.persistentConfig && this.persistentConfig.editorHeight) {
@@ -261,8 +274,92 @@ export class Yasqe extends CodeMirror {
 
     // if (this.config.resizeable) this.drawResizer();
     // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
-    // this.registerEventListeners();
+    this.registerEventListeners();
   }
+
+  public getDoc() {
+    if (!this.editor) throw new Error("Editor not initialized");
+    return {
+      // Get the current cursor position
+      getCursor: (position: string = "head") => {
+        const selection = this.editor!.getSelection();
+        if (!selection) return { line: 0, ch: 0 };
+
+        // In CodeMirror, 'start' is the beginning of selection, 'end' is the end,
+        // 'head' is the moving end, and 'anchor' is the fixed end
+        if (position === "start" || (position === "head" && !selection.isEmpty())) {
+          const pos = selection.getStartPosition();
+          return { line: pos.lineNumber - 1, ch: pos.column - 1 };
+        } else if (position === "end" || position === "head") {
+          const pos = selection.getEndPosition();
+          return { line: pos.lineNumber - 1, ch: pos.column - 1 };
+        } else {
+          // 'anchor'
+          const pos = selection.getPosition();
+          return { line: pos.lineNumber - 1, ch: pos.column - 1 };
+        }
+      },
+      // Get line content
+      getLine: (line: number) => {
+        if (!this.editor?.getModel()) return "";
+        return this.editor.getModel()!.getLineContent(line + 1); // Monaco is 1-based
+      },
+      // Get the last line number
+      lastLine: () => {
+        return this.editor?.getModel()?.getLineCount() ? this.editor!.getModel()!.getLineCount() - 1 : 0;
+      },
+      // Check if something is selected
+      somethingSelected: () => {
+        const selection = this.editor!.getSelection();
+        return selection ? !selection.isEmpty() : false;
+      },
+      // Get the selected text
+      getSelection: () => {
+        if (!this.editor?.getModel()) return "";
+        const selection = this.editor.getSelection();
+        if (!selection) return "";
+        return this.editor.getModel()!.getValueInRange(selection);
+      },
+      // Replace a range of text
+      replaceRange: (text: string, from: Position, to?: Position) => {
+        if (!this.editor?.getModel()) return;
+        const fromPos = {
+          lineNumber: from.line + 1,
+          column: from.ch + 1,
+        };
+        const toPos = to
+          ? {
+              lineNumber: to.line + 1,
+              column: to.ch + 1,
+            }
+          : fromPos;
+        this.editor.executeEdits("api", [
+          {
+            range: new monaco.Range(fromPos.lineNumber, fromPos.column, toPos.lineNumber, toPos.column),
+            text: text,
+          },
+        ]);
+      },
+      // Get index from position
+      indexFromPos: (pos: Position) => {
+        if (!this.editor?.getModel()) return 0;
+        return this.editor.getModel()!.getOffsetAt({
+          lineNumber: pos.line + 1,
+          column: pos.ch + 1,
+        });
+      },
+      // Get position from index
+      posFromIndex: (index: number) => {
+        if (!this.editor?.getModel()) return { line: 0, ch: 0 };
+        const position = this.editor.getModel()!.getPositionAt(index);
+        return {
+          line: position.lineNumber - 1,
+          ch: position.column - 1,
+        };
+      },
+    };
+  }
+
   private handleHashChange = () => {
     this.config.consumeShareLink?.(this);
   };
@@ -279,7 +376,7 @@ export class Yasqe extends CodeMirror {
     this.updateQueryButton();
   }
   private handleCursorActivity() {
-    this.autocomplete(true);
+    // this.autocomplete(true);
   }
   private handleQuery(_yasqe: Yasqe, req: Request, abortController?: AbortController) {
     this.req = req;
@@ -320,12 +417,12 @@ export class Yasqe extends CodeMirror {
     this.off("queryResponse", this.handleQueryResponse);
     this.off("queryAbort", this.handleQueryAbort);
   }
-  /**
-   * Generic IDE functions
-   */
-  public emit(event: string, ...data: any[]) {
-    CodeMirror.signal(this, event, this, ...data);
-  }
+  // /**
+  //  * Generic IDE functions
+  //  */
+  // public emit(event: string, ...data: any[]) {
+  //   // CodeMirror.signal(this, event, this, ...data);
+  // }
 
   public getStorageId(getter?: Config["persistenceId"]): string | undefined {
     const persistenceId = getter || this.config.persistenceId;
@@ -529,7 +626,7 @@ export class Yasqe extends CodeMirror {
       this.saveQuery();
     }
     // Refresh the editor to make sure the 'hidden' lines are rendered
-    this.refresh();
+    // this.refresh();
   }
   public duplicateLine() {
     const cur = this.getDoc().getCursor();
@@ -588,7 +685,9 @@ export class Yasqe extends CodeMirror {
    * Get SPARQL query props
    */
   public getQueryType() {
-    return this.getOption("queryType");
+    // TODO: remove?
+    // return this.getOption("queryType");
+    return "SELECT";
   }
   public getQueryMode(): "update" | "query" {
     switch (this.getQueryType()) {
@@ -611,15 +710,16 @@ export class Yasqe extends CodeMirror {
     //not, we might get outdated info from the current query (creating loops such
     //as https://github.com/TriplyDB/YASGUI/issues/84)
     //on caveat: this function won't work when query is invalid (i.e. when typing)
-    const token: Token = this.getTokenAt(
-      { line: this.getDoc().lastLine(), ch: this.getDoc().getLine(this.getDoc().lastLine()).length },
-      true
-    );
-    const vars: string[] = [];
-    for (var v in token.state.variables) {
-      vars.push(v);
-    }
-    return vars.sort();
+    // const token: Token = this.getTokenAt(
+    //   { line: this.getDoc().lastLine(), ch: this.getDoc().getLine(this.getDoc().lastLine()).length },
+    //   true
+    // );
+    // const vars: string[] = [];
+    // for (var v in token.state.variables) {
+    //   vars.push(v);
+    // }
+    // return vars.sort();
+    return [];
   }
 
   /**
@@ -729,29 +829,26 @@ export class Yasqe extends CodeMirror {
   }
 
   public autoformat() {
-    if (!this.getDoc().somethingSelected()) this.execCommand("selectAll");
-    const from = this.getDoc().getCursor("start");
-
-    var to: Position = {
-      line: this.getDoc().getCursor("end").line,
-      ch: this.getDoc().getSelection().length,
-    };
-    var absStart = this.getDoc().indexFromPos(from);
-    var absEnd = this.getDoc().indexFromPos(to);
-    // Insert additional line breaks where necessary according to the
-    // mode's syntax
-
-    const res = this.autoformatSelection(absStart, absEnd);
-
-    // Replace and auto-indent the range
-    this.operation(() => {
-      this.getDoc().replaceRange(res, from, to);
-      var startLine = this.getDoc().posFromIndex(absStart).line;
-      var endLine = this.getDoc().posFromIndex(absStart + res.length).line;
-      for (var i = startLine; i <= endLine; i++) {
-        this.indentLine(i, "smart");
-      }
-    });
+    // if (!this.getDoc().somethingSelected()) this.execCommand("selectAll");
+    // const from = this.getDoc().getCursor("start");
+    // var to: Position = {
+    //   line: this.getDoc().getCursor("end").line,
+    //   ch: this.getDoc().getSelection().length,
+    // };
+    // var absStart = this.getDoc().indexFromPos(from);
+    // var absEnd = this.getDoc().indexFromPos(to);
+    // // Insert additional line breaks where necessary according to the
+    // // mode's syntax
+    // const res = this.autoformatSelection(absStart, absEnd);
+    // // Replace and auto-indent the range
+    // this.operation(() => {
+    //   this.getDoc().replaceRange(res, from, to);
+    //   var startLine = this.getDoc().posFromIndex(absStart).line;
+    //   var endLine = this.getDoc().posFromIndex(absStart + res.length).line;
+    //   for (var i = startLine; i <= endLine; i++) {
+    //     this.indentLine(i, "smart");
+    //   }
+    // });
   }
   //values in the form of {?var: 'value'}, or [{?var: 'value'}]
   public getQueryWithValues(values: string | { [varName: string]: string } | Array<{ [varName: string]: string }>) {
@@ -823,64 +920,65 @@ export class Yasqe extends CodeMirror {
   public checkSyntax() {
     this.queryValid = true;
 
-    this.clearGutter("gutterErrorBar");
+    // this.clearGutter("gutterErrorBar");
 
-    var state: TokenizerState;
-    for (var l = 0; l < this.getDoc().lineCount(); ++l) {
-      var precise = false;
-      if (!this.prevQueryValid) {
-        // we don't want cached information in this case, otherwise the
-        // previous error sign might still show up,
-        // even though the syntax error might be gone already
-        precise = true;
-      }
+    // var state: TokenizerState;
+    // for (var l = 0; l < this.getDoc().lineCount(); ++l) {
+    //   var precise = false;
+    //   if (!this.prevQueryValid) {
+    //     // we don't want cached information in this case, otherwise the
+    //     // previous error sign might still show up,
+    //     // even though the syntax error might be gone already
+    //     precise = true;
+    //   }
 
-      var token: Token = this.getTokenAt(
-        {
-          line: l,
-          ch: this.getDoc().getLine(l).length,
-        },
-        precise
-      );
-      var state = token.state;
-      this.setOption("queryType", state.queryType);
-      if (state.OK == false) {
-        if (!this.config.syntaxErrorCheck) {
-          //the library we use already marks everything as being an error. Overwrite this class attribute.
-          const els = this.getWrapperElement().querySelectorAll(".sp-error");
-          for (let i = 0; i < els.length; i++) {
-            var el: any = els[i];
-            if (el.style) el.style.color = "black";
-          }
-          //we don't want the gutter error, so return
-          return;
-        }
-        const warningEl = drawSvgStringAsElement(imgs.warning);
-        if (state.errorMsg) {
-          tooltip(this, warningEl, escape(token.state.errorMsg));
-        } else if (state.possibleCurrent && state.possibleCurrent.length > 0) {
-          var expectedEncoded: string[] = [];
-          state.possibleCurrent.forEach(function (expected) {
-            expectedEncoded.push("<strong style='text-decoration:underline'>" + escape(expected) + "</strong>");
-          });
-          tooltip(this, warningEl, "This line is invalid. Expected: " + expectedEncoded.join(", "));
-        }
-        // warningEl.style.marginTop = "2px";
-        // warningEl.style.marginLeft = "2px";
-        warningEl.className = "parseErrorIcon";
-        this.setGutterMarker(l, "gutterErrorBar", warningEl);
+    //   var token: Token = this.getTokenAt(
+    //     {
+    //       line: l,
+    //       ch: this.getDoc().getLine(l).length,
+    //     },
+    //     precise
+    //   );
+    //   var state = token.state;
+    //   this.setOption("queryType", state.queryType);
+    //   if (state.OK == false) {
+    //     if (!this.config.syntaxErrorCheck) {
+    //       //the library we use already marks everything as being an error. Overwrite this class attribute.
+    //       const els = this.getWrapperElement().querySelectorAll(".sp-error");
+    //       for (let i = 0; i < els.length; i++) {
+    //         var el: any = els[i];
+    //         if (el.style) el.style.color = "black";
+    //       }
+    //       //we don't want the gutter error, so return
+    //       return;
+    //     }
+    //     const warningEl = drawSvgStringAsElement(imgs.warning);
+    //     if (state.errorMsg) {
+    //       tooltip(this, warningEl, escape(token.state.errorMsg));
+    //     } else if (state.possibleCurrent && state.possibleCurrent.length > 0) {
+    //       var expectedEncoded: string[] = [];
+    //       state.possibleCurrent.forEach(function (expected) {
+    //         expectedEncoded.push("<strong style='text-decoration:underline'>" + escape(expected) + "</strong>");
+    //       });
+    //       tooltip(this, warningEl, "This line is invalid. Expected: " + expectedEncoded.join(", "));
+    //     }
+    //     // warningEl.style.marginTop = "2px";
+    //     // warningEl.style.marginLeft = "2px";
+    //     warningEl.className = "parseErrorIcon";
+    //     this.setGutterMarker(l, "gutterErrorBar", warningEl);
 
-        this.queryValid = false;
-        break;
-      }
-    }
+    //     this.queryValid = false;
+    //     break;
+    //   }
+    // }
   }
   /**
    * Token management
    */
 
-  public getCompleteToken(token?: Token, cur?: Position): Token {
-    return getCompleteToken(this, token, cur);
+  public getCompleteToken(token?: Token, cur?: Position): Token | undefined {
+    // return getCompleteToken(this, token, cur);
+    return undefined;
   }
   public getPreviousNonWsToken(line: number, token: Token): Token {
     return getPreviousNonWsToken(this, line, token);
@@ -931,25 +1029,25 @@ export class Yasqe extends CodeMirror {
   /**
    * Autocompleter management
    */
-  public enableCompleter(name: string): Promise<void> {
-    if (!Yasqe.Autocompleters[name])
-      return Promise.reject(new Error("Autocompleter " + name + " is not a registered autocompleter"));
-    if (this.config.autocompleters.indexOf(name) < 0) this.config.autocompleters.push(name);
-    const autocompleter = (this.autocompleters[name] = new Autocompleter.Completer(this, Yasqe.Autocompleters[name]));
-    return autocompleter.initialize();
-  }
-  public disableCompleter(name: string) {
-    this.config.autocompleters = this.config.autocompleters.filter((a) => a !== name);
-    this.autocompleters[name] = undefined;
-  }
-  public autocomplete(fromAutoShow = false) {
-    if (this.getDoc().somethingSelected()) return;
+  // public enableCompleter(name: string): Promise<void> {
+  //   if (!Yasqe.Autocompleters[name])
+  //     return Promise.reject(new Error("Autocompleter " + name + " is not a registered autocompleter"));
+  //   if (this.config.autocompleters.indexOf(name) < 0) this.config.autocompleters.push(name);
+  //   const autocompleter = (this.autocompleters[name] = new Autocompleter.Completer(this, Yasqe.Autocompleters[name]));
+  //   return autocompleter.initialize();
+  // }
+  // public disableCompleter(name: string) {
+  //   this.config.autocompleters = this.config.autocompleters.filter((a) => a !== name);
+  //   this.autocompleters[name] = undefined;
+  // }
+  // public autocomplete(fromAutoShow = false) {
+  //   if (this.getDoc().somethingSelected()) return;
 
-    for (let i in this.config.autocompleters) {
-      const autocompleter = this.autocompleters[this.config.autocompleters[i]];
-      if (!autocompleter || !autocompleter.autocomplete(fromAutoShow)) continue;
-    }
-  }
+  //   for (let i in this.config.autocompleters) {
+  //     const autocompleter = this.autocompleters[this.config.autocompleters[i]];
+  //     if (!autocompleter || !autocompleter.autocomplete(fromAutoShow)) continue;
+  //   }
+  // }
 
   /**
    * Prefix management
@@ -957,7 +1055,7 @@ export class Yasqe extends CodeMirror {
   public collapsePrefixes(collapse = true) {
     const firstPrefixLine = findFirstPrefixLine(this);
     if (firstPrefixLine === undefined) return; //nothing to collapse
-    this.foldCode(firstPrefixLine, (<any>CodeMirror).fold.prefix, collapse ? "fold" : "unfold");
+    // this.foldCode(firstPrefixLine, (<any>CodeMirror).fold.prefix, collapse ? "fold" : "unfold");
   }
 
   public getPrefixesFromQuery(): Prefixes {
@@ -1030,7 +1128,7 @@ export class Yasqe extends CodeMirror {
   }
 
   public expandEditor() {
-    this.setSize(null, "100%");
+    // this.setSize(null, "100%");
   }
 
   public destroy() {
@@ -1039,9 +1137,9 @@ export class Yasqe extends CodeMirror {
     this.unregisterEventListeners();
     this.resizeWrapper?.removeEventListener("mousedown", this.initDrag, false);
     this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor);
-    for (const autocompleter in this.autocompleters) {
-      this.disableCompleter(autocompleter);
-    }
+    // for (const autocompleter in this.autocompleters) {
+    //   this.disableCompleter(autocompleter);
+    // }
     window.removeEventListener("hashchange", this.handleHashChange);
     this.rootEl.remove();
   }
@@ -1050,35 +1148,35 @@ export class Yasqe extends CodeMirror {
    * Statics
    */
   static Sparql = Sparql;
-  static runMode = (<any>CodeMirror).runMode;
+  // static runMode = (<any>CodeMirror).runMode;
   static clearStorage() {
     const storage = new YStorage(Yasqe.storageNamespace);
     storage.removeNamespace();
   }
 
-  static Autocompleters: { [name: string]: Autocompleter.CompleterConfig } = {};
-  static registerAutocompleter(value: Autocompleter.CompleterConfig, enable = true) {
-    const name = value.name;
-    Yasqe.Autocompleters[name] = value;
-    if (enable && Yasqe.defaults.autocompleters.indexOf(name) < 0) Yasqe.defaults.autocompleters.push(name);
-  }
+  static Autocompleters = {};
+  // static registerAutocompleter(value: Autocompleter.CompleterConfig, enable = true) {
+  //   const name = value.name;
+  //   Yasqe.Autocompleters[name] = value;
+  //   if (enable && Yasqe.defaults.autocompleters.indexOf(name) < 0) Yasqe.defaults.autocompleters.push(name);
+  // }
   static defaults = getDefaults();
-  static forkAutocompleter(
-    fromCompleter: string,
-    newCompleter: { name: string } & Partial<Autocompleter.CompleterConfig>,
-    enable = true
-  ) {
-    if (!Yasqe.Autocompleters[fromCompleter]) throw new Error("Autocompleter " + fromCompleter + " does not exist");
-    if (!newCompleter?.name) {
-      throw new Error("Expected a name for newly registered autocompleter");
-    }
-    const name = newCompleter.name;
-    Yasqe.Autocompleters[name] = { ...Yasqe.Autocompleters[fromCompleter], ...newCompleter };
+  // static forkAutocompleter(
+  //   fromCompleter: string,
+  //   newCompleter: { name: string } & Partial<Autocompleter.CompleterConfig>,
+  //   enable = true
+  // ) {
+  //   if (!Yasqe.Autocompleters[fromCompleter]) throw new Error("Autocompleter " + fromCompleter + " does not exist");
+  //   if (!newCompleter?.name) {
+  //     throw new Error("Expected a name for newly registered autocompleter");
+  //   }
+  //   const name = newCompleter.name;
+  //   Yasqe.Autocompleters[name] = { ...Yasqe.Autocompleters[fromCompleter], ...newCompleter };
 
-    if (enable && Yasqe.defaults.autocompleters.indexOf(name) < 0) Yasqe.defaults.autocompleters.push(name);
-  }
+  //   if (enable && Yasqe.defaults.autocompleters.indexOf(name) < 0) Yasqe.defaults.autocompleters.push(name);
+  // }
 }
-(<any>Object).assign(CodeMirror.prototype, Yasqe.prototype);
+// (<any>Object).assign(CodeMirror.prototype, Yasqe.prototype);
 
 export type TokenizerState = sparql11Mode.State;
 export type Position = CodeMirror.Position;
@@ -1203,8 +1301,8 @@ export interface PersistentConfig {
 
 //Need to assign our prototype to codemirror's, as some of the callbacks (e.g. the keymap opts)
 //give us a cm doc, instead of a yasqe + cm doc
-Autocompleter.completers.forEach((c) => {
-  Yasqe.registerAutocompleter(c);
-});
+// Autocompleter.completers.forEach((c) => {
+//   Yasqe.registerAutocompleter(c);
+// });
 
 export default Yasqe;

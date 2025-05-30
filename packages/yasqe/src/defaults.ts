@@ -25,7 +25,7 @@ SELECT * WHERE {
     lineNumbers: true,
     lineWrapping: true,
     foldGutter: {
-      rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix),
+      // rangeFinder: new (<any>CodeMirror).fold.combine((<any>CodeMirror).fold.brace, (<any>CodeMirror).fold.prefix),
     },
     collapsePrefixesOnLoad: false,
     gutters: ["gutterErrorBar", "CodeMirror-linenumbers", "CodeMirror-foldgutter"],
@@ -39,8 +39,8 @@ SELECT * WHERE {
        * the codemirror config interface (that specifies the type should be codemirror-editor)
        */
       "Ctrl-Space": function (_yasqe: any) {
-        const yasqe: Yasqe = _yasqe;
-        yasqe.autocomplete();
+        // const yasqe: Yasqe = _yasqe;
+        // yasqe.autocomplete();
       },
       "Shift-Ctrl-K": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
@@ -85,8 +85,8 @@ SELECT * WHERE {
         yasqe.query().catch(() => {}); //catch this to avoid unhandled rejection
       },
       Esc: function (_yasqe: any) {
-        const yasqe: Yasqe = _yasqe;
-        yasqe.getInputField().blur();
+        // const yasqe: Yasqe = _yasqe;
+        // yasqe.getInputField().blur();
       },
     },
 

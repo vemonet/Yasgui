@@ -57,6 +57,7 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
       return; // Nothing to query
     }
     const abortController = new AbortController();
+    console.log("Executing query", populatedConfig);
 
     const fetchOptions: RequestInit = {
       method: populatedConfig.reqMethod,
@@ -94,11 +95,18 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
     if (!response.ok) {
       throw new Error((await response.text()) || response.statusText);
     }
-    // Await the response content
     const queryResponse = {
+      status: response.status,
+      statusText: response.statusText,
+      headers: response.headers,
+      ok: response.ok,
+      redirected: response.redirected,
+      type: response.type,
+      url: response.url,
+      // Await the response content
       content: await response.text(),
-      ...response,
     };
+    // console.log("Emit Query response from sparql.ts", response, queryResponse);
     yasqe.emit("queryResponse", queryResponse, Date.now() - queryStart);
     yasqe.emit("queryResults", queryResponse.content, Date.now() - queryStart);
     return queryResponse;

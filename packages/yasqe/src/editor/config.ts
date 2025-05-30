@@ -1,5 +1,6 @@
 import { configureDefaultWorkerFactory } from "monaco-editor-wrapper/workers/workerLoaders";
-import { sparqlTextmateGrammar, sparqlLanguageConfig, sparqlTheme } from "./sparqlTheme";
+import { sparqlThemeDark, sparqlThemeLight } from "./sparqlTheme";
+import { sparqlTextmateGrammar, sparqlLanguageConfig } from "./sparqlGrammar";
 import type { WrapperConfig } from "monaco-editor-wrapper";
 import { LogLevel, Uri } from "vscode";
 
@@ -37,7 +38,8 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
   const extensionFilesOrContents = new Map<string, string | URL>();
   extensionFilesOrContents.set("/sparql-configuration.json", JSON.stringify(sparqlLanguageConfig));
   extensionFilesOrContents.set("/sparql-grammar.json", JSON.stringify(sparqlTextmateGrammar));
-  extensionFilesOrContents.set("/sparql-theme.json", JSON.stringify(sparqlTheme));
+  extensionFilesOrContents.set("/sparql-theme-dark.json", JSON.stringify(sparqlThemeDark));
+  extensionFilesOrContents.set("/sparql-theme-light.json", JSON.stringify(sparqlThemeLight));
 
   const wrapperConfig: WrapperConfig = {
     $type: "extended",
@@ -85,7 +87,8 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
       editorOptions: {
         tabCompletion: "on",
         suggestOnTriggerCharacters: true,
-        theme: "vs-dark",
+        // theme: "vs-dark",
+        theme: "vs",
         fontSize: 16,
         fontFamily: "Source Code Pro",
         links: false,
@@ -136,9 +139,15 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
             themes: [
               {
                 id: "vs-dark",
-                label: "SPARQL Custom Theme",
+                label: "SPARQL Custom Dark Theme",
                 uiTheme: "vs-dark",
-                path: "./sparql-theme.json",
+                path: "./sparql-theme-dark.json",
+              },
+              {
+                id: "vs",
+                label: "SPARQL Custom Light Theme",
+                uiTheme: "vs",
+                path: "./sparql-theme-light.json",
               },
             ],
             grammars: [

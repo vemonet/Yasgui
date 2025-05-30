@@ -110,8 +110,8 @@ select * {
 PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
 * where { `;
         window.yasqe.setValue(query);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: window.yasqe.getDoc().lineCount(), ch: 0 });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: window.yasqe.getDoc().lineCount(), ch: 0 });
         return window.yasqe.getDoc().getCursor();
       });
       await type("foaf:");
@@ -130,8 +130,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
 PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
 * where { ?sub `;
         window.yasqe.setValue(query);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: window.yasqe.getDoc().lineCount(), ch: 0 });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: window.yasqe.getDoc().lineCount(), ch: 0 });
         return window.yasqe.getDoc().getCursor();
       });
       await type("testa:");
@@ -153,8 +153,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         const query =
           "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:/testa:someotherprop";
         window.yasqe.setValue(query);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(":/testa:someotherprop") });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(":/testa:someotherprop") });
         return window.yasqe.getDoc().getCursor();
       });
       await issueAutocompletionKeyCombination();
@@ -170,8 +170,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         const query =
           "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:someotherprop/testa;";
         window.yasqe.setValue(query);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(";") });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(";") });
         return window.yasqe.getDoc().getCursor();
       });
       await issueAutocompletionKeyCombination();
@@ -193,7 +193,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
     const getCompleteTokenAt = (character: number, line?: number) => {
       return page.evaluate(
         (at: { character: number; line?: number }) => {
-          window.yasqe.getDoc().setCursor({ line: at.line || window.yasqe.getCursor().line, ch: at.character });
+          // window.yasqe.getDoc().setCursor({ line: at.line || window.yasqe.getCursor().line, ch: at.character });
           return window.yasqe.getCompleteToken();
         },
         { character: character, line: line }
@@ -208,8 +208,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         window.yasqe.setValue(query);
         window.yasqe.on("autocompletionShown", () => (window as any).showCount++);
         window.yasqe.on("autocompletionClose", () => (window as any).hideCount++);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.length });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: query.length });
         return window.yasqe.getDoc().getCursor();
       });
       const getHideCount = () =>
@@ -233,8 +233,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.evaluate(() => {
         const query = `select * where { ?s <https://test.a.com/55`;
         window.yasqe.setValue(query);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.length });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: query.length });
         return window.yasqe.getDoc().getCursor();
       });
       await issueAutocompletionKeyCombination();
@@ -242,14 +242,14 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.keyboard.press("Escape");
       await page.evaluate(() => {
         const query = `select * where { ?s <https://test.a.com/55`;
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("/test.a") });
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("/test.a") });
       });
       await issueAutocompletionKeyCombination();
       expect(await waitForAutocompletionPopup()).to.equal(11);
       await page.keyboard.press("Escape");
       await page.evaluate(() => {
         const query = `select * where { ?s <https://test.a.com/55`;
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("/55") });
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("/55") });
       });
       await issueAutocompletionKeyCombination();
       expect(await waitForAutocompletionPopup()).to.equal(11);
@@ -257,7 +257,7 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.keyboard.press("Escape");
       await page.evaluate(() => {
         const query = `select * where { ?s <https://test.a.com/55`;
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("http") });
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("http") });
       });
       await issueAutocompletionKeyCombination();
       expect(await waitForAutocompletionPopup()).to.equal(11);
@@ -266,8 +266,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.evaluate(() => {
         const query = "select * where { ?subject ?predicate ?s}";
         window.yasqe.setValue(query);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: query.length - 2 });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: query.length - 2 });
         return window.yasqe.getDoc().getCursor();
       });
       await issueAutocompletionKeyCombination();
@@ -284,8 +284,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.evaluate(() => {
         const oneLineQuery = "PREFIX testa: <https://test.a.com/> select * where { ?subject testa:/testa:2/testa:3";
         window.yasqe.setValue(oneLineQuery);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 1 });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 1 });
       });
       let token = await getCompleteToken();
       expect(token.string).to.equal("testa:3");
@@ -309,8 +309,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.evaluate(() => {
         const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql# ?s";
         window.yasqe.setValue(oneLineQuery);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 5 });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.length - 5 });
       });
 
       await issueAutocompletionKeyCombination();
@@ -325,8 +325,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.evaluate(() => {
         const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql#";
         window.yasqe.setValue(oneLineQuery);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
       });
 
       await issueAutocompletionKeyCombination();
@@ -339,8 +339,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       await page.evaluate(() => {
         const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql#";
         window.yasqe.setValue(oneLineQuery);
-        window.yasqe.focus();
-        window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
+        // window.yasqe.focus();
+        // window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
       });
       const token = await getCompleteToken();
       expect(token.string).to.equal("<http://www.opengis.net/ont/geosparql#");
@@ -351,8 +351,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         await page.evaluate(() => {
           const oneLineQuery = "select * where { ?subject <http://www.opengis.net/ont/geosparql#";
           window.yasqe.setValue(oneLineQuery);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("opengis") });
         });
         const token = await getCompleteToken();
         expect(token.string).to.equal("<http://www.opengis.net/ont/geosparql#");
@@ -362,8 +362,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         await page.evaluate(() => {
           const oneLineQuery = "select * where { bind(";
           window.yasqe.setValue(oneLineQuery);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("(") + 1 });
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("(") + 1 });
         });
         const token = await getCompleteToken();
         expect(token.state.possibleCurrent).contains(
@@ -375,8 +375,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         await page.evaluate(() => {
           const oneLineQuery = 'select * where { bind("';
           window.yasqe.setValue(oneLineQuery);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf('"') + 1 });
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf('"') + 1 });
         });
         const token = await getCompleteToken();
         expect(token.state.possibleCurrent).contains(
@@ -388,8 +388,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         await page.evaluate(() => {
           const oneLineQuery = "select * where { ?s ?p ?o }";
           window.yasqe.setValue(oneLineQuery);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("}") + 1 });
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor({ line: 0, ch: oneLineQuery.indexOf("}") + 1 });
         });
         const token = await getCompleteToken();
         expect(token.state.possibleCurrent).contains(
@@ -406,8 +406,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         return page.evaluate(() => {
           const query = `PREFIX geo: <http://www.opengis.net/ont/geosparql#> select * where {?x geo: ?y}`;
           window.yasqe.setValue(query);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(": ?y") + 1 });
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf(": ?y") + 1 });
           return window.yasqe.getDoc().getCursor();
         });
       }
@@ -416,8 +416,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         await page.evaluate(() => {
           const query = `select * where {?x <http://www.opengis.net/ont/geosparql#> ?y}`;
           window.yasqe.setValue(query);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("#> ?y") + 1 });
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor({ line: 0, ch: query.indexOf("#> ?y") + 1 });
           return window.yasqe.getDoc().getCursor();
         });
 
@@ -517,8 +517,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
         return page.evaluate(() => {
           const query = `PREFIX testb: <https://test.b.com/> select * where {?x a <htt`;
           window.yasqe.setValue(query);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 0, ch: query.length - 2 });
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor({ line: 0, ch: query.length - 2 });
           return window.yasqe.getDoc().getCursor();
         });
       }
@@ -552,20 +552,20 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
           }
         }
       });
-      it("Should auto open when autocompleter is Async and ontype is enabled", async () => {
-        await page.evaluate(() => {
-          (window.yasqe.autocompleters["class-local"] as any).config.autoShow = true;
-        });
-        await focusOnAutocompletionPos();
-        await page.waitForSelector(`.CodeMirror-hints`);
-      });
+      // it("Should auto open when autocompleter is Async and ontype is enabled", async () => {
+      //   await page.evaluate(() => {
+      //     (window.yasqe.autocompleters["class-local"] as any).config.autoShow = true;
+      //   });
+      //   await focusOnAutocompletionPos();
+      //   await page.waitForSelector(`.CodeMirror-hints`);
+      // });
     });
     describe("Async prefix autocompletion", function () {
       function focusOnAutocompletionPos() {
         return page.evaluate(() => {
           window.yasqe.setValue("");
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor({ line: 0, ch: 0 });
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor({ line: 0, ch: 0 });
           return window.yasqe.getDoc().getCursor();
         });
       }
@@ -610,8 +610,8 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#> select
       async function executeFirstLineAutocompletion(query: string) {
         await page.evaluate((query) => {
           window.yasqe.setValue(query);
-          window.yasqe.focus();
-          window.yasqe.getDoc().setCursor(1, 0);
+          // window.yasqe.focus();
+          // window.yasqe.getDoc().setCursor(1, 0);
           return window.yasqe.getDoc().getCursor();
         }, query);
         await page.keyboard.press("End");

@@ -46,20 +46,21 @@ export function getPrefixesFromQuery(yasqe: Yasqe): Token["state"]["prefixes"] {
   //Use precise here. We want to be sure we use the most up to date state. If we're
   //not, we might get outdated prefixes from the current query (creating loops such
   //as https://github.com/TriplyDB/YASGUI/issues/84)
-  return yasqe.getTokenAt(
-    { line: yasqe.getDoc().lastLine(), ch: yasqe.getDoc().getLine(yasqe.getDoc().lastLine()).length },
-    true
-  ).state.prefixes;
+  // return yasqe.getTokenAt(
+  //   { line: yasqe.getDoc().lastLine(), ch: yasqe.getDoc().getLine(yasqe.getDoc().lastLine()).length },
+  //   true
+  // ).state.prefixes;
 }
 
 export function getIndentFromLine(yasqe: Yasqe, line: number, charNumber: number = 1): string {
-  var token = yasqe.getTokenAt({
-    line: line,
-    ch: charNumber,
-  });
-  if (token == null || token == undefined || token.type != "ws") {
-    return "";
-  } else {
-    return token.string + getIndentFromLine(yasqe, line, token.end + 1);
-  }
+  // var token = yasqe.getTokenAt({
+  //   line: line,
+  //   ch: charNumber,
+  // });
+  // if (token == null || token == undefined || token.type != "ws") {
+  //   return "";
+  // } else {
+  //   return token.string + getIndentFromLine(yasqe, line, token.end + 1);
+  // }
+  return "";
 }
