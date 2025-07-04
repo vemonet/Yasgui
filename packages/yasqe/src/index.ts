@@ -19,9 +19,45 @@ import * as monaco from "monaco-editor";
 import { buildWrapperConfig } from "./editor/config";
 
 import getDefaults from "./defaults";
-// import CodeMirror from "./CodeMirror";
 import { YasqeAjaxConfig } from "./sparql";
-import { backends } from "./editor/backends";
+import { Backend } from "./editor/endpointMetadata";
+
+class LspInfoOverlayWidget implements monaco.editor.IOverlayWidget {
+  private domNode: HTMLElement;
+
+  constructor(private readonly editor: monaco.editor.IStandaloneCodeEditor, backend: any) {
+    this.domNode = document.createElement("div");
+    this.domNode.style.background = "#444";
+    this.domNode.style.color = "#fff";
+    this.domNode.style.padding = "0.3em 0.5em";
+    this.domNode.style.fontSize = "12px";
+    this.domNode.style.borderRadius = "4px";
+    this.domNode.style.cursor = "pointer";
+    this.domNode.addEventListener("mouseover", () => {
+      this.domNode.style.filter = "brightness(60%)";
+    });
+    this.domNode.addEventListener("mouseout", () => {
+      this.domNode.style.filter = "";
+    });
+    // filter: brightness(60%);
+    this.domNode.innerText = "ℹ️ Backends Info";
+    this.domNode.onclick = () => {
+      // const info = getLanguageServerState();
+      alert(JSON.stringify(backend, null, 2));
+    };
+  }
+  getId(): string {
+    return "lsp.info.overlay";
+  }
+  getDomNode(): HTMLElement {
+    return this.domNode;
+  }
+  getPosition(): monaco.editor.IOverlayWidgetPosition {
+    return {
+      preference: monaco.editor.OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER,
+    };
+  }
+}
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
@@ -76,16 +112,16 @@ export class Yasqe extends EventEmitter {
     el.style.height = "500px";
 
     // Add backend SPARQL endpoints
-    for (const conf of backends) {
+    for (const endpointMeta of Object.values(this.persistentConfig?.backends || {})) {
       this.languageClientWrapper
         .getLanguageClient()!
-        .sendRequest("qlueLs/addBackend", conf)
+        .sendRequest("qlueLs/addBackend", endpointMeta.backend)
         .catch((err: any) => {
           console.error(err);
         });
       this.languageClientWrapper
         .getLanguageClient()!
-        .sendRequest("qlueLs/updateDefaultBackend", conf.backend.name)
+        .sendRequest("qlueLs/updateDefaultBackend", endpointMeta.backend.backend.name)
         .catch((err: any) => {
           console.error(err);
         });
@@ -202,10 +238,9 @@ export class Yasqe extends EventEmitter {
         this.query().catch(() => {}); //catch this to avoid unhandled rejection
       },
     });
-  }
 
-  public getBackend() {
-    return backends.find((backendConf) => backendConf.default)!.backend;
+    const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
+    wrapper.getEditor()!.addOverlayWidget(overlay);
   }
 
   public getValue(): string {
@@ -249,14 +284,15 @@ export class Yasqe extends EventEmitter {
     if (storageId) {
       const persConf = this.storage.get<any>(storageId);
       if (persConf && typeof persConf === "string") {
-        this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight }; // Migrate to object based localstorage
+        this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight, backends: {} };
       } else {
         this.persistentConfig = persConf;
       }
       if (!this.persistentConfig)
-        this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight };
+        this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight, backends: {} };
       if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
     }
+    console.log("INIT YASQE", this.getStorageId(), this);
 
     // this.config.autocompleters.forEach((c) => this.enableCompleter(c).then(() => {}, console.warn));
     if (this.config.consumeShareLink) {
@@ -586,17 +622,17 @@ export class Yasqe extends EventEmitter {
       this.updateQueryButton();
     }
   }
-  private drawResizer() {
-    if (this.resizeWrapper) return;
-    this.resizeWrapper = document.createElement("div");
-    addClass(this.resizeWrapper, "resizeWrapper");
-    const chip = document.createElement("div");
-    addClass(chip, "resizeChip");
-    this.resizeWrapper.appendChild(chip);
-    this.resizeWrapper.addEventListener("mousedown", this.initDrag, false);
-    this.resizeWrapper.addEventListener("dblclick", this.expandEditor);
-    this.rootEl.appendChild(this.resizeWrapper);
-  }
+  // private drawResizer() {
+  //   if (this.resizeWrapper) return;
+  //   this.resizeWrapper = document.createElement("div");
+  //   addClass(this.resizeWrapper, "resizeWrapper");
+  //   const chip = document.createElement("div");
+  //   addClass(chip, "resizeChip");
+  //   this.resizeWrapper.appendChild(chip);
+  //   this.resizeWrapper.addEventListener("mousedown", this.initDrag, false);
+  //   this.resizeWrapper.addEventListener("dblclick", this.expandEditor);
+  //   this.rootEl.appendChild(this.resizeWrapper);
+  // }
   private initDrag() {
     document.documentElement.addEventListener("mousemove", this.doDrag, false);
     document.documentElement.addEventListener("mouseup", this.stopDrag, false);
@@ -1290,9 +1326,17 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   queryingDisabled: string | undefined; // The string will be the message displayed when hovered
   prefixCcApi: string; // the suggested default prefixes URL API getter
 }
+
+export interface EndpointMetadata {
+  backend: Backend;
+  lastFetched: number; // Timestamp
+  version: string; // For cache invalidation
+}
+
 export interface PersistentConfig {
   query: string;
   editorHeight: string;
+  backends: { [key: string]: EndpointMetadata };
 }
 // export var _Yasqe = _Yasqe;
 

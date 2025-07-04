@@ -1,6 +1,7 @@
 import { Storage as YStorage } from "@zazuko/yasgui-utils";
 import Yasgui from "./";
 import * as Tab from "./Tab";
+
 export var storageNamespace = "triply";
 export interface PersistedJson {
   endpointHistory: string[];
@@ -9,6 +10,7 @@ export interface PersistedJson {
   tabConfig: { [tabId: string]: Tab.PersistedJson };
   lastClosedTab: { index: number; tab: Tab.PersistedJson } | undefined;
 }
+
 function getDefaults(): PersistedJson {
   return {
     endpointHistory: [],

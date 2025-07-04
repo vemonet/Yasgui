@@ -1,8 +1,64 @@
 import { configureDefaultWorkerFactory } from "monaco-editor-wrapper/workers/workerLoaders";
-import { sparqlThemeDark, sparqlThemeLight } from "./sparqlTheme";
+import { sparqlThemeDark, sparqlThemeLight, sparqlThemeSolarizedDark } from "./sparqlTheme";
 import { sparqlTextmateGrammar, sparqlLanguageConfig } from "./sparqlGrammar";
 import type { WrapperConfig } from "monaco-editor-wrapper";
 import { LogLevel, Uri } from "vscode";
+
+/**
+ * Detects the user's preferred color scheme (light or dark)
+ * @returns true if dark mode is preferred, false for light mode
+ */
+function prefersDarkMode(): boolean {
+  if (typeof window !== "undefined" && window.matchMedia) {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  // Default to light
+  return false;
+}
+
+/**
+ * Gets the appropriate theme configuration based on system preference
+ * @returns object with theme name and VSCode theme name
+ */
+export function getThemeConfig() {
+  if (prefersDarkMode()) {
+    return {
+      editorTheme: "vs-dark",
+      vscodeTheme: "SPARQL Solarized Dark Theme",
+    };
+  } else {
+    return {
+      editorTheme: "vs",
+      vscodeTheme: "SPARQL Custom Light Theme",
+    };
+  }
+}
+
+// TODO: Uncomment and check to support live theme changes
+// /**
+//  * Sets up a listener for system theme changes
+//  * @param callback Function to call when theme changes, receives the new theme config
+//  * @returns Function to remove the listener
+//  */
+// export function setupThemeChangeListener(callback: (themeConfig: ReturnType<typeof getThemeConfig>) => void): () => void {
+//   if (typeof window === 'undefined' || !window.matchMedia) {
+//     // Return a no-op function if matchMedia is not available
+//     return () => {};
+//   }
+//   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+//   const handleChange = () => {
+//     callback(getThemeConfig());
+//   };
+//   // Use the modern addEventListener if available, fallback to addListener
+//   if (mediaQuery.addEventListener) {
+//     mediaQuery.addEventListener('change', handleChange);
+//     return () => mediaQuery.removeEventListener('change', handleChange);
+//   } else if (mediaQuery.addListener) {
+//     mediaQuery.addListener(handleChange);
+//     return () => mediaQuery.removeListener(handleChange);
+//   }
+//   return () => {};
+// }
 
 export async function buildWrapperConfig(container: HTMLElement, initial: string): Promise<WrapperConfig> {
   // Use the external worker file instead of creating from blob
@@ -38,9 +94,14 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
   const extensionFilesOrContents = new Map<string, string | URL>();
   extensionFilesOrContents.set("/sparql-configuration.json", JSON.stringify(sparqlLanguageConfig));
   extensionFilesOrContents.set("/sparql-grammar.json", JSON.stringify(sparqlTextmateGrammar));
-  extensionFilesOrContents.set("/sparql-theme-dark.json", JSON.stringify(sparqlThemeDark));
   extensionFilesOrContents.set("/sparql-theme-light.json", JSON.stringify(sparqlThemeLight));
+  extensionFilesOrContents.set("/sparql-theme-dark.json", JSON.stringify(sparqlThemeDark));
+  extensionFilesOrContents.set("/sparql-theme-dark-solarized.json", JSON.stringify(sparqlThemeSolarizedDark));
 
+  // Get theme configuration based on system preference
+  const themeConfig = getThemeConfig();
+
+  // Configure the Monaco editor and LS wrapper
   const wrapperConfig: WrapperConfig = {
     $type: "extended",
     htmlContainer: container,
@@ -87,9 +148,8 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
       editorOptions: {
         tabCompletion: "on",
         suggestOnTriggerCharacters: true,
-        // theme: "vs-dark",
-        theme: "vs",
-        fontSize: 16,
+        theme: themeConfig.editorTheme,
+        fontSize: 14,
         fontFamily: "Source Code Pro",
         links: false,
         minimap: {
@@ -106,7 +166,7 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
     vscodeApiConfig: {
       userConfiguration: {
         json: JSON.stringify({
-          "workbench.colorTheme": "SPARQL Custom Theme",
+          "workbench.colorTheme": themeConfig.vscodeTheme,
           "editor.guides.bracketPairsHorizontal": "active",
           "editor.lightbulb.enabled": "On",
           "editor.wordBasedSuggestions": "off",
@@ -131,7 +191,7 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
             languages: [
               {
                 id: "sparql",
-                extensions: [".rq"],
+                extensions: [".rq", ".sparql"],
                 aliases: ["sparql", "SPARQL"],
                 configuration: "/sparql-configuration.json",
               },
@@ -139,6 +199,12 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
             themes: [
               {
                 id: "vs-dark",
+                label: "SPARQL Solarized Dark Theme",
+                uiTheme: "vs-dark",
+                path: "./sparql-theme-dark-solarized.json",
+              },
+              {
+                id: "custom-dark",
                 label: "SPARQL Custom Dark Theme",
                 uiTheme: "vs-dark",
                 path: "./sparql-theme-dark.json",

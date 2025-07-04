@@ -8,10 +8,12 @@ import { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
 import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";
 import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@zazuko/yasqe";
+import { Backend, createBackendConf } from "@zazuko/yasqe/src/editor/endpointMetadata";
 import { default as Yasr, Config as YasrConfig } from "@zazuko/yasr";
 import { addClass, removeClass } from "@zazuko/yasgui-utils";
 import "./index.scss";
 import "@zazuko/yasr/src/scss/global.scss";
+
 if (window) {
   //We're storing yasqe and yasr as a member of Yasgui, but _also_ in the window
   //That way, we dont have to tweak e.g. pro plugins to register themselves to both
@@ -90,6 +92,12 @@ export class Yasgui extends EventEmitter {
   public tabPanelsEl: HTMLDivElement;
   public config: Config;
   public persistentConfig: PersistentConfig;
+  public yasqe: Yasqe | undefined;
+  public yasr: Yasr | undefined;
+  private yasqeWrapperEl: HTMLDivElement | undefined;
+  private yasrWrapperEl: HTMLDivElement | undefined;
+  private addedBackends: Set<string> = new Set();
+  private currentEndpoint: string | undefined;
   public static Tab = Tab;
   constructor(parent: HTMLElement, config: PartialConfig) {
     super();
@@ -105,6 +113,10 @@ export class Yasgui extends EventEmitter {
 
     this.rootEl.appendChild(this.tabElements.drawTabsList());
     this.rootEl.appendChild(this.tabPanelsEl);
+
+    // Initialize global YASQE and YASR instances
+    this.initGlobalYasqeAndYasr();
+
     let executeIdAfterInit: string | undefined;
     let optionsFromUrl: PersistedTabJson | undefined;
     if (this.config.populateFromUrl) {
@@ -149,6 +161,14 @@ export class Yasgui extends EventEmitter {
         this._registerTabListeners(this._tabs[tabId]);
         // this.tabs[tabId].on("close", tab => this.closeTabId(tab.getId()));
         this.tabElements.drawTab(tabId);
+
+        // // Setup endpoint backend for each existing tab
+        // const endpoint = this._tabs[tabId].getEndpoint();
+        // if (endpoint) {
+        //   this.setupEndpointBackend(endpoint).catch((err) => {
+        //     console.warn("Failed to setup endpoint backend for existing tab:", err);
+        //   });
+        // }
       }
       const activeTabId = this.persistentConfig.getActiveId();
       if (activeTabId) {
@@ -201,17 +221,24 @@ export class Yasgui extends EventEmitter {
     }
     //mark tab active
     this.tabElements.selectTab(tabId);
-
     //draw tab content
-    if (!this._tabs[tabId]) {
-      this._tabs[tabId] = new Tab(this, Tab.getDefaults(this));
-    }
+    // if (!this._tabs[tabId]) {
+    //   // this._tabs[tabId] = new Tab(this, Tab.getDefaults(this));
+    //   // this._tabs[tabId] = new Tab(this, this.persistentConfig.getTab(tabId));
+    // }
     this._tabs[tabId].show();
     for (const otherTabId in this._tabs) {
       if (otherTabId !== tabId) this._tabs[otherTabId].hide();
     }
+    // Update YASQE and YASR for the newly selected tab
+    const selectedTab = this._tabs[tabId];
+    if (selectedTab) {
+      this.updateYasqeForTab(selectedTab);
+      this.updateYasrForTab(selectedTab);
+    }
     return true;
   }
+
   public selectTabId(tabId: string) {
     const tab = this.getTab();
     if (tab && tab.getId() !== tabId) {
@@ -223,6 +250,7 @@ export class Yasgui extends EventEmitter {
     }
     return tab;
   }
+
   /**
    * Checks if two persistent tab configuration are the same based.
    * It isnt a strict equality, as falsy values (e.g. a header that isnt set in one tabjson) isnt taken into consideration
@@ -233,9 +261,7 @@ export class Yasgui extends EventEmitter {
   private tabConfigEquals(tab1: PersistedTabJson, tab2: PersistedTabJson): boolean {
     let sameRequest = true;
 
-    /**
-     * Check request config
-     */
+    // Check request config
     let key: keyof RequestConfig<Yasgui>;
     for (key in tab1.requestConfig) {
       if (!tab1.requestConfig[key]) continue;
@@ -243,18 +269,13 @@ export class Yasgui extends EventEmitter {
         sameRequest = false;
       }
     }
-    /**
-     * Check yasqe settings
-     */
+    // Check yasqe settings
     if (sameRequest) {
       sameRequest = (<Array<keyof PersistedTabJson["yasqe"]>>["endpoint", "value"]).every(
         (key) => tab1.yasqe[key] === tab2.yasqe[key]
       );
     }
-
-    /**
-     * Check yasr settings
-     */
+    // Check yasr settings
     if (sameRequest) {
       sameRequest =
         tab1.yasr.settings.selectedPlugin === tab2.yasr.settings.selectedPlugin &&
@@ -263,7 +284,6 @@ export class Yasgui extends EventEmitter {
           tab2.yasr.settings.pluginsConfig?.[tab2.yasr.settings?.selectedPlugin || ""]
         );
     }
-
     return sameRequest && tab1.name === tab2.name;
   }
   private findTabIdForConfig(tabConfig: PersistedTabJson) {
@@ -281,7 +301,90 @@ export class Yasgui extends EventEmitter {
     tab.on("queryResponse", (tab) => this.emit("queryResponse", this, tab));
     tab.on("autocompletionShown", (tab, widget) => this.emit("autocompletionShown", this, tab, widget));
     tab.on("autocompletionClose", (tab) => this.emit("autocompletionClose", this, tab));
+    tab.on("endpointChange", (tab, endpoint) => this.handleEndpointChange(tab, endpoint));
   }
+
+  /**
+   * Handles the change of endpoint in a tab.
+   * It fetches endpoint metadata (prefixes, example queries) and creates a backend configuration.
+   * If metadata is not available, it uses default values built from the URL and baseBackend.
+   * @param tab The tab where the endpoint change occurred
+   * @param endpoint The new endpoint URL
+   */
+  private async handleEndpointChange(tab: Tab, endpoint: string) {
+    // Ensure the global YASQE instance uses the updated endpoint configuration
+    // This is crucial for query execution to use the new endpoint
+    if (tab === this.getActiveTab()) {
+      this.updateYasqeForTab(tab);
+    }
+    tab.setEndpoint(endpoint);
+    if (this.yasqe) {
+      if (typeof this.yasqe.config.requestConfig === "function") {
+        // We can't directly modify a function, we need to replace it with a new function
+        const originalRequestConfig = this.yasqe.config.requestConfig;
+        this.yasqe.config.requestConfig = (yasqe) => {
+          const config = originalRequestConfig(yasqe);
+          return { ...config, endpoint };
+        };
+      } else {
+        // Directly modify the object
+        this.yasqe.config.requestConfig.endpoint = endpoint;
+      }
+    }
+    // Fetch endpoint metadata or create default backend configuration only if endpoint changed
+    if (endpoint !== this.currentEndpoint) {
+      this.currentEndpoint = endpoint;
+      await this.setupEndpointBackend(endpoint);
+    }
+  }
+
+  /**
+   * Sets up backend configuration for an endpoint using metadata or defaults
+   * @param endpoint The SPARQL endpoint URL
+   */
+  private async setupEndpointBackend(endpoint: string) {
+    let backendConf: Backend | undefined;
+    if (this.getTab()?.getYasqe()?.persistentConfig?.backends[endpoint]) {
+      backendConf = this.getTab()?.getYasqe()?.persistentConfig?.backends[endpoint].backend;
+    }
+    if (!backendConf) {
+      backendConf = await createBackendConf(endpoint);
+      if (this.getTab()?.getYasqe()?.persistentConfig) {
+        // @ts-ignore
+        this.getTab().getYasqe().persistentConfig.backends[endpoint] = {
+          backend: backendConf,
+          lastFetched: Date.now(),
+          version: "1.0.0",
+        };
+      }
+    }
+    this.updateLanguageClientBackend(backendConf);
+  }
+
+  /**
+   * Updates the language client with a backend configuration
+   */
+  private updateLanguageClientBackend(backendConf: Backend) {
+    // Check if backend is already added to avoid duplicates
+    const languageClient = this.getTab()?.getYasqe()?.languageClientWrapper.getLanguageClient();
+    if (!languageClient) return;
+    // Only add backend if it hasn't been added yet
+    if (!this.addedBackends.has(backendConf.backend.name)) {
+      languageClient
+        .sendRequest("qlueLs/addBackend", backendConf)
+        .then(() => {
+          this.addedBackends.add(backendConf.backend.name);
+        })
+        .catch((err: any) => {
+          console.error(err);
+        });
+    }
+    // Update the default backend to the new one
+    languageClient.sendRequest("qlueLs/updateDefaultBackend", backendConf.backend.name).catch((err: any) => {
+      console.error(err);
+    });
+  }
+
   public _setPanel(panelId: string, panel: HTMLDivElement) {
     for (const id in this._tabs) {
       if (id !== panelId) this._tabs[id].hide();
@@ -334,6 +437,16 @@ export class Yasgui extends EventEmitter {
       this.persistentConfig.setActive(tabId);
       this._tabs[tabId].show();
     }
+
+    // Setup endpoint backend for the new tab only if endpoint changed
+    const endpoint = this._tabs[tabId].getEndpoint();
+    if (endpoint && endpoint !== this.currentEndpoint) {
+      this.currentEndpoint = endpoint;
+      this.setupEndpointBackend(endpoint).catch((err) => {
+        console.warn("Failed to setup endpoint backend for new tab:", err);
+      });
+    }
+
     return this._tabs[tabId];
   }
   public restoreLastTab() {
@@ -342,6 +455,153 @@ export class Yasgui extends EventEmitter {
       this.addTab(true, config.tab, { atIndex: config.index });
     }
   }
+
+  private initGlobalYasqeAndYasr() {
+    // Create wrapper elements for YASQE and YASR that will be moved between tabs
+    this.yasqeWrapperEl = document.createElement("div");
+    this.yasrWrapperEl = document.createElement("div");
+
+    // Initialize YASQE with base configuration
+    const yasqeConf: Partial<YasqeConfig> = {
+      ...this.config.yasqe,
+      // Dynamic persistence ID that changes based on the active tab
+      // This ensures the global YASQE instance saves its state per tab
+      persistenceId: (yasqe) => {
+        const activeTab = this.getActiveTab();
+        return activeTab ? "yasqe_" + activeTab.getId() + "_query" : "yasqe_global_query";
+      },
+      consumeShareLink: null, // not handled by yasqe, but by parent yasgui instance
+      createShareableLink: () => this.getActiveTab()?.getShareableLink() || "",
+    };
+
+    if (!yasqeConf.hintConfig) {
+      yasqeConf.hintConfig = {};
+    }
+    if (!yasqeConf.hintConfig.container) {
+      yasqeConf.hintConfig.container = this.rootEl;
+    }
+
+    this.yasqe = new Yasqe(this.yasqeWrapperEl, yasqeConf);
+
+    // Initialize YASR with base configuration
+    const yasrConf: Partial<YasrConfig> = {
+      persistenceId: null, // yasgui handles persistent storing
+      defaultPlugin: "table",
+    };
+
+    this.yasr = new Yasr(this.yasrWrapperEl, yasrConf);
+
+    // Set up event listeners for global instances
+    this.setupGlobalYasqeListeners();
+    this.setupGlobalYasrListeners();
+  }
+
+  private setupGlobalYasqeListeners() {
+    if (!this.yasqe) return;
+    this.yasqe.on("blur", () => {
+      if (this.yasqe) this.getActiveTab()?.handleYasqeBlur(this.yasqe);
+    });
+    this.yasqe.on("query", () => {
+      if (this.yasqe) this.getActiveTab()?.handleYasqeQuery(this.yasqe);
+    });
+    this.yasqe.on("queryBefore", () => {
+      this.getActiveTab()?.handleYasqeQueryBefore();
+    });
+    this.yasqe.on("queryAbort", () => {
+      this.getActiveTab()?.handleYasqeQueryAbort();
+    });
+    this.yasqe.on("resize", (yasqe, newSize) => {
+      this.getActiveTab()?.handleYasqeResize(yasqe, newSize);
+    });
+    this.yasqe.on("autocompletionShown", (yasqe, widget) => {
+      this.getActiveTab()?.handleAutocompletionShown(yasqe, widget);
+    });
+    this.yasqe.on("autocompletionClose", () => {
+      if (this.yasqe) this.getActiveTab()?.handleAutocompletionClose(this.yasqe);
+    });
+    this.yasqe.on("queryResponse", (response, duration) => {
+      this.getActiveTab()?.handleQueryResponse(response, duration);
+    });
+  }
+
+  private setupGlobalYasrListeners() {
+    if (!this.yasr) return;
+    this.yasr.on("change", () => {
+      const activeTab = this.getActiveTab();
+      if (activeTab && this.yasr) {
+        activeTab.handleYasrChange(this.yasr);
+      }
+    });
+  }
+
+  private getActiveTab(): Tab | undefined {
+    const activeTabId = this.persistentConfig.getActiveId();
+    return activeTabId ? this._tabs[activeTabId] : undefined;
+  }
+
+  public moveYasqeToTab(tabId: string, yasqeContainer: HTMLElement) {
+    if (this.yasqeWrapperEl && this.yasqeWrapperEl.parentNode) {
+      this.yasqeWrapperEl.parentNode.removeChild(this.yasqeWrapperEl);
+    }
+    if (this.yasqeWrapperEl) {
+      yasqeContainer.appendChild(this.yasqeWrapperEl);
+    }
+  }
+
+  public moveYasrToTab(tabId: string, yasrContainer: HTMLElement) {
+    if (this.yasrWrapperEl && this.yasrWrapperEl.parentNode) {
+      this.yasrWrapperEl.parentNode.removeChild(this.yasrWrapperEl);
+    }
+    if (this.yasrWrapperEl) {
+      yasrContainer.appendChild(this.yasrWrapperEl);
+    }
+  }
+
+  public updateYasqeForTab(tab: Tab) {
+    if (this.yasqe) {
+      // Update YASQE with the current tab's configuration
+      const tabConfig = tab.getPersistedJson();
+      this.yasqe.setValue(tabConfig.yasqe.value);
+      // Update request config function to use current tab's data
+      const originalRequestConfig = this.yasqe.config.requestConfig;
+      if (typeof originalRequestConfig === "function") {
+        this.yasqe.config.requestConfig = (yasqe) => tab.getProcessedRequestConfig() as any;
+      }
+      // Update sharelink function
+      this.yasqe.config.createShareableLink = () => tab.getShareableLink();
+
+      // Setup endpoint backend only if the endpoint has changed
+      const endpoint = tab.getEndpoint();
+      if (endpoint && endpoint !== this.currentEndpoint) {
+        this.currentEndpoint = endpoint;
+        this.setupEndpointBackend(endpoint).catch((err) => {
+          console.warn("Failed to setup endpoint backend when updating YASQE:", err);
+        });
+      }
+    }
+  }
+
+  public updateYasrForTab(tab: Tab) {
+    if (this.yasr) {
+      const tabConfig = tab.getPersistedJson();
+      // Update YASR configuration
+      this.yasr.config.defaultPlugin = tabConfig.yasr.settings.selectedPlugin || "table";
+      // Update prefixes function to use current tab's YASQE
+      this.yasr.config.prefixes = () => {
+        const prefixesFromYasrConf =
+          typeof this.config.yasr.prefixes === "function"
+            ? this.config.yasr.prefixes(this.yasr!)
+            : this.config.yasr.prefixes;
+        const prefixesFromYasqe = this.yasqe?.getPrefixesFromQuery();
+        return { ...prefixesFromYasrConf, ...prefixesFromYasqe };
+      };
+      // Set response if exists
+      if (tabConfig.yasr.response) {
+        this.yasr.setResponse(tabConfig.yasr.response);
+      }
+    }
+  }
+
   public destroy() {
     this.removeAllListeners();
     this.tabElements.destroy();
@@ -350,6 +610,19 @@ export class Yasgui extends EventEmitter {
       tab.destroy();
     }
     this._tabs = {};
+
+    // Clean up global YASQE and YASR instances
+    if (this.yasqe) {
+      this.yasqe.destroy();
+      this.yasqe = undefined;
+    }
+    if (this.yasr) {
+      this.yasr.destroy();
+      this.yasr = undefined;
+    }
+
+    // Clear current endpoint tracking
+    this.currentEndpoint = undefined;
 
     while (this.rootEl.firstChild) this.rootEl.firstChild.remove();
   }

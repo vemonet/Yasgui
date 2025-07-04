@@ -37,6 +37,12 @@ export default function initialize(): Config<CatalogueItem> {
           {
             endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql",
           },
+          {
+            endpoint: "https://sparql.uniprot.org/sparql/",
+          },
+          {
+            endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+          },
         ];
       },
       keys: [],

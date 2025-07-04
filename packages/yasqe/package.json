@@ -29,7 +29,7 @@
     "lodash-es": "^4.17.15",
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^16.1.1",
     "monaco-editor-wrapper": "~6.7.0",
-    "qlue-ls": "^0.7.1",
+    "qlue-ls": "^0.13.2",
     "vscode": "npm:@codingame/monaco-vscode-extension-api@^16.1.1",
     "vscode-uri": "~3.1.0",
     "query-string": "^6.10.1"

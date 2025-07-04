@@ -46,6 +46,7 @@
 		window.onpageshow = function () {
 			window.yasgui = new Yasgui(document.getElementById("yasgui"), {
 				corsProxy: "<%- corsProxy %>",
+				// persistenceId: `yasgui_${window.location.pathname.replace(/\//g, "")}`,
 				requestConfig: {
 					endpoint: "<%- endpoint %>",
 				}

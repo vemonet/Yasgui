@@ -160,3 +160,122 @@ export const sparqlThemeLight = {
     },
   ],
 };
+
+export const sparqlThemeSolarizedDark = {
+  name: "SPARQL Solarized Dark Theme",
+  type: "dark",
+  colors: {
+    "editor.foreground": "#839496", // base0 - solarized
+    "editor.background": "#002b36", // base03 - solarized dark background
+    "editor.selectionBackground": "#073642", // base02 - solarized
+    "editor.lineHighlightBackground": "#073642", // base02 - solarized
+    "editorCursor.foreground": "#fdf6e3", // base3 - solarized
+    "editorWhitespace.foreground": "#586e75", // base01 - solarized
+    "editorIndentGuide.activeBackground": "#cb4b1680", // keeping from light theme but with transparency
+    "editor.selectionHighlightBorder": "#d33682", // magenta - solarized accent
+  },
+  tokenColors: [
+    {
+      scope: "keyword.control.sparql",
+      settings: {
+        foreground: "#859900", // green - solarized (inspired by light theme's purple)
+        // fontStyle: "bold",
+      },
+    },
+    {
+      scope: "keyword.operator.function.sparql",
+      settings: {
+        foreground: "#cb4b16", // orange - solarized (keeping from light theme)
+        // fontStyle: "bold",
+      },
+    },
+    // {
+    //   scope: "keyword.operator.function.sparql",
+    //   settings: {
+    //     foreground: "#dc322f", // red - solarized (keeping from light theme)
+    //     fontStyle: "bold",
+    //   },
+    // },
+    {
+      scope: "keyword.operator.prefixdecl.sparql",
+      settings: {
+        foreground: "#859900", // green - solarized (matching control keywords)
+        fontStyle: "bold",
+      },
+    },
+    // {
+    //   scope: "variable.prefix.sparql",
+    //   settings: {
+    //     foreground: "#dc322f", // red - solarized (inspired by light theme's orange)
+    //     fontStyle: "italic",
+    //   },
+    // },
+    // {
+    //   scope: "variable.reference.sparql",
+    //   settings: {
+    //     foreground: "#dc322f", // red - solarized (matching prefix variables)
+    //     fontStyle: "italic",
+    //   },
+    // },
+    {
+      scope: "variable.prefix.sparql",
+      settings: {
+        foreground: "#FF5600", // orange - solarized (inspired by light theme's orange)
+        fontStyle: "italic",
+      },
+    },
+    {
+      scope: "variable.reference.sparql",
+      settings: {
+        foreground: "#FF5600", // orange - solarized (matching prefix variables)
+        fontStyle: "italic",
+      },
+    },
+    // {
+    //   scope: "variable.prefix.sparql",
+    //   settings: {
+    //     foreground: "#cb4b16", // orange - solarized (inspired by light theme's orange)
+    //     fontStyle: "italic",
+    //   },
+    // },
+    // {
+    //   scope: "variable.reference.sparql",
+    //   settings: {
+    //     foreground: "#cb4b16", // orange - solarized (matching prefix variables)
+    //     fontStyle: "italic",
+    //   },
+    // },
+    {
+      scope: "variable.other.sparql",
+      settings: {
+        foreground: "#268bd2", // blue - solarized (inspired by light theme's blue)
+      },
+    },
+    {
+      scope: "constant.other.iri.sparql",
+      settings: {
+        foreground: "#2aa198", // cyan - solarized (inspired by light theme's green)
+      },
+    },
+    {
+      scope: "constant.numeric",
+      settings: {
+        foreground: "#2aa198", // cyan - solarized (keeping consistent with light theme)
+      },
+    },
+    {
+      scope: "string",
+      settings: {
+        foreground: "#b58900", // yellow - solarized (inspired by light theme's red)
+        // fontStyle: "bold italic",
+      },
+    },
+    {
+      scope: "keyword.symbol",
+      settings: {
+        foreground: "#93a1a1", // base1 - solarized (light gray for symbols)
+        fontStyle: "bold",
+      },
+    },
+  ],
+};
