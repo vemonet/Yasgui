@@ -10,6 +10,7 @@
 		body {
 			font-family: 'Roboto', sans-serif;
 			margin: 0px;
+			transition: background-color 0.3s ease, color 0.3s ease;
 		}
 		.navItem a {
 			color: #555;
@@ -24,6 +25,55 @@
 			color: black;
 			font-size:110%;
 		}
+
+		/* Dark mode styles */
+		/* [data-theme="dark"] {
+			background-color: #1a1a1a;
+			color: #e0e0e0;
+		}
+
+		[data-theme="dark"] .navItem a {
+			color: #b0b0b0;
+		}
+
+		[data-theme="dark"] .navItem a:hover {
+			color: #e0e0e0;
+		}
+
+		[data-theme="dark"] .navItem.active a {
+			color: white;
+		}
+
+		[data-theme="dark"] nav {
+			background: #2d2d2d !important;
+		} */
+
+		/* Theme toggle button */
+		.theme-toggle {
+			background: none;
+			border: 2px solid #555;
+			border-radius: 50%;
+			width: 40px;
+			height: 40px;
+			cursor: pointer;
+			margin-left: auto;
+			margin-right: 15px;
+			font-size: 18px;
+			transition: all 0.3s ease;
+			align-self: center;
+		}
+
+		/* .theme-toggle:hover {
+			background-color: #f0f0f0;
+		}
+
+		[data-theme="dark"] .theme-toggle {
+			border-color: #b0b0b0;
+		}
+
+		[data-theme="dark"] .theme-toggle:hover {
+			background-color: #3a3a3a;
+		} */
 	</style>
 	<script src="../../packages/yasgui/static/yasgui.polyfill.min.js"></script>
 	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
@@ -37,12 +87,49 @@
 			<ul style="display: flex; list-style: none; align-self: center">
 				<% _.forEach(links, function(link) { %><li class="navItem <%- link.className %>"><a class="nav-link" href="<%- link.href %>"><%- link.text %></a></li><% }); %>
 			</ul>
+			<button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">
+				<span id="theme-icon">🌙</span>
+			</button>
     </nav>
 	</div>
 
 	<div id="yasgui"></div>
 
 	<script>
+		let theme = 'light';
+		// Theme management
+		function getSystemTheme() {
+			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		}
+
+		function applyTheme(theme) {
+			document.documentElement.setAttribute('data-theme', theme);
+			const themeIcon = document.getElementById('theme-icon');
+			if (themeIcon) themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+		}
+
+		function toggleTheme() {
+			theme = theme === 'dark' ? 'light' : 'dark';
+			console.log(`Toggling theme to: ${theme}`);
+			applyTheme(theme);
+		}
+
+		// Initialize theme on page load
+		document.addEventListener('DOMContentLoaded', function() {
+			theme = getSystemTheme();
+			applyTheme(theme);
+			// Add event listener to toggle button
+			const toggleButton = document.getElementById('theme-toggle');
+			if (toggleButton) toggleButton.addEventListener('click', toggleTheme);
+		});
+
+		// // Listen for system theme changes
+		// window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+		// 	if (!getStoredTheme()) {
+		// 		applyTheme(e.matches ? 'dark' : 'light');
+		// 	}
+		// });
+
 		window.onpageshow = function () {
 			window.yasgui = new Yasgui(document.getElementById("yasgui"), {
 				corsProxy: "<%- corsProxy %>",

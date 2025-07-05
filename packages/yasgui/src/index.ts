@@ -16,8 +16,7 @@ import "@zazuko/yasr/src/scss/global.scss";
 
 if (window) {
   //We're storing yasqe and yasr as a member of Yasgui, but _also_ in the window
-  //That way, we dont have to tweak e.g. pro plugins to register themselves to both
-  //Yasgui.Yasr _and_ Yasr.
+  //That way, we dont have to tweak e.g. pro plugins to register themselves to both Yasgui.Yasr _and_ Yasr.
   if (Yasqe) (window as any).Yasqe = Yasqe;
   if (Yasr) (window as any).Yasr = Yasr;
 }
@@ -99,6 +98,7 @@ export class Yasgui extends EventEmitter {
   private addedBackends: Set<string> = new Set();
   private currentEndpoint: string | undefined;
   public static Tab = Tab;
+
   constructor(parent: HTMLElement, config: PartialConfig) {
     super();
     this.rootEl = document.createElement("div");
@@ -232,10 +232,7 @@ export class Yasgui extends EventEmitter {
     }
     // Update YASQE and YASR for the newly selected tab
     const selectedTab = this._tabs[tabId];
-    if (selectedTab) {
-      this.updateYasqeForTab(selectedTab);
-      this.updateYasrForTab(selectedTab);
-    }
+    if (selectedTab) this.updateEditorsContent(selectedTab);
     return true;
   }
 
@@ -260,7 +257,6 @@ export class Yasgui extends EventEmitter {
    */
   private tabConfigEquals(tab1: PersistedTabJson, tab2: PersistedTabJson): boolean {
     let sameRequest = true;
-
     // Check request config
     let key: keyof RequestConfig<Yasgui>;
     for (key in tab1.requestConfig) {
@@ -314,9 +310,7 @@ export class Yasgui extends EventEmitter {
   private async handleEndpointChange(tab: Tab, endpoint: string) {
     // Ensure the global YASQE instance uses the updated endpoint configuration
     // This is crucial for query execution to use the new endpoint
-    if (tab === this.getActiveTab()) {
-      this.updateYasqeForTab(tab);
-    }
+    if (tab === this.getActiveTab()) this.updateEditorsContent(tab);
     tab.setEndpoint(endpoint);
     if (this.yasqe) {
       if (typeof this.yasqe.config.requestConfig === "function") {
@@ -539,34 +533,35 @@ export class Yasgui extends EventEmitter {
     return activeTabId ? this._tabs[activeTabId] : undefined;
   }
 
-  public moveYasqeToTab(tabId: string, yasqeContainer: HTMLElement) {
+  /**
+   * Move YASQE and YASR instances to the specified tab containers and update their content
+   * This is the single clean function that handles all editor updates
+   */
+  public syncEditorsWithTab(tab: Tab, yasqeContainer: HTMLElement, yasrContainer: HTMLElement) {
+    // Move the wrapper elements to the new containers
     if (this.yasqeWrapperEl && this.yasqeWrapperEl.parentNode) {
       this.yasqeWrapperEl.parentNode.removeChild(this.yasqeWrapperEl);
     }
-    if (this.yasqeWrapperEl) {
-      yasqeContainer.appendChild(this.yasqeWrapperEl);
-    }
-  }
-
-  public moveYasrToTab(tabId: string, yasrContainer: HTMLElement) {
+    if (this.yasqeWrapperEl) yasqeContainer.appendChild(this.yasqeWrapperEl);
     if (this.yasrWrapperEl && this.yasrWrapperEl.parentNode) {
       this.yasrWrapperEl.parentNode.removeChild(this.yasrWrapperEl);
     }
-    if (this.yasrWrapperEl) {
-      yasrContainer.appendChild(this.yasrWrapperEl);
-    }
+    if (this.yasrWrapperEl) yasrContainer.appendChild(this.yasrWrapperEl);
+    // Update content and configuration for both editors
+    this.updateEditorsContent(tab);
   }
 
-  public updateYasqeForTab(tab: Tab) {
+  /**
+   * Updates the content and configuration of both YASQE and YASR for the given tab
+   * This can be called independently when only content needs to be updated
+   */
+  public updateEditorsContent(tab: Tab) {
+    const tabConfig = tab.getPersistedJson();
+    // Update YASQE
     if (this.yasqe) {
-      // Update YASQE with the current tab's configuration
-      const tabConfig = tab.getPersistedJson();
       this.yasqe.setValue(tabConfig.yasqe.value);
       // Update request config function to use current tab's data
-      const originalRequestConfig = this.yasqe.config.requestConfig;
-      if (typeof originalRequestConfig === "function") {
-        this.yasqe.config.requestConfig = (yasqe) => tab.getProcessedRequestConfig() as any;
-      }
+      this.yasqe.config.requestConfig = (yasqe) => tab.getProcessedRequestConfig() as any;
       // Update sharelink function
       this.yasqe.config.createShareableLink = () => tab.getShareableLink();
 
@@ -575,16 +570,13 @@ export class Yasgui extends EventEmitter {
       if (endpoint && endpoint !== this.currentEndpoint) {
         this.currentEndpoint = endpoint;
         this.setupEndpointBackend(endpoint).catch((err) => {
-          console.warn("Failed to setup endpoint backend when updating YASQE:", err);
+          console.warn("Failed to setup endpoint backend:", err);
         });
       }
     }
-  }
 
-  public updateYasrForTab(tab: Tab) {
+    // Update YASR
     if (this.yasr) {
-      const tabConfig = tab.getPersistedJson();
-      // Update YASR configuration
       this.yasr.config.defaultPlugin = tabConfig.yasr.settings.selectedPlugin || "table";
       // Update prefixes function to use current tab's YASQE
       this.yasr.config.prefixes = () => {

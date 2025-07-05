@@ -26,6 +26,12 @@ export interface Backend {
   default: boolean;
 }
 
+export interface EndpointMetadata {
+  backend: Backend;
+  lastFetched: number; // Timestamp
+  version: string; // For cache invalidation
+}
+
 /**
  * Creates a backend configuration, optionally with minimal fallback prefixes
  * @param endpoint The SPARQL endpoint URL

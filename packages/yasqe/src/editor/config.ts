@@ -34,7 +34,7 @@ export function getThemeConfig() {
   }
 }
 
-// TODO: Uncomment and check to support live theme changes
+// // TODO: Uncomment and check to support live theme changes
 // /**
 //  * Sets up a listener for system theme changes
 //  * @param callback Function to call when theme changes, receives the new theme config
@@ -61,7 +61,6 @@ export function getThemeConfig() {
 // }
 
 export async function buildWrapperConfig(container: HTMLElement, initial: string): Promise<WrapperConfig> {
-  // Use the external worker file instead of creating from blob
   const workerPromise: Promise<Worker> = new Promise((resolve, reject) => {
     try {
       const instance = new Worker(new URL("./languageServer.worker.ts", import.meta.url), {
@@ -74,12 +73,10 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
           resolve(instance);
         }
       };
-
       instance.onerror = (error) => {
         console.error("Worker error:", error);
         reject(error);
       };
-
       // Add a timeout to prevent indefinite waiting
       setTimeout(() => {
         reject(new Error("Worker initialization timeout"));

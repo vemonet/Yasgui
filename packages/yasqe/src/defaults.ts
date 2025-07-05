@@ -32,16 +32,15 @@ SELECT * WHERE {
     matchBrackets: true,
     fixedGutter: true,
     syntaxErrorCheck: true,
-    autocompleters: [],
     extraKeys: {
-      /**
-       * Need to use _yasqe:any as function parameter here. Otherwise ts will complain that we're not following
-       * the codemirror config interface (that specifies the type should be codemirror-editor)
-       */
-      "Ctrl-Space": function (_yasqe: any) {
-        // const yasqe: Yasqe = _yasqe;
-        // yasqe.autocomplete();
-      },
+      // /**
+      //  * Need to use _yasqe:any as function parameter here. Otherwise ts will complain that we're not following
+      //  * the codemirror config interface (that specifies the type should be codemirror-editor)
+      //  */
+      // "Ctrl-Space": function (_yasqe: any) {
+      //   // const yasqe: Yasqe = _yasqe;
+      //   // yasqe.autocomplete();
+      // },
       "Shift-Ctrl-K": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         const lineNumber = yasqe.getDoc().getCursor().line;
@@ -59,18 +58,18 @@ SELECT * WHERE {
           return yasqe.getDoc().replaceRange("", { ch: 0, line: lineNumber }, { ch: 0, line: lineNumber + 1 });
         }
       },
-      "Ctrl-/": function (_yasqe: any) {
-        const yasqe: Yasqe = _yasqe;
-        yasqe.commentLines();
-      },
+      // TODO: remove "Ctrl-/": function (_yasqe: any) {
+      //   const yasqe: Yasqe = _yasqe;
+      //   yasqe.commentLines();
+      // },
       "Shift-Ctrl-D": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.duplicateLine();
       },
-      "Shift-Ctrl-F": function (_yasqe: any) {
-        const yasqe: Yasqe = _yasqe;
-        yasqe.autoformat();
-      },
+      // "Shift-Ctrl-F": function (_yasqe: any) {
+      //   const yasqe: Yasqe = _yasqe;
+      //   yasqe.autoformat();
+      // },
       "Ctrl-S": function (_yasqe: any) {
         const yasqe: Yasqe = _yasqe;
         yasqe.saveQuery();

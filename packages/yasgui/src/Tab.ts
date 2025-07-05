@@ -2,9 +2,9 @@ import { EventEmitter } from "events";
 import { addClass, removeClass, getAsValue } from "@zazuko/yasgui-utils";
 import { TabListEl } from "./TabElements";
 import TabPanel from "./TabPanel";
-import { default as Yasqe, RequestConfig, PlainRequestConfig, PartialConfig as YasqeConfig } from "@zazuko/yasqe";
-import { default as Yasr, Parser, Config as YasrConfig, PersistentConfig as YasrPersistentConfig } from "@zazuko/yasr";
-import { mapValues, eq, mergeWith, words, deburr, invert } from "lodash-es";
+import { default as Yasqe, PlainRequestConfig } from "@zazuko/yasqe";
+import { Parser, PersistentConfig as YasrPersistentConfig } from "@zazuko/yasr";
+import { eq, mergeWith } from "lodash-es";
 import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
 import "./tab.scss";
@@ -116,14 +116,9 @@ export class Tab extends EventEmitter {
     addClass(this.rootEl, "active");
     this.yasgui.tabElements.selectTab(this.persistentJson.id);
 
-    // Move global YASQE and YASR instances to this tab
-    if (this.yasqeWrapperEl) {
-      this.yasgui.moveYasqeToTab(this.persistentJson.id, this.yasqeWrapperEl);
-      this.yasgui.updateYasqeForTab(this);
-    }
-    if (this.yasrWrapperEl) {
-      this.yasgui.moveYasrToTab(this.persistentJson.id, this.yasrWrapperEl);
-      this.yasgui.updateYasrForTab(this);
+    // Move global YASQE and YASR instances to this tab and update their content
+    if (this.yasqeWrapperEl && this.yasrWrapperEl) {
+      this.yasgui.syncEditorsWithTab(this, this.yasqeWrapperEl, this.yasrWrapperEl);
     }
 
     const yasr = this.getYasr();
@@ -227,7 +222,6 @@ export class Tab extends EventEmitter {
       this.persistentJson.requestConfig.endpoint = endpoint;
       this.emit("change", this, this.persistentJson);
       this.emit("endpointChange", this, endpoint);
-
       // Endpoint metadata is handled by the parent Yasgui instance through the endpointChange event
     }
     if (this.endpointSelect instanceof EndpointSelect) {

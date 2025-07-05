@@ -200,7 +200,7 @@ export const sparqlThemeSolarizedDark = {
       scope: "keyword.operator.prefixdecl.sparql",
       settings: {
         foreground: "#859900", // green - solarized (matching control keywords)
-        fontStyle: "bold",
+        // fontStyle: "bold",
       },
     },
     // {
