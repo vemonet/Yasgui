@@ -1,10 +1,10 @@
 import { defineConfig } from "vite";
 import typescript from "@rollup/plugin-typescript";
-// import wasm from "vite-plugin-wasm";
+import wasm from "vite-plugin-wasm";
 // import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
 export default defineConfig({
-  // base: './',
+  base: "./",
   build: {
     target: ["es2020"],
     lib: {
@@ -13,13 +13,12 @@ export default defineConfig({
       fileName: "yasgui",
     },
     sourcemap: true,
-    // cssCodeSplit: true,
     rollupOptions: {
       plugins: [typescript()],
       external: [],
-      output: {
-        inlineDynamicImports: true,
-      },
+      // output: {
+      //   inlineDynamicImports: false,
+      // },
     },
   },
   css: {
@@ -30,17 +29,20 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
+    include: [
+      "vscode-textmate",
+      "vscode-oniguruma",
+      // "@zazuko/yasqe",
+    ],
+    // exclude: [],
+    exclude: ["@zazuko/yasqe"],
     // esbuildOptions: {
     //   plugins: [importMetaUrlPlugin],
     // },
-    include: ["vscode-textmate", "vscode-oniguruma", "@zazuko/yasqe"],
-    // exclude: ['@zazuko/yasqe'],
   },
-  // worker: {
-  //   format: "es",
-  //   plugins: () => [wasm()],
-  // },
-  // plugins: [
-  //   wasm(),
-  // ],
+  worker: {
+    format: "es",
+    plugins: () => [wasm()],
+  },
+  plugins: [wasm()],
 });

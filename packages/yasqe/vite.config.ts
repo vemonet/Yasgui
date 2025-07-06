@@ -23,10 +23,15 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
+    include: [
+      "vscode-textmate",
+      "vscode-oniguruma",
+      // "monaco-editor",
+      // "monaco-editor-wrapper",
+    ],
     // esbuildOptions: {
     //   plugins: [importMetaUrlPlugin],
     // },
-    include: ["vscode-textmate", "vscode-oniguruma"],
   },
   worker: {
     format: "es",

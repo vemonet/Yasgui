@@ -1,26 +1,28 @@
 {
-  "name": "yasgui",
+  "name": "qlue-sparql-editor",
   "private": true,
   "type": "module",
   "workspaces": [
     "packages/utils",
     "packages/yasqe",
     "packages/yasr",
-    "packages/yasgui"
+    "packages/yasgui",
+    "packages/demo"
   ],
   "scripts": {
-    "prepare": "husky",
+    "dev": "vite",
+    "build": "npm run build --workspaces",
     "build:utils": "npm run build -w packages/utils",
     "build:yasqe": "npm run build -w packages/yasqe",
     "build:yasr": "npm run build -w packages/yasr",
     "build:yasgui": "npm run build -w packages/yasgui",
-    "build": "npm run build --workspaces",
+    "build:demo": "npm run build -w packages/demo",
+    "dev:demo": "npm run dev -w packages/demo",
+    "preview:demo": "npm run preview -w packages/demo",
     "eslint": "eslint \"packages/**/*.{ts,tsx,html,json}\" --fix",
     "fmt": "prettier --write . && eslint \"packages/**/*.{ts,tsx,html,json}\" --fix",
     "lint": "prettier --check . && eslint \"packages/**/*.{ts,tsx,html,json}\"",
     "upgrade": "npx npm-check-updates -u && npm run upgrade --workspaces && npm i",
-    "dev": "vite",
-    "preview": "vite preview",
     "util:lint": "ESLINT_STRICT=true eslint --ext .tsx --ext .ts $(ls -d ./packages/*/* | grep -E '(src|test|grammar)$')",
     "util:buildWebpackConfig": "tsc -p tsconfig-webpack.json",
     "util:validateTs": "tsc -p ./tsconfig-validate.json --noEmit",
@@ -34,7 +36,8 @@
     "unit-test": "tsc -p ./tsconfig-test.json && mocha $(find ./build/test -name '*-test.js') --require source-map-support/register || true",
     "puppeteer-test": "tsc -p ./tsconfig-test.json && mocha --timeout 30000 ./build/test/test/run.js --require source-map-support/register",
     "prerelease": "npm run build && npm run test",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "prepare": "husky"
   },
   "betterScripts": {
     "dev": {

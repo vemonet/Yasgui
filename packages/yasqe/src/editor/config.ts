@@ -3,6 +3,7 @@ import { sparqlThemeDark, sparqlThemeLight, sparqlThemeSolarizedDark } from "./s
 import { sparqlTextmateGrammar, sparqlLanguageConfig } from "./sparqlGrammar";
 import type { WrapperConfig } from "monaco-editor-wrapper";
 import { LogLevel, Uri } from "vscode";
+import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
 import LanguageServerWorker from "./languageServer.worker?worker&inline";
 
 // https://github.com/vitejs/vite/discussions/15547
@@ -149,6 +150,32 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
           "editor.detectIndentation": false,
         }),
       },
+      // serviceOverrides: {
+      //   // Prevent workbench layout service startup
+      //   IWorkbenchLayoutService: class {
+      //     _serviceBrand: undefined;
+      //     startup() {
+      //       return Promise.resolve();
+      //     }
+      //     isRestored() {
+      //       return true;
+      //     }
+      //     whenReady() {
+      //       return Promise.resolve();
+      //     }
+      //     whenRestored() {
+      //       return Promise.resolve();
+      //     }
+      //   },
+      //   // Prevent ViewDescriptorService errors
+      //   ViewDescriptorService: class {
+      //     _serviceBrand: undefined;
+      //     getViewContainersByLocation() {
+      //       return [];
+      //     }
+      //   },
+      // },
+      serviceOverrides: getConfigurationServiceOverride(),
     },
 
     extensions: [

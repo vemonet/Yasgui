@@ -176,7 +176,6 @@ export class Yasgui extends EventEmitter {
         if (executeIdAfterInit && executeIdAfterInit === activeTabId) {
           (this.getTab(activeTabId) as Tab).query().catch(() => {});
         }
-        // }
       }
     }
   }
@@ -232,7 +231,18 @@ export class Yasgui extends EventEmitter {
     }
     // Update YASQE and YASR for the newly selected tab
     const selectedTab = this._tabs[tabId];
-    if (selectedTab) this.updateEditorsContent(selectedTab);
+    if (selectedTab) {
+      this.updateEditorsContent(selectedTab);
+      // Setup endpoint backend for the selected tab if the endpoint has changed
+      const endpoint = selectedTab.getEndpoint();
+      if (endpoint && endpoint !== this.currentEndpoint) {
+        this.currentEndpoint = endpoint;
+        console.debug("Setting up endpoint backend for selected tab:", endpoint);
+        this.setupEndpointBackend(endpoint).catch((err) => {
+          console.warn("Failed to setup endpoint backend for selected tab:", err);
+        });
+      }
+    }
     return true;
   }
 
@@ -328,7 +338,9 @@ export class Yasgui extends EventEmitter {
     // Fetch endpoint metadata or create default backend configuration only if endpoint changed
     if (endpoint !== this.currentEndpoint) {
       this.currentEndpoint = endpoint;
-      await this.setupEndpointBackend(endpoint);
+      await this.setupEndpointBackend(endpoint).catch((err) => {
+        console.warn("Failed to setup endpoint backend for selected tab:", err);
+      });
     }
   }
 
@@ -565,15 +577,6 @@ export class Yasgui extends EventEmitter {
       this.yasqe.config.requestConfig = (yasqe) => tab.getProcessedRequestConfig() as any;
       // Update sharelink function
       this.yasqe.config.createShareableLink = () => tab.getShareableLink();
-
-      // Setup endpoint backend only if the endpoint has changed
-      const endpoint = tab.getEndpoint();
-      if (endpoint && endpoint !== this.currentEndpoint) {
-        this.currentEndpoint = endpoint;
-        this.setupEndpointBackend(endpoint).catch((err) => {
-          console.warn("Failed to setup endpoint backend:", err);
-        });
-      }
     }
 
     // Update YASR

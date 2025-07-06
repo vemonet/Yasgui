@@ -13,6 +13,9 @@ import * as imgs from "./imgs";
 import { merge } from "lodash-es";
 import { MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper";
 import * as monaco from "monaco-editor";
+// import { initialize } from '@codingame/monaco-vscode-api'
+// import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
+
 import { buildWrapperConfig } from "./editor/config";
 
 import getDefaults from "./defaults";
@@ -104,6 +107,16 @@ export class Yasqe extends EventEmitter {
    */
   public async initEditor(el: HTMLElement, conf: PartialConfig = {}) {
     try {
+      // overriding Monaco service with VSCode
+      // await initialize({
+      //     ...getConfigurationServiceOverride(),
+      // });
+      // json config like in vscode settings.json
+      // updateUserConfiguration(`{
+      //     "editor.fontSize": 30, "editor.lineHeight": 30, "editor.letterSpacing": 0,
+      // }`)
+      // import { StaticServices } from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices';
+      // const codeEditorService = StaticServices.codeEditorService.get();
       const wrapper = new MonacoEditorLanguageClientWrapper();
       const wrapperConfig = await buildWrapperConfig(el, this.config.value);
       await wrapper.initAndStart(wrapperConfig);

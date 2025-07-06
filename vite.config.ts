@@ -14,6 +14,7 @@ function getAliasFor(packageName: "yasgui" | "yasr" | "yasqe" | "utils") {
   };
 }
 
+// https://vitejs.dev/config/
 export default defineConfig({
   // Development server configuration
   server: {

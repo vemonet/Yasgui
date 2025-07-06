@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qlue SPARQL editor</title>
+  <meta property="og:title" content="SPARQL editor" />
+  <meta
+    name="description"
+    content="SPARQL editor based on Yasgui, using the Qlue-ls language server and Monaco editor"
+  />
+  <meta
+    property="og:description"
+    content="SPARQL editor based on Yasgui, using the Qlue-ls language server and Monaco editor"
+  />
+  <meta property="og:image" content="yasgui.png" />
+  <meta name="author" content="SIB Swiss Institute of Bioinformatics" />
+  <meta name="keywords" content="SPARQL, RDF, Semantic Web, editor" />
+  <link rel="icon" href="/yasgui.png" type="image/png">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0px;
+    }
+    .navItem a {
+      color: #555;
+      text-decoration: none;
+      padding: 5px;
+      padding-right: 15px;
+    }
+    .navItem a:hover {
+      color: #222;
+    }
+    .navItem.active a {
+      color: black;
+      font-size: 110%;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+</head>
+<body>
+  <div id="yasgui"></div>
+
+  <script type="module">
+    // import Yasgui from '../packages/yasgui/src/index.ts';
+    import Yasgui from '@zazuko/yasgui';
+    import '@zazuko/yasgui/dist/yasgui.css';
+    import '@zazuko/yasqe/dist/yasqe.css';
+    import '@zazuko/yasr/dist/index.css';
+
+    window.onpageshow = function () {
+      window.yasgui = new Yasgui(document.getElementById("yasgui"), {
+        requestConfig: {
+          endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+          // endpoint: "https://dbpedia.org/sparql",
+        },
+        endpointCatalogueOptions: {
+          ...Yasgui.defaults.endpointCatalogueOptions,
+          getData: () => {
+            return [
+              {
+                endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+              },
+              {
+                endpoint: "https://sparql.uniprot.org/sparql/",
+              },
+              {
+                endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql",
+              },
+              {
+                endpoint: "https://dbpedia.org/sparql",
+              },
+            ];
+          },
+        }
+      });
+    };
+  </script>
+</body>
+</html>

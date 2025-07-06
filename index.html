@@ -41,13 +41,13 @@
 
   <script type="module">
     // For development, use the source code directly:
-    // import Yasgui from './packages/yasgui/src/index.ts';
+    import Yasgui from './packages/yasgui/src/index.ts';
 
     // For testing production build:
-    import Yasgui from './packages/yasgui/dist/yasgui.js';
-    import './packages/yasgui/dist/yasgui.css';
-    import './packages/yasqe/dist/yasqe.css';
-    import './packages/yasr/dist/index.css';
+    // import Yasgui from './packages/yasgui/dist/yasgui.js';
+    // import './packages/yasgui/dist/yasgui.css';
+    // import './packages/yasqe/dist/yasqe.css';
+    // import './packages/yasr/dist/index.css';
 
     window.onpageshow = function () {
       window.yasgui = new Yasgui(document.getElementById("yasgui"), {

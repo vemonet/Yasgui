@@ -1,0 +1,34 @@
+{
+  "name": "@sib-swiss/qlue-editor-demo",
+  "version": "0.2.4",
+  "description": "A demo website of the Qlue SPARQL editor.",
+  "license": "MIT",
+  "author": {
+    "name": "Vincent Emonet",
+    "email": "vincent.emonet@gmail.com"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "upgrade": "npx npm-check-updates -u"
+  },
+  "dependencies": {
+    "@zazuko/yasgui": "*"
+  },
+  "keywords": [
+    "SPARQL",
+    "editor",
+    "YASGUI",
+    "query",
+    "semantic web",
+    "RDF",
+    "Linked Data"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sib-swiss/sparql-editor.git"
+  },
+  "private": true
+}
