@@ -6,7 +6,7 @@ export default defineConfig({
     outDir: "dist",
     target: ["es2020"],
     lib: {
-      entry: "src/index.ts",
+      entry: "./src/index.ts",
       name: "@zazuko/yasgui-utils",
       fileName: "yasgui-utils",
     },

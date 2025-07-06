@@ -5,7 +5,7 @@
   "type": "module",
   "main": "dist/yasr.umd.cjs",
   "module": "dist/yasr.js",
-  "types": "dist/yasr.d.ts",
+  "types": "dist/types/index.d.ts",
   "license": "MIT",
   "author": "Triply <info@triply.cc>",
   "homepage": "https://github.com/zazuko/Yasgui",

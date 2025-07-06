@@ -11,7 +11,6 @@
     "sourceMap": true,
     "listFiles": false,
     "declaration": true,
-    "outDir": "./build/ts",
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
@@ -21,8 +20,7 @@
       "@zazuko/yasr": ["./packages/yasr/src"]
     }
   },
-  "files": ["./packages/yasgui/typings-custom/main.d.ts"],
-  "include": ["./packages/*/src/**/**/*", "./webpack/**/*", "./test/*", "./packages/yasqe/grammar/tokenizer.ts"],
+  "include": ["./packages/*/src/**/**/*", "./test/*"],
   "compileOnSave": false,
-  "exclude": ["**/build/**"]
+  "exclude": ["**/build/**", "**/dist/**"]
 }
