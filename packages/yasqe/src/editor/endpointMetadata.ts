@@ -1,5 +1,3 @@
-// import YStorage from "@zazuko/yasgui-utils/src/Storage";
-
 // https://sparql.uniprot.org/sparql/
 // https://qlever.cs.uni-freiburg.de/api/uniprot
 // https://dbpedia.org/sparql/

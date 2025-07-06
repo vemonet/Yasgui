@@ -25,12 +25,12 @@ export function getAjaxConfig(
   );
   if (!config.endpoint || config.endpoint.length == 0) return; // nothing to query!
 
-  var queryMode = yasqe.getQueryMode();
+  const queryMode = yasqe.getQueryMode();
   /**
    * initialize ajax config
    */
   const endpoint = isFunction(config.endpoint) ? config.endpoint(yasqe) : config.endpoint;
-  var reqMethod: "GET" | "POST" =
+  const reqMethod: "GET" | "POST" =
     queryMode == "update" ? "POST" : isFunction(config.method) ? config.method(yasqe) : config.method;
   const headers = isFunction(config.headers) ? config.headers(yasqe) : config.headers;
   // console.log({headers})
@@ -123,11 +123,11 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
 
 export type RequestArgs = { [argName: string]: string | string[] };
 export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]): RequestArgs {
-  var queryMode = yasqe.getQueryMode();
+  const queryMode = yasqe.getQueryMode();
 
-  var data: RequestArgs = {};
+  const data: RequestArgs = {};
   const config: RequestConfig<Yasqe> = getRequestConfigSettings(yasqe, _config);
-  var queryArg = isFunction(config.queryArgument) ? config.queryArgument(yasqe) : config.queryArgument;
+  let queryArg = isFunction(config.queryArgument) ? config.queryArgument(yasqe) : config.queryArgument;
   if (!queryArg) queryArg = yasqe.getQueryMode();
   data[queryArg] = config.adjustQueryBeforeRequest ? config.adjustQueryBeforeRequest(yasqe) : yasqe.getValue();
   /**
@@ -135,7 +135,7 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
    */
   const namedGraphs = isFunction(config.namedGraphs) ? config.namedGraphs(yasqe) : config.namedGraphs;
   if (namedGraphs && namedGraphs.length > 0) {
-    let argName = queryMode === "query" ? "named-graph-uri" : "using-named-graph-uri ";
+    const argName = queryMode === "query" ? "named-graph-uri" : "using-named-graph-uri ";
     data[argName] = namedGraphs;
   }
   /**
@@ -143,7 +143,7 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
    */
   const defaultGraphs = isFunction(config.defaultGraphs) ? config.defaultGraphs(yasqe) : config.defaultGraphs;
   if (defaultGraphs && defaultGraphs.length > 0) {
-    let argName = queryMode == "query" ? "default-graph-uri" : "using-graph-uri ";
+    const argName = queryMode == "query" ? "default-graph-uri" : "using-graph-uri ";
     data[argName] = namedGraphs;
   }
 
@@ -164,11 +164,11 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
 }
 export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) {
   const config: RequestConfig<Yasqe> = getRequestConfigSettings(yasqe, _config);
-  var acceptHeader = null;
+  let acceptHeader = null;
   if (yasqe.getQueryMode() == "update") {
     acceptHeader = isFunction(config.acceptHeaderUpdate) ? config.acceptHeaderUpdate(yasqe) : config.acceptHeaderUpdate;
   } else {
-    var qType = yasqe.getQueryType();
+    const qType = yasqe.getQueryType();
     if (qType == "DESCRIBE" || qType == "CONSTRUCT") {
       acceptHeader = isFunction(config.acceptHeaderGraph) ? config.acceptHeaderGraph(yasqe) : config.acceptHeaderGraph;
     } else {
@@ -180,7 +180,7 @@ export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) 
   return acceptHeader;
 }
 export function getAsCurlString(yasqe: Yasqe, _config?: Config["requestConfig"]) {
-  let ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
+  const ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
   if (!ajaxConfig) return "";
   let url = ajaxConfig.url;
   if (ajaxConfig.url.indexOf("http") !== 0) {

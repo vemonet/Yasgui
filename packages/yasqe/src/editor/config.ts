@@ -3,6 +3,9 @@ import { sparqlThemeDark, sparqlThemeLight, sparqlThemeSolarizedDark } from "./s
 import { sparqlTextmateGrammar, sparqlLanguageConfig } from "./sparqlGrammar";
 import type { WrapperConfig } from "monaco-editor-wrapper";
 import { LogLevel, Uri } from "vscode";
+import LanguageServerWorker from "./languageServer.worker?worker&inline";
+
+// https://github.com/vitejs/vite/discussions/15547
 
 /**
  * Detects the user's preferred color scheme (light or dark)
@@ -34,44 +37,17 @@ export function getThemeConfig() {
   }
 }
 
-// // TODO: Uncomment and check to support live theme changes
-// /**
-//  * Sets up a listener for system theme changes
-//  * @param callback Function to call when theme changes, receives the new theme config
-//  * @returns Function to remove the listener
-//  */
-// export function setupThemeChangeListener(callback: (themeConfig: ReturnType<typeof getThemeConfig>) => void): () => void {
-//   if (typeof window === 'undefined' || !window.matchMedia) {
-//     // Return a no-op function if matchMedia is not available
-//     return () => {};
-//   }
-//   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-//   const handleChange = () => {
-//     callback(getThemeConfig());
-//   };
-//   // Use the modern addEventListener if available, fallback to addListener
-//   if (mediaQuery.addEventListener) {
-//     mediaQuery.addEventListener('change', handleChange);
-//     return () => mediaQuery.removeEventListener('change', handleChange);
-//   } else if (mediaQuery.addListener) {
-//     mediaQuery.addListener(handleChange);
-//     return () => mediaQuery.removeListener(handleChange);
-//   }
-//   return () => {};
-// }
-
 export async function buildWrapperConfig(container: HTMLElement, initial: string): Promise<WrapperConfig> {
   const workerPromise: Promise<Worker> = new Promise((resolve, reject) => {
     try {
-      const instance = new Worker(new URL("./languageServer.worker.ts", import.meta.url), {
-        name: "Language Server",
-        type: "module",
-      });
+      const instance: Worker = new LanguageServerWorker({ name: "Language Server" });
+      // const instance = new Worker(new URL("./languageServer.worker.ts", import.meta.url), {
+      //   name: "Language Server",
+      //   type: "module",
+      // });
 
       instance.onmessage = (event) => {
-        if (event.data.type === "ready") {
-          resolve(instance);
-        }
+        if (event.data.type === "ready") resolve(instance);
       };
       instance.onerror = (error) => {
         console.error("Worker error:", error);
@@ -228,3 +204,29 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
   };
   return wrapperConfig;
 }
+
+// // TODO: Uncomment and check to support live theme changes
+// /**
+//  * Sets up a listener for system theme changes
+//  * @param callback Function to call when theme changes, receives the new theme config
+//  * @returns Function to remove the listener
+//  */
+// export function setupThemeChangeListener(callback: (themeConfig: ReturnType<typeof getThemeConfig>) => void): () => void {
+//   if (typeof window === 'undefined' || !window.matchMedia) {
+//     // Return a no-op function if matchMedia is not available
+//     return () => {};
+//   }
+//   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+//   const handleChange = () => {
+//     callback(getThemeConfig());
+//   };
+//   // Use the modern addEventListener if available, fallback to addListener
+//   if (mediaQuery.addEventListener) {
+//     mediaQuery.addEventListener('change', handleChange);
+//     return () => mediaQuery.removeEventListener('change', handleChange);
+//   } else if (mediaQuery.addListener) {
+//     mediaQuery.addListener(handleChange);
+//     return () => mediaQuery.removeListener(handleChange);
+//   }
+//   return () => {};
+// }

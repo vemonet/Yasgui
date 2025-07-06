@@ -4,8 +4,8 @@ export default function get(): Config {
     persistenceId: function (yasr) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
-      var id = "";
-      var elem: any = yasr.rootEl;
+      let id = "";
+      let elem: any = yasr.rootEl;
       if ((<any>elem).id) id = (<any>elem).id;
       for (; elem && elem !== <any>document; elem = elem.parentNode) {
         if (elem) {

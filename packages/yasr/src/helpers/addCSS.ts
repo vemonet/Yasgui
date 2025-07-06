@@ -1,5 +1,5 @@
 export default function addCss(href: string) {
-  var link = document.createElement("link");
+  const link = document.createElement("link");
   link.setAttribute("rel", "stylesheet");
   link.setAttribute("type", "text/css");
   link.setAttribute("href", href);

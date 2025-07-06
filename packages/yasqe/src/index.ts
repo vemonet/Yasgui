@@ -11,7 +11,6 @@ import { drawSvgStringAsElement, addClass, removeClass } from "@zazuko/yasgui-ut
 import * as Sparql from "./sparql";
 import * as imgs from "./imgs";
 import { merge } from "lodash-es";
-import { editor } from "monaco-editor";
 import { MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper";
 import * as monaco from "monaco-editor";
 import { buildWrapperConfig } from "./editor/config";
@@ -96,7 +95,7 @@ export class Yasqe extends EventEmitter {
   public config: Config;
   public persistentConfig: PersistentConfig | undefined;
   public languageClientWrapper: any;
-  public editor: editor.IStandaloneCodeEditor | undefined; // Monaco editor instance, will be set in initialize
+  public editor: monaco.editor.IStandaloneCodeEditor | undefined; // Monaco editor instance, will be set in initialize
 
   /**
    * Initializes the Monaco editor in the given element.
@@ -104,184 +103,196 @@ export class Yasqe extends EventEmitter {
    * @param conf configuration for the editor
    */
   public async initEditor(el: HTMLElement, conf: PartialConfig = {}) {
-    const wrapper = new MonacoEditorLanguageClientWrapper();
-    const wrapperConfig = await buildWrapperConfig(el, this.config.value);
-    await wrapper.initAndStart(wrapperConfig);
-    this.languageClientWrapper = wrapper.getLanguageClientWrapper("sparql");
-    this.editor = wrapper.getEditor();
-    // TODO: fix height definition
-    el.style.height = "500px";
+    try {
+      const wrapper = new MonacoEditorLanguageClientWrapper();
+      const wrapperConfig = await buildWrapperConfig(el, this.config.value);
+      await wrapper.initAndStart(wrapperConfig);
+      this.languageClientWrapper = wrapper.getLanguageClientWrapper("sparql");
+      this.editor = wrapper.getEditor();
+      // TODO: fix height definition
+      el.style.height = "500px";
 
-    // Add backend SPARQL endpoints
-    for (const endpointMeta of Object.values(this.persistentConfig?.backends || {})) {
-      this.languageClientWrapper
-        .getLanguageClient()!
-        .sendRequest("qlueLs/addBackend", endpointMeta.backend)
-        .catch((err: any) => {
-          console.error(err);
-        });
-      this.languageClientWrapper
-        .getLanguageClient()!
-        .sendRequest("qlueLs/updateDefaultBackend", endpointMeta.backend.backend.name)
-        .catch((err: any) => {
-          console.error(err);
-        });
-    }
-    // Register event listeners first, before setting up Monaco editor events
-    this.registerEventListeners();
-
-    // Listen for changes in the editor
-    this.editor?.getModel()?.onDidChangeContent(() => {
-      this.emit("change");
-      this.emit("changes");
-    });
-    // Listen for cursor position changes
-    this.editor?.onDidChangeCursorPosition((e) => {
-      this.emit("cursorActivity");
-    });
-    // Listen for blur events
-    this.editor?.onDidBlurEditorText(() => {
-      this.emit("blur");
-    });
-
-    // Add commands for editor actions
-    monaco.editor.addCommand({
-      id: "triggerNewCompletion",
-      run: () => {
-        this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
-      },
-    });
-
-    monaco.editor.addCommand({
-      id: "jumpToNextPosition",
-      run: () => {
-        this.languageClientWrapper
-          ?.getLanguageClient()!
-          .sendRequest("textDocument/formatting", {
-            textDocument: { uri: this.editor?.getModel()?.uri.toString() },
-            options: {
-              tabSize: 2,
-              insertSpaces: true,
-            },
-          })
-          .then((response: any) => {
-            const edits = response.map((edit: any) => {
-              return {
-                range: {
-                  startLineNumber: edit.range.start.line + 1,
-                  startColumn: edit.range.start.character + 1,
-                  endLineNumber: edit.range.end.line + 1,
-                  endColumn: edit.range.end.character + 1,
-                },
-                text: edit.newText,
-              };
+      // Add backend SPARQL endpoints
+      if (this.languageClientWrapper && this.languageClientWrapper.getLanguageClient()) {
+        for (const endpointMeta of Object.values(this.persistentConfig?.backends || {})) {
+          this.languageClientWrapper
+            .getLanguageClient()!
+            .sendRequest("qlueLs/addBackend", endpointMeta.backend)
+            .catch((err: any) => {
+              console.error(err);
             });
-            this.editor?.getModel()!.applyEdits(edits);
-            const cursorPosition = this.editor?.getPosition();
-            if (cursorPosition) {
-              this.languageClientWrapper
-                ?.getLanguageClient()!
-                .sendRequest("qlueLs/jump", {
-                  textDocument: { uri: this.editor?.getModel()?.uri.toString() },
-                  position: {
-                    line: cursorPosition?.lineNumber - 1,
-                    character: cursorPosition?.column - 1,
-                  },
-                })
-                .then((response: any) => {
-                  if (response) {
-                    const newCursorPosition = {
-                      lineNumber: response.position.line + 1,
-                      column: response.position.character + 1,
-                    };
-                    if (response.insertAfter) {
-                      this.editor?.executeEdits("jumpToNextPosition", [
-                        {
-                          range: new monaco.Range(
-                            newCursorPosition.lineNumber,
-                            newCursorPosition.column,
-                            newCursorPosition.lineNumber,
-                            newCursorPosition.column
-                          ),
-                          text: response.insertAfter,
-                        },
-                      ]);
-                    }
-                    this.editor?.setPosition(newCursorPosition, "jumpToNextPosition");
-                    if (response.insertBefore) {
-                      this.editor?.getModel()?.applyEdits([
-                        {
-                          range: new monaco.Range(
-                            newCursorPosition.lineNumber,
-                            newCursorPosition.column,
-                            newCursorPosition.lineNumber,
-                            newCursorPosition.column
-                          ),
-                          text: response.insertBefore,
-                        },
-                      ]);
-                    }
-                    this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
-                  }
-                });
-            }
-          });
-        this.editor?.trigger("jumpToNextPosition", "editor.action.formatDocument", {});
-        // console.log("jump to next location");
-      },
-    });
-    monaco.editor.addKeybindingRule({
-      command: "jumpToNextPosition",
-      keybinding: monaco.KeyMod.Alt | monaco.KeyCode.KeyN,
-    });
-    wrapper.getEditor()!.addAction({
-      id: "Execute Query",
-      label: "Execute",
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-      contextMenuGroupId: "navigation",
-      contextMenuOrder: 1.5,
-      run: (editor, ...args) => {
-        // run_query(this.getBackend().url, this.getValue())
-        this.query().catch(() => {}); //catch this to avoid unhandled rejection
-      },
-    });
-
-    const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
-    wrapper.getEditor()!.addOverlayWidget(overlay);
-
-    // Do some post processing, init storage
-    this.drawButtons();
-    const storageId = this.getStorageId();
-    if (storageId) {
-      const persConf = this.storage.get<any>(storageId);
-      if (persConf && typeof persConf === "string") {
-        this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight, backends: {} };
-      } else {
-        this.persistentConfig = persConf;
+          this.languageClientWrapper
+            .getLanguageClient()!
+            .sendRequest("qlueLs/updateDefaultBackend", endpointMeta.backend.backend.name)
+            .catch((err: any) => {
+              console.error(err);
+            });
+        }
       }
-      if (!this.persistentConfig)
-        this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight, backends: {} };
-      if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
-    }
 
-    if (this.config.consumeShareLink) {
-      this.config.consumeShareLink(this);
-      //and: add a hash listener!
-      window.addEventListener("hashchange", this.handleHashChange);
-    }
-    // Add beforeunload event to save query when tab/window changes
-    window.addEventListener("beforeunload", this.handleBeforeUnload);
-    // Add visibility change event to save query when tab becomes hidden
-    document.addEventListener("visibilitychange", this.handleVisibilityChange);
+      // Register event listeners first, before setting up Monaco editor events
+      this.registerEventListeners();
 
-    // // Size editor to the height of the wrapper element
-    // if (this.persistentConfig && this.persistentConfig.editorHeight) {
-    //   this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
-    // } else if (this.config.editorHeight) {
-    //   this.getWrapperElement().style.height = this.config.editorHeight;
-    // }
-    // if (this.config.resizeable) this.drawResizer();
-    // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
+      // Listen for changes in the editor
+      this.editor?.getModel()?.onDidChangeContent(() => {
+        this.emit("change");
+        this.emit("changes");
+      });
+      // Listen for cursor position changes
+      this.editor?.onDidChangeCursorPosition(() => {
+        this.emit("cursorActivity");
+      });
+      // Listen for blur events
+      this.editor?.onDidBlurEditorText(() => {
+        this.emit("blur");
+      });
+
+      // Add commands for editor actions
+      monaco.editor.addCommand({
+        id: "triggerNewCompletion",
+        run: () => {
+          this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
+        },
+      });
+
+      monaco.editor.addCommand({
+        id: "jumpToNextPosition",
+        run: () => {
+          this.languageClientWrapper
+            ?.getLanguageClient()!
+            .sendRequest("textDocument/formatting", {
+              textDocument: { uri: this.editor?.getModel()?.uri.toString() },
+              options: {
+                tabSize: 2,
+                insertSpaces: true,
+              },
+            })
+            .then((response: any) => {
+              const edits = response.map((edit: any) => {
+                return {
+                  range: {
+                    startLineNumber: edit.range.start.line + 1,
+                    startColumn: edit.range.start.character + 1,
+                    endLineNumber: edit.range.end.line + 1,
+                    endColumn: edit.range.end.character + 1,
+                  },
+                  text: edit.newText,
+                };
+              });
+              this.editor?.getModel()!.applyEdits(edits);
+              const cursorPosition = this.editor?.getPosition();
+              if (cursorPosition) {
+                this.languageClientWrapper
+                  ?.getLanguageClient()!
+                  .sendRequest("qlueLs/jump", {
+                    textDocument: { uri: this.editor?.getModel()?.uri.toString() },
+                    position: {
+                      line: cursorPosition?.lineNumber - 1,
+                      character: cursorPosition?.column - 1,
+                    },
+                  })
+                  .then((response: any) => {
+                    if (response) {
+                      const newCursorPosition = {
+                        lineNumber: response.position.line + 1,
+                        column: response.position.character + 1,
+                      };
+                      if (response.insertAfter) {
+                        this.editor?.executeEdits("jumpToNextPosition", [
+                          {
+                            range: new monaco.Range(
+                              newCursorPosition.lineNumber,
+                              newCursorPosition.column,
+                              newCursorPosition.lineNumber,
+                              newCursorPosition.column
+                            ),
+                            text: response.insertAfter,
+                          },
+                        ]);
+                      }
+                      this.editor?.setPosition(newCursorPosition, "jumpToNextPosition");
+                      if (response.insertBefore) {
+                        this.editor?.getModel()?.applyEdits([
+                          {
+                            range: new monaco.Range(
+                              newCursorPosition.lineNumber,
+                              newCursorPosition.column,
+                              newCursorPosition.lineNumber,
+                              newCursorPosition.column
+                            ),
+                            text: response.insertBefore,
+                          },
+                        ]);
+                      }
+                      this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
+                    }
+                  });
+              }
+            });
+          this.editor?.trigger("jumpToNextPosition", "editor.action.formatDocument", {});
+          // console.log("jump to next location");
+        },
+      });
+      monaco.editor.addKeybindingRule({
+        command: "jumpToNextPosition",
+        keybinding: monaco.KeyMod.Alt | monaco.KeyCode.KeyN,
+      });
+      wrapper.getEditor()!.addAction({
+        id: "Execute Query",
+        label: "Execute",
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+        contextMenuGroupId: "navigation",
+        contextMenuOrder: 1.5,
+        run: (editor, ...args) => {
+          // run_query(this.getBackend().url, this.getValue())
+          this.query().catch(() => {}); //catch this to avoid unhandled rejection
+        },
+      });
+
+      const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
+      wrapper.getEditor()!.addOverlayWidget(overlay);
+
+      // Do some post processing, init storage
+      this.drawButtons();
+      const storageId = this.getStorageId();
+      if (storageId) {
+        const persConf = this.storage.get<any>(storageId);
+        if (persConf && typeof persConf === "string") {
+          this.persistentConfig = { query: persConf, editorHeight: this.config.editorHeight, backends: {} };
+        } else {
+          this.persistentConfig = persConf;
+        }
+        if (!this.persistentConfig)
+          this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight, backends: {} };
+        if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
+      }
+
+      if (this.config.consumeShareLink) {
+        this.config.consumeShareLink(this);
+        //and: add a hash listener!
+        window.addEventListener("hashchange", this.handleHashChange);
+      }
+      // Add beforeunload event to save query when tab/window changes
+      window.addEventListener("beforeunload", this.handleBeforeUnload);
+      // Add visibility change event to save query when tab becomes hidden
+      document.addEventListener("visibilitychange", this.handleVisibilityChange);
+
+      // // Size editor to the height of the wrapper element
+      // if (this.persistentConfig && this.persistentConfig.editorHeight) {
+      //   this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
+      // } else if (this.config.editorHeight) {
+      //   this.getWrapperElement().style.height = this.config.editorHeight;
+      // }
+      // if (this.config.resizeable) this.drawResizer();
+      // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
+    } catch (error) {
+      console.error("Failed to initialize Monaco editor:", error);
+      // Fallback to show error message in the element
+      el.innerHTML = `<div style="color: red; padding: 10px; border: 1px solid red; background: #ffebee;">
+        Error initializing SPARQL editor: ${error instanceof Error ? error.message : String(error)}
+      </div>`;
+      throw error;
+    }
   }
 
   public getValue(): string {
@@ -408,8 +419,6 @@ export class Yasqe extends EventEmitter {
     this.config.consumeShareLink?.(this);
   };
   private handleChange() {
-    // this.checkSyntax();
-    console.log("handleChange");
     this.updateQueryButton();
     this.saveQuery(); // Save query on every change
   }
@@ -418,10 +427,8 @@ export class Yasqe extends EventEmitter {
   }
   private handleChanges() {
     // e.g. handle blur
-    // this.checkSyntax();
-    console.log("handleChanges");
     this.updateQueryButton();
-    this.saveQuery(); // Save query on changes
+    this.saveQuery();
   }
   private handleCursorActivity() {
     // this.autocomplete(true);
@@ -499,7 +506,7 @@ export class Yasqe extends EventEmitter {
      * draw share link button
      */
     if (this.config.createShareableLink) {
-      var svgShare = drawSvgStringAsElement(imgs.share);
+      const svgShare = drawSvgStringAsElement(imgs.share);
       const shareLinkWrapper = document.createElement("button");
       shareLinkWrapper.className = "yasqe_share";
       shareLinkWrapper.title = "Share query";
@@ -528,7 +535,7 @@ export class Yasqe extends EventEmitter {
           },
           true
         );
-        var input = document.createElement("input");
+        const input = document.createElement("input");
         input.type = "text";
         input.value = this.config.createShareableLink(this);
 
@@ -542,7 +549,7 @@ export class Yasqe extends EventEmitter {
         };
         popup.innerHTML = "";
 
-        var inputWrapper = document.createElement("div");
+        const inputWrapper = document.createElement("div");
         inputWrapper.className = "inputWrapper";
 
         inputWrapper.appendChild(input);
@@ -871,7 +878,7 @@ export class Yasqe extends EventEmitter {
   }
   public configToQueryParams(): queryString.ParsedQuery {
     //extend existing link, so first fetch current arguments
-    var urlParams: any = {};
+    let urlParams: any = {};
     if (window.location.hash.length > 1) urlParams = queryString.parse(window.location.hash);
     urlParams["query"] = this.getValue();
     return urlParams;

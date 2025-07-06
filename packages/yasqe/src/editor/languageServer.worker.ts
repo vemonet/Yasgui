@@ -1,4 +1,5 @@
-import init, { init_language_server, listen } from "qlue-ls";
+// @ts-ignore
+import init, { init_language_server, listen } from "qlue-ls?init";
 
 init().then(() => {
   // Connection Worker <-> Language Server(WASM)
@@ -18,6 +19,7 @@ init().then(() => {
   };
   // Language Server -> Language Client
   (async () => {
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const { value, done } = await wasmReader.read();
       if (done) break;

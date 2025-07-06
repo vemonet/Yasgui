@@ -1,4 +1,7 @@
 import CodeMirror from "codemirror";
+// @ts-ignore
+import grammar from "./_tokenizer-table";
+
 export interface State {
   tokenize: (stream: CodeMirror.StringStream, state: State) => string;
   inLiteral: "SINGLE" | "DOUBLE" | undefined;
@@ -45,7 +48,6 @@ export interface Token {
   start: number;
 }
 export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mode<State> {
-  const grammar = require("./_tokenizer-table.js");
   const ll1_table = grammar.table;
 
   const IRI_REF = '<[^<>"`|{}^\\\x00-\x20]*>';
@@ -124,7 +126,7 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
     regex: RegExp;
     style: string;
   }
-  var stringLiteralLongRegex: {
+  const stringLiteralLongRegex: {
     [k: string]: {
       complete: LiteralRegex;
       contents: LiteralRegex;
@@ -305,7 +307,7 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
   ];
 
   function getPossibles(symbol: string) {
-    var possibles = [],
+    const possibles = [],
       possiblesOb = ll1_table[symbol];
     if (possiblesOb != undefined) {
       for (const property in possiblesOb) {
@@ -321,7 +323,7 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
     function nextToken(): Token {
       let consumed: string[];
       if (state.inLiteral) {
-        var closingQuotes = false;
+        let closingQuotes = false;
         //multi-line literal. try to parse contents.
         consumed = stream.match(stringLiteralLongRegex[state.inLiteral].contents.regex as any, true, false) as any;
         if (consumed && consumed[0].length == 0) {
@@ -368,7 +370,7 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
       }
 
       // Tokens defined by individual regular expressions
-      for (var i = 0; i < terminals.length; ++i) {
+      for (let i = 0; i < terminals.length; ++i) {
         consumed = stream.match(terminals[i].regex as any, true, false) as any;
         if (consumed) {
           return {
@@ -504,8 +506,8 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
     }
     // Otherwise, run the parser until the token is digested
     // or failure
-    var finished = false;
-    var topSymbol;
+    let finished = false;
+    let topSymbol;
     const tokenCat = tokenOb.cat;
     if (state.possibleFullIri && tokenOb.string === ">") {
       state.possibleFullIri = false;
@@ -536,8 +538,8 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
             setQueryType(topSymbol);
             // Check whether $ (end of input token) is poss next
             // for everything on stack
-            var allNillable = true;
-            for (var sp = state.stack.length; sp > 0; --sp) {
+            let allNillable = true;
+            for (let sp = state.stack.length; sp > 0; --sp) {
               const item = ll1_table[state.stack[sp - 1]];
               if (!item || !item["$"]) allNillable = false;
             }
@@ -577,7 +579,7 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
           const nextSymbols = ll1_table[topSymbol][tokenCat];
           if (nextSymbols != undefined && checkSideConditions(topSymbol)) {
             // Match - copy RHS of rule to stack
-            for (var i = nextSymbols.length - 1; i >= 0; --i) {
+            for (let i = nextSymbols.length - 1; i >= 0; --i) {
               state.stack.push(nextSymbols[i]);
             }
             // Peform any non-grammatical side-effects
@@ -666,8 +668,8 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
       //we are after a semi-colon. I.e., nicely align this line with predicate position of previous line
       return state.lastPredicateOffset;
     } else {
-      var n = 0; // indent level
-      var i = state.stack.length - 1;
+      let n = 0; // indent level
+      let i = state.stack.length - 1;
       if (/^[\}\]\)]/.test(textAfter)) {
         // Skip stack items until after matching bracket
         const closeBracket = textAfter.substr(0, 1);
@@ -679,14 +681,14 @@ export default function (config: CodeMirror.EditorConfiguration): CodeMirror.Mod
         }
       } else {
         // Consider nullable non-terminals if at top of stack
-        let dn = indentTop[state.stack[i]];
+        const dn = indentTop[state.stack[i]];
         if (dn) {
           n += dn;
           --i;
         }
       }
       for (; i >= 0; --i) {
-        let dn = indentTable[state.stack[i]];
+        const dn = indentTable[state.stack[i]];
         if (dn) {
           n += dn;
         }

@@ -1,12 +1,12 @@
 import { default as Yasqe, Token } from "./";
 export type Prefixes = { [prefixLabel: string]: string };
 export function addPrefixes(yasqe: Yasqe, prefixes: string | Prefixes) {
-  var existingPrefixes = yasqe.getPrefixesFromQuery();
+  const existingPrefixes = yasqe.getPrefixesFromQuery();
   //for backwards compatability, we stil support prefixes value as string (e.g. 'rdf: <http://fbfgfgf>'
   if (typeof prefixes == "string") {
     addPrefixAsString(yasqe, prefixes);
   } else {
-    for (var pref in prefixes) {
+    for (const pref in prefixes) {
       if (!(pref in existingPrefixes)) addPrefixAsString(yasqe, pref + ": <" + prefixes[pref] + ">");
     }
   }
@@ -22,11 +22,11 @@ export function addPrefixAsString(yasqe: Yasqe, prefixString: string) {
   yasqe.collapsePrefixes(false);
 }
 export function removePrefixes(yasqe: Yasqe, prefixes: Prefixes) {
-  var escapeRegex = function (string: string) {
+  const escapeRegex = function (string: string) {
     //taken from http://stackoverflow.com/questions/3561493/is-there-a-regexp-escape-function-in-javascript/3561711#3561711
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
   };
-  for (var pref in prefixes) {
+  for (const pref in prefixes) {
     yasqe.setValue(
       yasqe
         .getValue()

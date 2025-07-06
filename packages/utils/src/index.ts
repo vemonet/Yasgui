@@ -6,12 +6,12 @@ const { sanitize } = DOMPurify;
 export function drawSvgStringAsElement(svgString: string) {
   if (svgString && svgString.trim().indexOf("<svg") == 0) {
     //no style passed via config. guess own styles
-    var parser = new DOMParser();
-    var dom = parser.parseFromString(svgString, "text/xml");
-    var svg = dom.documentElement;
+    const parser = new DOMParser();
+    const dom = parser.parseFromString(svgString, "text/xml");
+    const svg = dom.documentElement;
     svg.setAttribute("aria-hidden", "true");
 
-    var svgContainer = document.createElement("div");
+    const svgContainer = document.createElement("div");
     svgContainer.className = "svgImg";
     svgContainer.appendChild(svg);
     return svgContainer;
@@ -51,7 +51,7 @@ export function removeClass(el: Element | undefined | null, className: string) {
   if (!el) return;
   if (el.classList) el.classList.remove(className);
   else if (hasClass(el, className)) {
-    var reg = new RegExp("(\\s|^)" + className + "(\\s|$)");
+    const reg = new RegExp("(\\s|^)" + className + "(\\s|$)");
     el.className = el.className.replace(reg, " ");
   }
 }

@@ -2,11 +2,19 @@
   "name": "@zazuko/yasqe",
   "description": "Yet Another SPARQL Query Editor",
   "version": "4.5.0",
-  "main": "build/yasqe.min.js",
-  "types": "build/ts/src/index.d.ts",
+  "type": "module",
+  "main": "dist/yasqe.umd.cjs",
+  "module": "dist/yasqe.js",
+  "types": "dist/yasqe.d.ts",
   "license": "MIT",
   "author": "Triply <info@triply.cc>",
   "homepage": "https://github.com/zazuko/Yasgui",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "upgrade": "npx npm-check-updates -u",
+    "version": "npm run build && npm publish"
+  },
   "engines": {
     "node": ">= 8"
   },
@@ -24,15 +32,15 @@
     "directory": "packages/yasqe"
   },
   "dependencies": {
-    "@zazuko/yasgui-utils": "^4.5.0",
+    "@zazuko/yasgui-utils": "*",
     "codemirror": "^5.51.0",
     "lodash-es": "^4.17.15",
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^16.1.1",
     "monaco-editor-wrapper": "~6.7.0",
     "qlue-ls": "^0.13.2",
+    "query-string": "^6.10.1",
     "vscode": "npm:@codingame/monaco-vscode-extension-api@^16.1.1",
-    "vscode-uri": "~3.1.0",
-    "query-string": "^6.10.1"
+    "vscode-uri": "~3.1.0"
   },
   "devDependencies": {
     "@types/codemirror": "0.0.100",

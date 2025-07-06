@@ -1,4 +1,5 @@
-var store = require("store");
+import store from "store";
+
 export interface ItemWrapper<V = {}> {
   exp: number;
   val: V;
@@ -66,7 +67,7 @@ export default class Storage {
     if (!key) return;
     this.removeExpiredKeys();
     if (key) {
-      var info: ItemWrapper<V> = store.get(key);
+      const info: ItemWrapper<V> = store.get(key);
       if (!info) {
         return;
       }
@@ -77,7 +78,7 @@ export default class Storage {
   }
 }
 function isQuotaExceeded(e: any) {
-  var quotaExceeded = false;
+  let quotaExceeded = false;
   if (e) {
     if (e.code) {
       switch (e.code) {

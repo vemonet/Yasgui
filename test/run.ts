@@ -1,4 +1,4 @@
-require("source-map-support/register");
+import "source-map-support/register";
 import * as puppeteer from "puppeteer";
 
 import * as path from "path";
@@ -10,7 +10,7 @@ import Yasqe from "@zazuko/yasqe";
 //@ts-ignore ignore unused warning
 import { setup, destroy, closePage, getPage, makeScreenshot, inspectLive, wait } from "./utils";
 
-declare var window: Window & {
+declare const window: Window & {
   Yasqe: typeof Yasqe;
   yasqe: Yasqe;
 };

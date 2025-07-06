@@ -1,5 +1,5 @@
 "use strict";
-var $ = require("jquery");
+import $ from "jquery";
 
 $.fn.tableToCsv = function (config) {
   var csvString = "";

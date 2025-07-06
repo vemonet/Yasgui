@@ -4,17 +4,17 @@
 import { Plugin } from "../";
 import Yasr from "../../";
 import "./index.scss";
-const CodeMirror = require("codemirror");
-require("codemirror/addon/fold/foldcode.js");
-require("codemirror/addon/fold/foldgutter.js");
-require("codemirror/addon/fold/xml-fold.js");
-require("codemirror/addon/fold/brace-fold.js");
+// const CodeMirror = require("codemirror");
+// require("codemirror/addon/fold/foldcode.js");
+// require("codemirror/addon/fold/foldgutter.js");
+// require("codemirror/addon/fold/xml-fold.js");
+// require("codemirror/addon/fold/brace-fold.js");
 
-require("codemirror/addon/edit/matchbrackets.js");
-require("codemirror/mode/xml/xml.js");
+// require("codemirror/addon/edit/matchbrackets.js");
+// require("codemirror/mode/xml/xml.js");
 
-require("codemirror/mode/javascript/javascript.js");
-require("codemirror/lib/codemirror.css");
+// require("codemirror/mode/javascript/javascript.js");
+// require("codemirror/lib/codemirror.css");
 import { drawSvgStringAsElement, addClass, removeClass, drawFontAwesomeIconAsSvg } from "@zazuko/yasgui-utils";
 import * as faAlignIcon from "@fortawesome/free-solid-svg-icons/faAlignLeft";
 import { DeepReadonly } from "ts-essentials";
@@ -30,7 +30,7 @@ export default class Response implements Plugin<PluginConfig> {
   helpReference = "https://triply.cc/docs/yasgui#response";
   private config: DeepReadonly<PluginConfig>;
   private overLay: HTMLDivElement | undefined;
-  private cm: CodeMirror.Editor | undefined;
+  // private cm: CodeMirror.Editor | undefined;
   constructor(yasr: Yasr) {
     this.yasr = yasr;
     this.config = Response.defaults;
@@ -45,7 +45,7 @@ export default class Response implements Plugin<PluginConfig> {
   canHandleResults() {
     if (!this.yasr.results) return false;
     if (!this.yasr.results.getOriginalResponseAsString) return false;
-    var response = this.yasr.results.getOriginalResponseAsString();
+    const response = this.yasr.results.getOriginalResponseAsString();
     if ((!response || response.length == 0) && this.yasr.results.getError()) return false; //in this case, show exception instead, as we have nothing to show anyway
     return true;
   }
@@ -113,10 +113,9 @@ export default class Response implements Plugin<PluginConfig> {
    * @param setValue Optional, if set to false the string will not update
    */
   showLess(setValue = true) {
-    if (!this.cm) return;
-    // Add overflow
-    addClass(this.cm.getWrapperElement(), "overflow");
-
+    // if (!this.cm) return;
+    // // Add overflow
+    // addClass(this.cm.getWrapperElement(), "overflow");
     // Remove old instance
     if (this.overLay) {
       this.overLay.remove();
@@ -153,21 +152,21 @@ export default class Response implements Plugin<PluginConfig> {
 
     overlayContent.appendChild(downloadButton);
     this.overLay.appendChild(overlayContent);
-    this.cm.getWrapperElement().appendChild(this.overLay);
-    if (setValue) {
-      this.cm.setValue(this.limitData(this.yasr.results?.getOriginalResponseAsString() || ""));
-    }
+    // this.cm.getWrapperElement().appendChild(this.overLay);
+    // if (setValue) {
+    //   this.cm.setValue(this.limitData(this.yasr.results?.getOriginalResponseAsString() || ""));
+    // }
   }
   /**
    * Render the raw response full length
    */
   showMore() {
-    if (!this.cm) return;
-    removeClass(this.cm.getWrapperElement(), "overflow");
+    // if (!this.cm) return;
+    // removeClass(this.cm.getWrapperElement(), "overflow");
     this.overLay?.remove();
     this.overLay = undefined;
-    this.cm.setValue(this.yasr.results?.getOriginalResponseAsString() || "");
-    this.cm.refresh();
+    // this.cm.setValue(this.yasr.results?.getOriginalResponseAsString() || "");
+    // this.cm.refresh();
   }
   public static defaults: PluginConfig = {
     maxLines: 30,

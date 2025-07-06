@@ -1,16 +1,16 @@
-const JsUri = require("jsuri");
+import JsUri from "jsuri";
 
 import { default as Tab, PersistedJson } from "./Tab";
 import Yasr from "@zazuko/yasr";
 import { PlainRequestConfig } from "@zazuko/yasqe";
 import { getAsValue } from "@zazuko/yasgui-utils";
-var getUrlParams = function (_url?: string) {
-  var urlFromWindow = false;
+const getUrlParams = function (_url?: string) {
+  let urlFromWindow = false;
   if (!_url) {
     _url = window.location.href;
     urlFromWindow = true;
   }
-  var url = new JsUri(_url);
+  const url = new JsUri(_url);
   if (url.anchor().length > 0) {
     //firefox does some decoding if we're using window.location.hash (e.g. the + sign in contentType settings)
     //Don't want this. So simply get the hash string ourselves
@@ -22,7 +22,7 @@ var getUrlParams = function (_url?: string) {
 
 export type RequestArgs = { [argName: string]: string | string[] };
 export function appendArgsToUrl(_url: string, args: RequestArgs): string {
-  var url = new JsUri(_url);
+  const url = new JsUri(_url);
   for (const arg in args) {
     const val = args[arg];
     if (Array.isArray(val)) {
@@ -90,7 +90,7 @@ export function createShareConfig(tab: Tab): ShareConfigObject {
   const requestConfig = tab.getRequestConfig();
   const yasrPersistentSetting = tab.getPersistedJson().yasr.settings;
   return {
-    query: tab.getQuery(),
+    query: tab.getQuery() || "",
     endpoint: tab.getEndpoint(),
     requestMethod: getAsValue(requestConfig.method, yasgui),
     tabTitle: tab.getName(),
@@ -112,10 +112,10 @@ export function createShareConfig(tab: Tab): ShareConfigObject {
 export function getConfigFromUrl(defaults: PersistedJson, _url?: string): PersistedJson | undefined {
   const options = defaults;
 
-  var url = getUrlParams(_url);
-  var hasQuery = false;
+  const url = getUrlParams(_url);
+  let hasQuery = false;
   const currentParams: [string, string][] = (<any>url).queryPairs;
-  var pluginsConfig: any;
+  let pluginsConfig: any;
   currentParams.forEach(function ([key, value]) {
     if (key === "query") {
       hasQuery = true;

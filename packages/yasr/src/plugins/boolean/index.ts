@@ -2,7 +2,7 @@
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
 import Yasr from "../../";
-import { Plugin } from "../";
+import type { Plugin } from "../";
 import "./index.scss";
 export interface PluginConfig {}
 import { drawSvgStringAsElement } from "@zazuko/yasgui-utils";

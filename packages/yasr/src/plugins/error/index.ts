@@ -77,7 +77,7 @@ export default class Error implements Plugin<never> {
 
     // No custom rendering? Let's render it ourselves!
     if (error.status) {
-      var statusText = "Error";
+      let statusText = "Error";
       if (error.statusText && error.statusText.length < 100) {
         //use a max: otherwise the alert span will look ugly
         statusText = error.statusText;

@@ -10,7 +10,6 @@ import * as queryString from "query-string";
 export default function get() {
   const prefixCcApi =
     (window.location.protocol.indexOf("http") === 0 ? "//" : "http://") + "prefix.cc/popular/all.file.json";
-  const CodeMirror = require("codemirror");
   const config: Omit<Config, "requestConfig"> = {
     mode: "sparql11",
     value: `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

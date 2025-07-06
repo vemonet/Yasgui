@@ -61,7 +61,7 @@ export default function (
 ): Parser.SparqlResults | undefined {
   if (typeof xmlString !== "string") return;
   const domParser = new DOMParser();
-  let mainXml = domParser.parseFromString(xmlString, "text/xml");
+  const mainXml = domParser.parseFromString(xmlString, "text/xml");
   if (!mainXml.childNodes.length) return;
 
   const xml = mainXml.childNodes[0];

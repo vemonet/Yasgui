@@ -4,7 +4,6 @@
 import "./index.scss";
 import "datatables.net-dt/css/dataTables.dataTables.min.css";
 import "datatables.net";
-//@ts-ignore (jquery _does_ expose a default. In es6, it's the one we should use)
 import $ from "jquery";
 import Parser from "../../parsers";
 import { escape } from "lodash-es";
@@ -14,10 +13,12 @@ import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 import { DeepReadonly } from "ts-essentials";
 import { cloneDeep } from "lodash-es";
-import sanitize from "../../helpers/sanitize";
+// @ts-ignore
+import ColumnResizer from "column-resizer";
 import type { Api, ConfigColumns, CellMetaSettings, Config } from "datatables.net";
 
-const ColumnResizer = require("column-resizer");
+import sanitize from "../../helpers/sanitize";
+
 const DEFAULT_PAGE_SIZE = 50;
 
 export interface PluginConfig {
@@ -75,12 +76,9 @@ export default class Table implements Plugin<PluginConfig> {
     openIriInNewWindow: true,
     tableConfig: {
       layout: {
-        // @ts-ignore
-        top: null, // @TODO: remove ignore once https://github.com/DataTables/DataTablesSrc/issues/271 is released
-        // @ts-ignore
-        topStart: null, // @TODO: remove ignore once https://github.com/DataTables/DataTablesSrc/issues/271 is released
-        // @ts-ignore
-        topEnd: null, // @TODO: remove ignore once https://github.com/DataTables/DataTablesSrc/issues/271 is released
+        top: null,
+        topStart: null,
+        topEnd: null,
       },
       pageLength: DEFAULT_PAGE_SIZE, //default page length
       lengthChange: true, //allow changing page length
@@ -220,7 +218,7 @@ export default class Table implements Plugin<PluginConfig> {
     this.tableEl.style.removeProperty("width");
     this.tableEl.style.width = this.tableEl.clientWidth + "px";
     const widths = Array.from(this.tableEl.querySelectorAll("th")).map((h) => h.offsetWidth - 26);
-    this.tableResizer = new ColumnResizer.default(this.tableEl, {
+    this.tableResizer = new ColumnResizer(this.tableEl, {
       widths: this.persistentConfig.compact === true ? widths : [this.getSizeFirstColumn(), ...widths.slice(1)],
       partialRefresh: true,
       onResize: this.persistentConfig.isEllipsed !== false && this.setEllipsisHandlers,

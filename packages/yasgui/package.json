@@ -2,11 +2,20 @@
   "name": "@zazuko/yasgui",
   "description": "Yet Another SPARQL GUI",
   "version": "4.5.0",
-  "main": "build/yasgui.min.js",
-  "types": "build/ts/src/index.d.ts",
+  "type": "module",
+  "main": "dist/yasgui.umd.cjs",
+  "module": "dist/yasgui.js",
+  "types": "dist/yasgui.d.ts",
   "license": "MIT",
   "author": "Triply <info@triply.cc>",
   "homepage": "https://github.com/zazuko/Yasgui",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "upgrade": "npx npm-check-updates -u",
+    "version": "npm run build && npm publish",
+    "postversion": "git tag v$(npm pkg get version --no-workspaces | tr -d \\\") && git push origin v$(npm pkg get version --no-workspaces | tr -d \\\")"
+  },
   "keywords": [
     "JavaScript",
     "SPARQL",
@@ -22,9 +31,9 @@
   },
   "dependencies": {
     "@tarekraafat/autocomplete.js": "^7.2.0",
-    "@zazuko/yasgui-utils": "^4.5.0",
-    "@zazuko/yasqe": "^4.5.0",
-    "@zazuko/yasr": "^4.5.0",
+    "@zazuko/yasgui-utils": "*",
+    "@zazuko/yasqe": "*",
+    "@zazuko/yasr": "*",
     "autosuggest-highlight": "^3.1.1",
     "blueimp-md5": "^2.12.0",
     "choices.js": "^9.0.1",
@@ -39,7 +48,8 @@
     "@types/blueimp-md5": "^2.7.0",
     "@types/jsuri": "^1.3.30",
     "@types/lodash-es": "^4.17.3",
-    "@types/node": "^22.5.4"
+    "@types/node": "^22.5.4",
+    "@types/sortablejs": "^1.15.8"
   },
   "publishConfig": {
     "access": "public"

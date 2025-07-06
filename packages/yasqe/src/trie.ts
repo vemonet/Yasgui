@@ -18,7 +18,7 @@ export default class Trie {
       return;
     }
 
-    var T = this,
+    let T = this,
       k,
       child;
 
@@ -50,7 +50,7 @@ export default class Trie {
     if (str.length == 0) {
       return;
     }
-    var T = this,
+    let T = this,
       k,
       child;
 
@@ -100,7 +100,7 @@ export default class Trie {
       return 0;
     }
 
-    var T = this,
+    let T = this,
       k,
       child,
       ret = 0;
@@ -180,7 +180,7 @@ export default class Trie {
    * @return {Array} Array of words in the dictionary
    */
   getAllWords(str: string): string[] {
-    var T = this,
+    let T = this,
       k,
       child,
       ret = [];
@@ -211,7 +211,7 @@ export default class Trie {
    * @return {Array} Array of possible suggestions
    */
   autoComplete(str: string, pos?: number): string[] {
-    var T = this,
+    let T = this,
       k,
       child;
     if (str.length == 0) {

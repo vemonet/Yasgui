@@ -1,7 +1,7 @@
 import { EventEmitter } from "events";
 import { merge, filter, mapValues, uniqueId } from "lodash-es";
 import getDefaults from "./defaults";
-import { Plugin } from "./plugins";
+import type { Plugin } from "./plugins";
 import {
   Storage as YStorage,
   drawFontAwesomeIconAsSvg,
@@ -43,7 +43,7 @@ export class Yasr extends EventEmitter {
   public storage: YStorage;
   public plugins: { [name: string]: Plugin<any> } = {};
   // private persistentConfig: PersistentConfig;
-  public helpDrawn: Boolean = false;
+  public helpDrawn: boolean = false;
   private drawnPlugin: string | undefined;
   private selectedPlugin: string | undefined;
 
@@ -604,6 +604,6 @@ Yasr.registerPlugin("boolean", YasrPluginBoolean.default as any);
 Yasr.registerPlugin("response", YasrPluginResponse.default as any);
 Yasr.registerPlugin("error", YasrPluginError.default as any);
 
-export { Plugin, DownloadInfo } from "./plugins";
+export type { Plugin, DownloadInfo } from "./plugins";
 
 export default Yasr;

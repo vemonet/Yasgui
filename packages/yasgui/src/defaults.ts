@@ -10,8 +10,8 @@ export default function initialize(): Config<CatalogueItem> {
     persistenceId: function (yasgui) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
-      var id = "";
-      var elem: any = yasgui.rootEl;
+      let id = "";
+      let elem: any = yasgui.rootEl;
       if ((<any>elem).id) id = (<any>elem).id;
       for (; elem && elem !== <any>document; elem = elem.parentNode) {
         if (elem) {

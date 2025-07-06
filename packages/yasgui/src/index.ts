@@ -197,7 +197,7 @@ export class Yasgui extends EventEmitter {
   }
   public createTabName(name?: string, i: number = 0) {
     if (!name) name = this.config.tabName;
-    var fullName = name + (i > 0 ? " " + i : "");
+    let fullName = name + (i > 0 ? " " + i : "");
     if (this.tabNameTaken(fullName)) fullName = this.createTabName(name, i + 1);
     return fullName;
   }
@@ -352,6 +352,7 @@ export class Yasgui extends EventEmitter {
         };
       }
     }
+    console.debug("Setting up backend for endpoint", endpoint, backendConf);
     this.updateLanguageClientBackend(backendConf);
   }
 
@@ -360,7 +361,7 @@ export class Yasgui extends EventEmitter {
    */
   private updateLanguageClientBackend(backendConf: Backend) {
     // Check if backend is already added to avoid duplicates
-    const languageClient = this.getTab()?.getYasqe()?.languageClientWrapper.getLanguageClient();
+    const languageClient = this.getTab()?.getYasqe()?.languageClientWrapper?.getLanguageClient();
     if (!languageClient) return;
     // Only add backend if it hasn't been added yet
     if (!this.addedBackends.has(backendConf.backend.name)) {

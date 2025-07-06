@@ -1,13 +1,21 @@
 {
   "name": "@zazuko/yasgui-utils",
   "version": "4.5.0",
+  "type": "module",
   "description": "Utils for YASGUI libs",
-  "main": "build/utils.min.js",
-  "types": "build/ts/src/index.d.ts",
+  "main": "dist/yasgui-utils.umd.cjs",
+  "module": "dist/yasgui-utils.js",
+  "types": "dist/yasgui-utils.d.ts",
   "license": "MIT",
   "author": "Triply <info@triply.cc>",
   "homepage": "https://github.com/zazuko/Yasgui",
   "bugs": "https://github.com/zazuko/Yasgui/issues",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "upgrade": "npx npm-check-updates -u",
+    "version": "npm run build && npm publish"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/zazuko/Yasgui.git",
@@ -18,7 +26,8 @@
     "store": "^2.0.12"
   },
   "devDependencies": {
-    "@types/node": "^22.5.4"
+    "@types/node": "^22.5.4",
+    "@types/store": "^2.0.5"
   },
   "publishConfig": {
     "access": "public"

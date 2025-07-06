@@ -7,7 +7,7 @@
 import Yasqe from "./";
 
 export default function tooltip(_yasqe: Yasqe, parent: HTMLDivElement, html: string) {
-  var tooltip: HTMLDivElement;
+  let tooltip: HTMLDivElement;
   parent.onmouseover = function () {
     if (!tooltip) {
       tooltip = document.createElement("div");

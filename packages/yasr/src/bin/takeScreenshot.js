@@ -1,6 +1,6 @@
-const puppeteer = require("puppeteer");
-const static = require("node-static");
-const http = require("http");
+import puppeteer from "puppeteer";
+import * as nodeStatic from "node-static";
+import * as http from "http";
 const PORT = 40001;
 
 // const endpoint = "https://api.nightly.triply.cc/datasets/gerwinbosch/Triply-pets/services/Triply-pets/sparql";
@@ -301,8 +301,8 @@ const getScreenWidth = (plugin) => {
   }
 };
 
-let staticFileServer = new static.Server("./");
-function setupServer () {
+let staticFileServer = new nodeStatic.Server("./");
+function setupServer() {
   return new Promise((resolve, reject) => {
     var server = http
       .createServer(function (request, response) {
@@ -319,10 +319,10 @@ function setupServer () {
       .on("error", (e) => reject(e));
   });
 }
-function wait (time) {
+function wait(time) {
   return new Promise((resolve) => setTimeout(resolve, time));
 }
-function waitForImagesToLoad (page) {
+function waitForImagesToLoad(page) {
   return page.evaluate(() => {
     const selectors = Array.from(document.querySelectorAll("img"));
     return Promise.all(
