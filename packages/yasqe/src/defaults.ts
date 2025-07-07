@@ -126,7 +126,7 @@ SELECT * WHERE {
 
     hintConfig: {},
     resizeable: true,
-    editorHeight: "300px",
+    editorHeight: "60vh",
     queryingDisabled: undefined,
     prefixCcApi: prefixCcApi,
   };

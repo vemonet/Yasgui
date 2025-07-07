@@ -24,42 +24,6 @@ import { YasqeAjaxConfig } from "./sparql";
 import { EndpointMetadata } from "./editor/endpointMetadata";
 // import tooltip from "./tooltip";
 
-class LspInfoOverlayWidget implements monaco.editor.IOverlayWidget {
-  private domNode: HTMLElement;
-
-  constructor(private readonly editor: monaco.editor.IStandaloneCodeEditor, backend: any) {
-    this.domNode = document.createElement("div");
-    this.domNode.style.background = "#444";
-    this.domNode.style.color = "#fff";
-    this.domNode.style.padding = "0.3em 0.5em";
-    this.domNode.style.fontSize = "12px";
-    this.domNode.style.borderRadius = "4px";
-    this.domNode.style.cursor = "pointer";
-    this.domNode.addEventListener("mouseover", () => {
-      this.domNode.style.filter = "brightness(60%)";
-    });
-    this.domNode.addEventListener("mouseout", () => {
-      this.domNode.style.filter = "";
-    });
-    this.domNode.innerText = "ℹ️ Backends Info";
-    this.domNode.onclick = () => {
-      // const info = getLanguageServerState();
-      alert(JSON.stringify(backend, null, 2));
-    };
-  }
-  getId(): string {
-    return "lsp.info.overlay";
-  }
-  getDomNode(): HTMLElement {
-    return this.domNode;
-  }
-  getPosition(): monaco.editor.IOverlayWidgetPosition {
-    return {
-      preference: monaco.editor.OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER,
-    };
-  }
-}
-
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
   off(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
@@ -267,6 +231,7 @@ export class Yasqe extends EventEmitter {
 
       // Do some post processing, init storage
       this.drawButtons();
+
       const storageId = this.getStorageId();
       if (storageId) {
         const persConf = this.storage.get<any>(storageId);
@@ -290,17 +255,16 @@ export class Yasqe extends EventEmitter {
       // Add visibility change event to save query when tab becomes hidden
       document.addEventListener("visibilitychange", this.handleVisibilityChange);
 
-      const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
-      wrapper.getEditor()!.addOverlayWidget(overlay);
-
-      // // Size editor to the height of the wrapper element
-      // if (this.persistentConfig && this.persistentConfig.editorHeight) {
-      //   this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
-      // } else if (this.config.editorHeight) {
-      //   this.getWrapperElement().style.height = this.config.editorHeight;
-      // }
-      // if (this.config.resizeable) this.drawResizer();
+      // Size editor to the height of the wrapper element
+      if (this.persistentConfig && this.persistentConfig.editorHeight) {
+        this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
+      } else if (this.config.editorHeight) {
+        this.getWrapperElement().style.height = this.config.editorHeight;
+      }
+      if (this.config.resizeable) this.drawResizer();
       // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
+      // const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
+      // wrapper.getEditor()!.addOverlayWidget(overlay);
     } catch (error) {
       console.error("Failed to initialize Monaco editor:", error);
       // Fallback to show error message in the element
@@ -666,39 +630,43 @@ export class Yasqe extends EventEmitter {
       this.updateQueryButton();
     }
   }
-  // private drawResizer() {
-  //   if (this.resizeWrapper) return;
-  //   this.resizeWrapper = document.createElement("div");
-  //   addClass(this.resizeWrapper, "resizeWrapper");
-  //   const chip = document.createElement("div");
-  //   addClass(chip, "resizeChip");
-  //   this.resizeWrapper.appendChild(chip);
-  //   this.resizeWrapper.addEventListener("mousedown", this.initDrag, false);
-  //   this.resizeWrapper.addEventListener("dblclick", this.expandEditor);
-  //   this.rootEl.appendChild(this.resizeWrapper);
-  // }
-  private initDrag() {
-    document.documentElement.addEventListener("mousemove", this.doDrag, false);
-    document.documentElement.addEventListener("mouseup", this.stopDrag, false);
+  private drawResizer() {
+    if (this.resizeWrapper) return;
+    this.resizeWrapper = document.createElement("div");
+    addClass(this.resizeWrapper, "resizeWrapper");
+    const chip = document.createElement("div");
+    addClass(chip, "resizeChip");
+    this.resizeWrapper.appendChild(chip);
+    this.resizeWrapper.addEventListener("mousedown", this.initDrag.bind(this), false);
+    this.resizeWrapper.addEventListener("dblclick", this.expandEditor.bind(this));
+    this.rootEl.appendChild(this.resizeWrapper);
+  }
+  private boundDoDrag = (event: MouseEvent) => this.doDrag(event);
+  private boundStopDrag = () => this.stopDrag();
+  private initDrag(event: MouseEvent) {
+    event.preventDefault();
+    document.documentElement.addEventListener("mousemove", this.boundDoDrag, false);
+    document.documentElement.addEventListener("mouseup", this.boundStopDrag, false);
   }
   private calculateDragOffset(event: MouseEvent, rootEl: HTMLElement) {
-    let parentOffset = 0;
-    // offsetParent is, at the time of writing, a working draft. see https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetParent
-    if (rootEl.offsetParent) parentOffset = (rootEl.offsetParent as HTMLElement).offsetTop;
-    let scrollOffset = 0;
-    let parentElement = rootEl.parentElement;
-    while (parentElement) {
-      scrollOffset += parentElement.scrollTop;
-      parentElement = parentElement.parentElement;
-    }
-    return event.clientY - parentOffset - this.rootEl.offsetTop + scrollOffset;
+    const rect = rootEl.getBoundingClientRect();
+    return event.clientY - rect.top;
   }
   private doDrag(event: MouseEvent) {
-    this.getWrapperElement().style.height = this.calculateDragOffset(event, this.rootEl) + "px";
+    event.preventDefault();
+    const newHeight = this.calculateDragOffset(event, this.rootEl);
+    const minHeight = 100; // Minimum height in pixels
+    const maxHeight = window.innerHeight - 100; // Maximum height
+    const constrainedHeight = Math.max(minHeight, Math.min(maxHeight, newHeight));
+    this.getWrapperElement().style.height = constrainedHeight + "px";
+    // Resize the Monaco editor to fit the new container size
+    if (this.editor) {
+      this.editor.layout();
+    }
   }
   private stopDrag() {
-    document.documentElement.removeEventListener("mousemove", this.doDrag, false);
-    document.documentElement.removeEventListener("mouseup", this.stopDrag, false);
+    document.documentElement.removeEventListener("mousemove", this.boundDoDrag, false);
+    document.documentElement.removeEventListener("mouseup", this.boundStopDrag, false);
     this.emit("resize", this.getWrapperElement().style.height);
     if (this.getStorageId() && this.persistentConfig) {
       // If there is no storage id there is no persistency wanted
@@ -706,7 +674,9 @@ export class Yasqe extends EventEmitter {
       this.saveQuery();
     }
     // Refresh the editor to make sure the 'hidden' lines are rendered
-    // this.refresh();
+    if (this.editor) {
+      this.editor.layout();
+    }
   }
   public duplicateLine() {
     const cur = this.getDoc().getCursor();
@@ -928,6 +898,20 @@ export class Yasqe extends EventEmitter {
   }
 
   public expandEditor() {
+    this.setSize();
+    // Resize the Monaco editor to fit the new container size
+    // if (this.editor) {
+    //   this.editor.layout();
+    // }
+  }
+
+  public setSize(height: string = "60vh", width: string = "100%") {
+    this.getWrapperElement().style.height = height;
+    this.getWrapperElement().style.width = width;
+    // Resize the Monaco editor to fit the new container size
+    // if (this.editor) {
+    //   this.editor.layout();
+    // }
     // TODO: this.setSize(null, "100%");
   }
 
@@ -935,8 +919,11 @@ export class Yasqe extends EventEmitter {
     // Abort running query
     this.abortQuery();
     this.unregisterEventListeners();
-    this.resizeWrapper?.removeEventListener("mousedown", this.initDrag, false);
-    this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor);
+    this.resizeWrapper?.removeEventListener("mousedown", this.initDrag.bind(this), false);
+    this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor.bind(this));
+    // Clean up any remaining drag listeners
+    document.documentElement.removeEventListener("mousemove", this.doDrag.bind(this), false);
+    document.documentElement.removeEventListener("mouseup", this.stopDrag.bind(this), false);
     window.removeEventListener("hashchange", this.handleHashChange);
     window.removeEventListener("beforeunload", this.handleBeforeUnload);
     document.removeEventListener("visibilitychange", this.handleVisibilityChange);
@@ -1077,3 +1064,39 @@ export interface PersistentConfig {
 // declare function runMode(text:string, mode:any, out:any):void
 
 export default Yasqe;
+
+// class LspInfoOverlayWidget implements monaco.editor.IOverlayWidget {
+//   private domNode: HTMLElement;
+
+//   constructor(private readonly editor: monaco.editor.IStandaloneCodeEditor, backend: any) {
+//     this.domNode = document.createElement("div");
+//     this.domNode.style.background = "#444";
+//     this.domNode.style.color = "#fff";
+//     this.domNode.style.padding = "0.3em 0.5em";
+//     this.domNode.style.fontSize = "12px";
+//     this.domNode.style.borderRadius = "4px";
+//     this.domNode.style.cursor = "pointer";
+//     this.domNode.addEventListener("mouseover", () => {
+//       this.domNode.style.filter = "brightness(60%)";
+//     });
+//     this.domNode.addEventListener("mouseout", () => {
+//       this.domNode.style.filter = "";
+//     });
+//     this.domNode.innerText = "ℹ️ Backends Info";
+//     this.domNode.onclick = () => {
+//       // const info = getLanguageServerState();
+//       alert(JSON.stringify(backend, null, 2));
+//     };
+//   }
+//   getId(): string {
+//     return "lsp.info.overlay";
+//   }
+//   getDomNode(): HTMLElement {
+//     return this.domNode;
+//   }
+//   getPosition(): monaco.editor.IOverlayWidgetPosition {
+//     return {
+//       preference: monaco.editor.OverlayWidgetPositionPreference.BOTTOM_RIGHT_CORNER,
+//     };
+//   }
+// }

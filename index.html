@@ -9,6 +9,9 @@
         font-family: sans-serif;
         margin: 0px;
       }
+      a:hover, button:hover {
+        filter: brightness(70%);
+      }
       /* Nav */
       .navItem a {
         color: #555;
@@ -26,20 +29,15 @@
       /* Theme */
       .theme-switcher {
         margin-left: auto;
-        margin-right: 20px;
+        margin-right: 1em;
         align-self: center;
       }
       .theme-switcher button {
-        background: #cccccc;
-        color: white;
+        background: none;
         border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
         cursor: pointer;
-        font-size: 14px;
-      }
-      .theme-switcher button:hover {
-        background: #e0e0e0;
+        font-size: 20px;
+        padding: 0;
       }
       /* Dark theme styles */
       body.dark-theme {
@@ -68,18 +66,15 @@
   </head>
 
   <body>
-    <div style="background:#eee">
-      <nav style="display: flex">
-        <img src="/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo">
-        <ul style="display: flex; list-style: none; align-self: center">
-          <li class="navItem active"><a class="nav-link" href="/">Yasgui</a></li>
-          <li class="navItem"><a class="nav-link" href="/yasqer.html">Yasqe + Yasr</a></li>
-        </ul>
-        <div class="theme-switcher">
-          <button id="theme-toggle">🌙</button>
-        </div>
-      </nav>
-    </div>
+    <nav style="display: flex; background:#eee">
+      <ul style="display: flex; list-style: none; align-self: center">
+        <li class="navItem active"><a class="nav-link" href="/">Yasgui</a></li>
+        <li class="navItem"><a class="nav-link" href="/yasqer.html">Yasqe + Yasr</a></li>
+      </ul>
+      <div class="theme-switcher">
+        <button id="theme-toggle">🌙</button>
+      </div>
+    </nav>
 
     <div id="yasgui"></div>
 

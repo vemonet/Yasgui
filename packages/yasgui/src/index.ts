@@ -237,7 +237,6 @@ export class Yasgui extends EventEmitter {
       const endpoint = selectedTab.getEndpoint();
       if (endpoint && endpoint !== this.currentEndpoint) {
         this.currentEndpoint = endpoint;
-        console.debug("Setting up endpoint backend for selected tab:", endpoint);
         this.setupEndpointBackend(endpoint).catch((err) => {
           console.warn("Failed to setup endpoint backend for selected tab:", err);
         });
