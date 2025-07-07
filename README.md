@@ -1,5 +1,7 @@
 # 🫆 SPARQL Qlue editor
 
+[![Deploy to GitHub Pages](https://github.com/vemonet/Yasgui/actions/workflows/deploy.yml/badge.svg)](https://github.com/vemonet/Yasgui/actions/workflows/deploy.yml)
+
 Yasgui consists of three components: 
 
 - Yasqe, a SPARQL query editor
