@@ -44,6 +44,7 @@ export default defineConfig({
     format: "es",
     plugins: () => [wasm()],
   },
+  // plugins: [wasm()],
 });
 
 // /** Build configuration for individual packages */

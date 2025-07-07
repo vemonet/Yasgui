@@ -19,8 +19,11 @@
   <link rel="icon" href="/yasgui.png" type="image/png">
   <style>
     body {
-      font-family: 'Roboto', sans-serif;
+      font-family: sans-serif;
       margin: 0px;
+    }
+    a:hover, button:hover {
+      filter: brightness(70%);
     }
     .navItem a {
       color: #555;
@@ -35,10 +38,64 @@
       color: black;
       font-size: 110%;
     }
+    /* Theme */
+    .theme-switcher {
+      margin-left: auto;
+      margin-right: 20px;
+      align-self: center;
+      display: flex;
+      align-items: center;
+      gap: 2em;
+    }
+    .theme-switcher button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 0;
+    }
+    /* Dark theme styles */
+    body.dark-theme {
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+    }
+    body.dark-theme nav {
+      background: #2d2d30 !important;
+    }
+    body.dark-theme .navItem a {
+      color: #cccccc;
+    }
+    body.dark-theme .navItem a:hover {
+      color: #ffffff;
+    }
+    body.dark-theme .navItem.active a {
+      color: #e0e0e0;
+    }
+    body.dark-theme .yasgui .tabsList .tab a {
+      color: #c0c0c0;
+    }
+    body.dark-theme .yasr .yasr_btn {
+      color: #c0c0c0;
+    }
+    body.dark-theme .yasgui .autocompleteList {
+      background: #2d2d30;
+    }
+    body.dark-theme nav img {
+      filter: invert(1) !important;
+    }
   </style>
-  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
 </head>
 <body>
+  <div style="background:#eee">
+    <nav style="display: flex">
+      <img src="/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo">
+      <div class="theme-switcher">
+        <button id="theme-toggle" title="Switch theme">🌙</button>
+        <a class="nav-link" href="https://github.com/vemonet/Yasgui" title="See source code on GitHub" target="_blank"><img src="/github.svg" alt="GitHub" style="width: 20px; height: 20px;"></a>
+      </div>
+    </nav>
+  </div>
+
   <div id="yasgui"></div>
 
   <script type="module">
@@ -48,33 +105,70 @@
     import '@zazuko/yasqe/dist/yasqe.css';
     import '@zazuko/yasr/dist/index.css';
 
-    window.onpageshow = function () {
-      window.yasgui = new Yasgui(document.getElementById("yasgui"), {
-        requestConfig: {
-          endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
-          // endpoint: "https://dbpedia.org/sparql",
+    function getSystemTheme() {
+      if (typeof window !== "undefined" && window.matchMedia) {
+        return (window.matchMedia("(prefers-color-scheme: dark)").matches) ? 'dark' : 'light';
+      }
+      return 'light';
+    }
+    function updateThemeBtn(currentTheme) {
+      document.getElementById('theme-toggle').textContent = currentTheme === 'dark'
+        ? '☀️'
+        : '🌙';
+    }
+
+    // document.addEventListener('DOMContentLoaded', function () {
+    // Initialize page theme based on system preference
+    let currentTheme = getSystemTheme();
+    if (currentTheme === 'dark') document.body.classList.add('dark-theme');
+
+    const yasgui = new Yasgui(document.getElementById("yasgui"), {
+      requestConfig: {
+        endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+      },
+      yasqe: {
+        theme: currentTheme,
+      },
+      endpointCatalogueOptions: {
+        ...Yasgui.defaults.endpointCatalogueOptions,
+        getData: () => {
+          return [
+            {
+              endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+            },
+            {
+              endpoint: "https://sparql.uniprot.org/sparql/",
+            },
+            {
+              endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql",
+            },
+            {
+              endpoint: "https://dbpedia.org/sparql",
+            },
+          ];
         },
-        endpointCatalogueOptions: {
-          ...Yasgui.defaults.endpointCatalogueOptions,
-          getData: () => {
-            return [
-              {
-                endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
-              },
-              {
-                endpoint: "https://sparql.uniprot.org/sparql/",
-              },
-              {
-                endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql",
-              },
-              {
-                endpoint: "https://dbpedia.org/sparql",
-              },
-            ];
-          },
+      }
+    });
+
+    // Theme toggle button
+    const themeToggle = document.getElementById('theme-toggle');
+    updateThemeBtn(currentTheme)
+    themeToggle.addEventListener('click', async () => {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      try {
+        // Update Monaco editor theme
+        await yasgui.getTab().getYasqe().setTheme(currentTheme);
+        // Update page theme
+        if (currentTheme === 'dark') {
+          document.body.classList.add('dark-theme');
+        } else {
+          document.body.classList.remove('dark-theme');
         }
-      });
-    };
+        updateThemeBtn(currentTheme)
+      } catch (error) {
+        console.error('Failed to switch theme:', error);
+      }
+    });
   </script>
 </body>
 </html>

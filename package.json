@@ -11,14 +11,16 @@
   ],
   "scripts": {
     "dev": "vite",
+    "dev:build": "vite build",
+    "dev:preview": "vite preview",
     "build": "npm run build --workspaces",
-    "build:utils": "npm run build -w packages/utils",
-    "build:yasqe": "npm run build -w packages/yasqe",
-    "build:yasr": "npm run build -w packages/yasr",
-    "build:yasgui": "npm run build -w packages/yasgui",
-    "build:demo": "npm run build -w packages/demo",
-    "dev:demo": "npm run dev -w packages/demo",
-    "preview:demo": "npm run preview -w packages/demo",
+    "utils:build": "npm run build -w packages/utils",
+    "yasqe:build": "npm run build -w packages/yasqe",
+    "yasr:build": "npm run build -w packages/yasr",
+    "yasgui:build": "npm run build -w packages/yasgui",
+    "demo:build": "npm run build -w packages/demo",
+    "demo:dev": "npm run dev -w packages/demo",
+    "demo:preview": "npm run preview -w packages/demo",
     "eslint": "eslint \"packages/**/*.{ts,tsx,html,json}\" --fix",
     "fmt": "prettier --write . && eslint \"packages/**/*.{ts,tsx,html,json}\" --fix",
     "lint": "prettier --check . && eslint \"packages/**/*.{ts,tsx,html,json}\"",
@@ -39,34 +41,6 @@
     "release": "changeset publish",
     "prepare": "husky"
   },
-  "betterScripts": {
-    "dev": {
-      "command": "npm run util:buildWebpackConfig && webpack-dev-server --host 0.0.0.0 --port 4000 --config ./webpack/config.js",
-      "env": {
-        "NODE_ENV": "development"
-      }
-    },
-    "build": {
-      "command": "rm -rf ./build && npm run util:buildWebpackConfig && webpack --config ./webpack/config.js && ./webpack/distributeBuildFiles.sh",
-      "env": {
-        "NODE_ENV": "production"
-      }
-    }
-  },
-  "lint-staged": {
-    "*.ts?(x)": [
-      "prettier --parser typescript --write"
-    ],
-    "*.js": [
-      "prettier --write"
-    ],
-    "*.css": [
-      "prettier --parser css --write"
-    ],
-    "*.scss": [
-      "prettier --parser scss --write"
-    ]
-  },
   "dependencies": {
     "autoprefixer": "^10.4.16",
     "babel-loader": "^9.1.3",
@@ -80,26 +54,6 @@
     "mocha": "^10.2.0",
     "node-static": "^0.7.11",
     "sass-embedded": "^1.69.5"
-  },
-  "bundlesize": [
-    {
-      "compression": "none",
-      "path": "build/yasgui.min.js",
-      "maxSize": "1.10 mb"
-    },
-    {
-      "compression": "none",
-      "path": "build/yasr.min.js",
-      "maxSize": "660 kB"
-    },
-    {
-      "compression": "none",
-      "path": "build/yasqe.min.js",
-      "maxSize": "495 kB"
-    }
-  ],
-  "overrides": {
-    "brotli-size": "4.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.23.5",
@@ -143,5 +97,53 @@
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4",
     "webpack-livereload-plugin": "^3.0.2"
+  },
+  "betterScripts": {
+    "dev": {
+      "command": "npm run util:buildWebpackConfig && webpack-dev-server --host 0.0.0.0 --port 4000 --config ./webpack/config.js",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    },
+    "build": {
+      "command": "rm -rf ./build && npm run util:buildWebpackConfig && webpack --config ./webpack/config.js && ./webpack/distributeBuildFiles.sh",
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  },
+  "lint-staged": {
+    "*.ts?(x)": [
+      "prettier --parser typescript --write"
+    ],
+    "*.js": [
+      "prettier --write"
+    ],
+    "*.css": [
+      "prettier --parser css --write"
+    ],
+    "*.scss": [
+      "prettier --parser scss --write"
+    ]
+  },
+  "bundlesize": [
+    {
+      "compression": "none",
+      "path": "build/yasgui.min.js",
+      "maxSize": "1.10 mb"
+    },
+    {
+      "compression": "none",
+      "path": "build/yasr.min.js",
+      "maxSize": "660 kB"
+    },
+    {
+      "compression": "none",
+      "path": "build/yasqe.min.js",
+      "maxSize": "495 kB"
+    }
+  ],
+  "overrides": {
+    "brotli-size": "4.0.0"
   }
 }

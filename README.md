@@ -473,6 +473,6 @@ npm run build
 
 ## 📜 License
 
-This is a fork from Zazuko from software written by Triply.
+This is a fork from [Zazuko](https://zazuko.com/) fork of a software written by [Triply](https://triplydb.com/).
 
 This code is released under the MIT license.

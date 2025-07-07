@@ -17,9 +17,10 @@ export default defineConfig({
     rollupOptions: {
       plugins: [typescript()],
       external: [],
-      // output: {
-      //   inlineDynamicImports: true,
-      // },
+      output: {
+        // Enable cleaner file structure
+        inlineDynamicImports: true,
+      },
     },
   },
   optimizeDeps: {
