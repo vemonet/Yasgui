@@ -1,62 +1,149 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Yasgui</title>
-  <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      margin: 0px;
-    }
-    .navItem a {
-      color: #555;
-      text-decoration: none;
-      padding: 5px;
-      padding-right: 15px;
-    }
-    .navItem a:hover {
-      color: #222;
-    }
-    .navItem.active a {
-      color: black;
-      font-size: 110%;
-    }
-  </style>
-  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-</head>
-<body>
-  <div style="background:#eee">
-    <nav style="display: flex">
-      <img src="/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo">
-      <ul style="display: flex; list-style: none; align-self: center">
-        <li class="navItem active"><a class="nav-link" href="/">Yasgui</a></li>
-        <li class="navItem"><a class="nav-link" href="/yasqe.html">Yasqe</a></li>
-        <li class="navItem"><a class="nav-link" href="/yasr.html">Yasr</a></li>
-      </ul>
-    </nav>
-  </div>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yasgui</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0px;
+      }
+      /* Nav */
+      .navItem a {
+        color: #555;
+        text-decoration: none;
+        padding: 5px;
+        padding-right: 15px;
+      }
+      .navItem a:hover {
+        color: #222;
+      }
+      .navItem.active a {
+        color: black;
+        font-size: 110%;
+      }
+      /* Theme */
+      .theme-switcher {
+        margin-left: auto;
+        margin-right: 20px;
+        align-self: center;
+      }
+      .theme-switcher button {
+        background: #cccccc;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .theme-switcher button:hover {
+        background: #e0e0e0;
+      }
+      /* Dark theme styles */
+      body.dark-theme {
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+      }
+      body.dark-theme nav {
+        background: #2d2d30 !important;
+      }
+      body.dark-theme .navItem a {
+        color: #cccccc;
+      }
+      body.dark-theme .navItem a:hover {
+        color: #ffffff;
+      }
+      body.dark-theme .navItem.active a {
+        color: #e0e0e0;
+      }
+      body.dark-theme .yasgui .tabsList .tab a {
+        color: #c0c0c0;
+      }
+      body.dark-theme .yasr .yasr_btn {
+        color: #c0c0c0;
+      }
+    </style>
+  </head>
 
-  <div id="yasgui"></div>
+  <body>
+    <div style="background:#eee">
+      <nav style="display: flex">
+        <img src="/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo">
+        <ul style="display: flex; list-style: none; align-self: center">
+          <li class="navItem active"><a class="nav-link" href="/">Yasgui</a></li>
+          <li class="navItem"><a class="nav-link" href="/yasqe.html">Yasqe</a></li>
+          <li class="navItem"><a class="nav-link" href="/yasr.html">Yasr</a></li>
+        </ul>
+        <div class="theme-switcher">
+          <button id="theme-toggle">🌙</button>
+        </div>
+      </nav>
+    </div>
 
-  <script type="module">
-    // For development, use the source code directly:
-    import Yasgui from './packages/yasgui/src/index.ts';
+    <div id="yasgui"></div>
 
-    // For testing production build:
-    // import Yasgui from './packages/yasgui/dist/yasgui.js';
-    // import './packages/yasgui/dist/yasgui.css';
-    // import './packages/yasqe/dist/yasqe.css';
-    // import './packages/yasr/dist/index.css';
+    <script type="module">
+      // For development, use the source code directly:
+      import Yasgui from './packages/yasgui/src/index.ts';
 
-    window.onpageshow = function () {
-      window.yasgui = new Yasgui(document.getElementById("yasgui"), {
-        requestConfig: {
-          endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
-          // endpoint: "https://dbpedia.org/sparql",
+      // For testing production build:
+      // import Yasgui from './packages/yasgui/dist/yasgui.js';
+      // import './packages/yasgui/dist/yasgui.css';
+      // import './packages/yasqe/dist/yasqe.css';
+      // import './packages/yasr/dist/index.css';
+
+      function getSystemTheme() {
+        if (typeof window !== "undefined" && window.matchMedia) {
+          return (window.matchMedia("(prefers-color-scheme: dark)").matches) ? 'dark' : 'light';
         }
-      });
-    };
-  </script>
-</body>
+        return 'light';
+      }
+      function updateThemeBtn(currentTheme) {
+        document.getElementById('theme-toggle').textContent = currentTheme === 'dark'
+          ? '☀️'
+          : '🌙';
+      }
+
+      window.onpageshow = function () {
+        // Initialize page theme based on system preference
+        let currentTheme = getSystemTheme();
+        if (currentTheme === 'dark') document.body.classList.add('dark-theme');
+
+        window.yasgui = new Yasgui(document.getElementById("yasgui"), {
+          requestConfig: {
+            endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+            // endpoint: "https://dbpedia.org/sparql",
+          },
+          yasqe: {
+            theme: currentTheme,
+          }
+        });
+
+        const themeToggle = document.getElementById('theme-toggle');
+        updateThemeBtn(currentTheme)
+
+        // Event listener for theme toggle button
+        themeToggle.addEventListener('click', async () => {
+          currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+          console.log('Switching theme for Yasqe editor:', currentTheme);
+          try {
+            // Update Monaco editor theme
+            await window.yasgui.getTab().getYasqe().setTheme(currentTheme);
+            // Update page theme
+            if (currentTheme === 'dark') {
+              document.body.classList.add('dark-theme');
+            } else {
+              document.body.classList.remove('dark-theme');
+            }
+            updateThemeBtn(currentTheme)
+          } catch (error) {
+            console.error('Failed to switch theme:', error);
+          }
+        });
+      };
+    </script>
+  </body>
 </html>

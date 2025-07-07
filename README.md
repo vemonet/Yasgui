@@ -65,6 +65,9 @@ And pass a second argument to the Yasgui initializer to specify the default endp
 const yasgui = new Yasgui(document.getElementById("yasgui"), {
   requestConfig: { endpoint: "http://example.com/sparql" },
   copyEndpointOnNewTab: false,
+  yasqe: {
+    theme: "dark",
+  }
 });
 ```
 
@@ -201,6 +204,8 @@ yasqe.removePrefixes({ dbo: "http://dbpedia.org/ontology/" });
 yasqe.setSize(500, 300);
 // Collapsing prefixes if there are any. Use false to expand them.
 yasqe.collapsePrefixes(true);
+// Change the theme (light/dark)
+yasqe.setTheme("dark");
 ```
 
 ### Events

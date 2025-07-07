@@ -9,36 +9,19 @@ import LanguageServerWorker from "./languageServer.worker?worker&inline";
 // https://github.com/vitejs/vite/discussions/15547
 
 /**
- * Detects the user's preferred color scheme (light or dark)
- * @returns true if dark mode is preferred, false for light mode
- */
-function prefersDarkMode(): boolean {
-  if (typeof window !== "undefined" && window.matchMedia) {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  }
-  // Default to light
-  return false;
-}
-
-/**
- * Gets the appropriate theme configuration based on system preference
+ * Gets the appropriate theme configuration based on system preference or explicit theme
+ * @param theme - Optional theme preference ('light' or 'dark'), defaults to system preference
  * @returns object with theme name and VSCode theme name
  */
-export function getThemeConfig() {
-  if (prefersDarkMode()) {
-    return {
-      editorTheme: "vs-dark",
-      vscodeTheme: "SPARQL Solarized Dark Theme",
-    };
-  } else {
-    return {
-      editorTheme: "vs",
-      vscodeTheme: "SPARQL Custom Light Theme",
-    };
-  }
+export function getVsThemeConfig(theme?: "light" | "dark") {
+  return theme === "dark" ? "vs-dark" : "vs";
 }
 
-export async function buildWrapperConfig(container: HTMLElement, initial: string): Promise<WrapperConfig> {
+export async function buildWrapperConfig(
+  container: HTMLElement,
+  initial: string,
+  theme?: "light" | "dark"
+): Promise<WrapperConfig> {
   const workerPromise: Promise<Worker> = new Promise((resolve, reject) => {
     try {
       const instance: Worker = new LanguageServerWorker({ name: "Language Server" });
@@ -71,9 +54,6 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
   extensionFilesOrContents.set("/sparql-theme-light.json", JSON.stringify(sparqlThemeLight));
   extensionFilesOrContents.set("/sparql-theme-dark.json", JSON.stringify(sparqlThemeDark));
   extensionFilesOrContents.set("/sparql-theme-dark-solarized.json", JSON.stringify(sparqlThemeSolarizedDark));
-
-  // Get theme configuration based on system preference
-  const themeConfig = getThemeConfig();
 
   // Configure the Monaco editor and LS wrapper
   const wrapperConfig: WrapperConfig = {
@@ -122,7 +102,7 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
       editorOptions: {
         tabCompletion: "on",
         suggestOnTriggerCharacters: true,
-        theme: themeConfig.editorTheme,
+        theme: getVsThemeConfig(theme),
         fontSize: 14,
         fontFamily: "Source Code Pro",
         links: false,
@@ -140,7 +120,7 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
     vscodeApiConfig: {
       userConfiguration: {
         json: JSON.stringify({
-          "workbench.colorTheme": themeConfig.vscodeTheme,
+          // "workbench.colorTheme": themeConfig.vscodeTheme,
           "editor.guides.bracketPairsHorizontal": "active",
           "editor.lightbulb.enabled": "On",
           "editor.wordBasedSuggestions": "off",
@@ -175,6 +155,7 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
       //     }
       //   },
       // },
+      // TODO: trying this to fix error with service override when building for prod
       serviceOverrides: getConfigurationServiceOverride(),
     },
 
@@ -231,29 +212,3 @@ export async function buildWrapperConfig(container: HTMLElement, initial: string
   };
   return wrapperConfig;
 }
-
-// // TODO: Uncomment and check to support live theme changes
-// /**
-//  * Sets up a listener for system theme changes
-//  * @param callback Function to call when theme changes, receives the new theme config
-//  * @returns Function to remove the listener
-//  */
-// export function setupThemeChangeListener(callback: (themeConfig: ReturnType<typeof getThemeConfig>) => void): () => void {
-//   if (typeof window === 'undefined' || !window.matchMedia) {
-//     // Return a no-op function if matchMedia is not available
-//     return () => {};
-//   }
-//   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-//   const handleChange = () => {
-//     callback(getThemeConfig());
-//   };
-//   // Use the modern addEventListener if available, fallback to addListener
-//   if (mediaQuery.addEventListener) {
-//     mediaQuery.addEventListener('change', handleChange);
-//     return () => mediaQuery.removeEventListener('change', handleChange);
-//   } else if (mediaQuery.addListener) {
-//     mediaQuery.addListener(handleChange);
-//     return () => mediaQuery.removeListener(handleChange);
-//   }
-//   return () => {};
-// }

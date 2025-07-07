@@ -12,11 +12,12 @@ import * as Sparql from "./sparql";
 import * as imgs from "./imgs";
 import { merge } from "lodash-es";
 import { MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper";
+// import { MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper/dist/";
 import * as monaco from "monaco-editor";
 // import { initialize } from '@codingame/monaco-vscode-api'
 // import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
 
-import { buildWrapperConfig } from "./editor/config";
+import { buildWrapperConfig, getVsThemeConfig } from "./editor/config";
 
 import getDefaults from "./defaults";
 import { YasqeAjaxConfig } from "./sparql";
@@ -98,6 +99,7 @@ export class Yasqe extends EventEmitter {
   public config: Config;
   public persistentConfig: PersistentConfig | undefined;
   public languageClientWrapper: any;
+  public monacoWrapper: MonacoEditorLanguageClientWrapper | undefined;
   public editor: monaco.editor.IStandaloneCodeEditor | undefined; // Monaco editor instance, will be set in initialize
 
   /**
@@ -118,10 +120,11 @@ export class Yasqe extends EventEmitter {
       // import { StaticServices } from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices';
       // const codeEditorService = StaticServices.codeEditorService.get();
       const wrapper = new MonacoEditorLanguageClientWrapper();
-      const wrapperConfig = await buildWrapperConfig(el, this.config.value);
+      const wrapperConfig = await buildWrapperConfig(el, this.config.value, this.config.theme);
       await wrapper.initAndStart(wrapperConfig);
+      this.monacoWrapper = wrapper;
       this.languageClientWrapper = wrapper.getLanguageClientWrapper("sparql");
-      this.editor = wrapper.getEditor();
+      this.editor = this.monacoWrapper.getEditor();
       // TODO: fix height definition
       el.style.height = "500px";
 
@@ -262,9 +265,6 @@ export class Yasqe extends EventEmitter {
         },
       });
 
-      const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
-      wrapper.getEditor()!.addOverlayWidget(overlay);
-
       // Do some post processing, init storage
       this.drawButtons();
       const storageId = this.getStorageId();
@@ -290,6 +290,9 @@ export class Yasqe extends EventEmitter {
       // Add visibility change event to save query when tab becomes hidden
       document.addEventListener("visibilitychange", this.handleVisibilityChange);
 
+      const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
+      wrapper.getEditor()!.addOverlayWidget(overlay);
+
       // // Size editor to the height of the wrapper element
       // if (this.persistentConfig && this.persistentConfig.editorHeight) {
       //   this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
@@ -314,6 +317,15 @@ export class Yasqe extends EventEmitter {
 
   public setValue(newValue: string) {
     this.editor?.setValue(newValue);
+  }
+
+  /**
+   * Switch the theme of the Monaco editor
+   * @param theme - The theme to switch to ('light' or 'dark')
+   */
+  public async setTheme(theme: "light" | "dark"): Promise<void> {
+    monaco.editor.setTheme(getVsThemeConfig(theme));
+    // console.log("Options:", this.monacoWrapper?.getEditor()?.getRawOptions().theme)
   }
 
   public getWrapperElement(): HTMLDivElement {
@@ -1052,6 +1064,7 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   editorHeight: string;
   queryingDisabled: string | undefined; // The string will be the message displayed when hovered
   prefixCcApi: string; // the suggested default prefixes URL API getter
+  theme: "light" | "dark";
 }
 
 export interface PersistentConfig {
