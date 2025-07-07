@@ -13,27 +13,25 @@ This is a fork of [zazuko/Yasgui](zazuko/Yasgui) which introduces these changes:
 - [x] Migrate build tool from webpack to [**vite**](https://vite.dev/), the packages are now available as ES modules and Common JS.
 - [x] Replace CodeMirror editor to use the [**Qlue-ls language server**](https://github.com/IoannisNezis/Qlue-ls) and [**Monaco editor**](https://microsoft.github.io/monaco-editor/) (what powers VSCode)
 - [x] Autocomplete is now [built-in based on SPARQL queries](https://arxiv.org/abs/2104.14595) sent to the endpoint, queries can be customized and optimized
-- [ ] Built-in support for light/dark themes
+- [x] Built-in support for light/dark themes
 
 ## 📥 Installation
 
 ### Via package managers
 
-To include Yasgui in a project include the package run the commands below.
-
-#### npm
+To include Yasgui in a project include the package run the command below.
 
 ```sh
 npm i --save @zazuko/yasgui
 ```
 
-#### yarn
+If you want to work with the Yasqe and Yasr components separately:
 
 ```sh
-yarn add @zazuko/yasgui
+npm i --save @zazuko/yasqe @zazuko/yasr
 ```
 
-### Via cdn
+### Via CDN
 
 To include Yasgui in your webpage, all that's needed is importing the Yasgui JavaScript and CSS files, and initializing a Yasgui object:
 
@@ -49,33 +47,110 @@ To include Yasgui in your webpage, all that's needed is importing the Yasgui Jav
 </body>
 ```
 
-If you only want to use Yasgui for querying a specific endpoint, you can add the following styling to disable the endpoint selector:
+## ⚡️ Usage
+
+### 🚀 Deploy Yasgui
+
+You can deploy `Yasgui` directly, this provide an input to change the SPARQL endpoint and tabs to have multiple editors open at the same time.
+
+Here is a minimal example to deploy Yasgui directly in a `.html` file:
 
 ```html
-<style>
-  .yasgui .autocompleteWrapper {
-    display: none !important;
-  }
-</style>
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yasgui</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="yasgui"></div>
+
+    <script type="module">
+      import Yasgui from '@zazuko/Yasgui';
+      import '@zazuko/yasgui/dist/yasgui.css';
+
+      const yasgui = new Yasgui(document.getElementById("yasgui"), {
+        requestConfig: {
+          endpoint: "https://sparql.uniprot.org/sparql/",
+        },
+        yasqe: {
+          theme: "dark",
+        },
+      });
+    </script>
+  </body>
+</html>
 ```
 
-And pass a second argument to the Yasgui initializer to specify the default endpoint:
+> [!TIP]
+>
+> If you only want to use Yasgui for querying a specific endpoint, you can add the following styling to disable the endpoint selector:
+>
+> ```html
+> <style>
+>     .yasgui .autocompleteWrapper {
+>       display: none !important;
+>     }
+> </style>
+> ```
+>
 
-```js
-const yasgui = new Yasgui(document.getElementById("yasgui"), {
-  requestConfig: { endpoint: "http://example.com/sparql" },
-  copyEndpointOnNewTab: false,
-  yasqe: {
-    theme: "dark",
-  }
-});
+### 🎨 Deploy Yasqe and Yasr
+
+Otherwise you can manually deploy `Yasqe` (editor) and `Yasr` (query results) separately, alone or together. Here is a minimal example to deploy and connect them:
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yasqe + Yasr</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 0px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="yasqe"></div>
+    <div id="yasr"></div>
+
+    <script type="module">
+      import Yasqe from '@zazuko/Yasqe';
+      import Yasr from '@zazuko/Yasr';
+      import '@zazuko/yasqe/dist/yasqe.css';
+      import '@zazuko/yasr/dist/yasr.css';
+     
+      // Initialize Yasqe and Yasr
+      const yasqe = new Yasqe(document.getElementById("yasqe"), {
+        requestConfig: { endpoint: "https://sparql.uniprot.org/sparql/" },
+        theme: "dark",
+        showQueryButton: false,
+        createShareableLink: null,
+      });
+      const yasr = new Yasr(document.getElementById("yasr"), {});
+
+      // Connect Yasqe to Yasr, pass Yasqe query response to Yasr
+      yasqe.on("queryResponse", (response, duration) => {
+        yasr.setResponse(response, duration);
+      });
+    </script>
+  </body>
+</html>
 ```
 
-Note: If you've already opened the Yasgui page before, you must first clear your local-storage cache before you will see the changes taking effect.
+## 📚 API Reference
 
-## 🧩 API Reference
-
-### Yasgui API
+### 🧩 Yasgui API
 
 Yasgui features tabs. Each tab has its own isolated query and results.
 
@@ -91,7 +166,7 @@ yasgui.addTab(
 yasgui.getTab("tab_id_x");
 ```
 
-### Tab API
+#### Tab API
 
 ```js
 // set the query of the tab
@@ -104,7 +179,7 @@ tab.yasqe;
 tab.yasr;
 ```
 
-### Events
+#### Yasgui Events
 
 Yasgui emits several Events. For information on how to use Events, see [NodeJS's Event documentation](https://nodejs.org/api/events.html).
 
@@ -115,7 +190,7 @@ yasgui.on("query", (instance: Yasgui, tab: Tab) => {});
 yasgui.on("queryResponse", (instance: Yasgui, tab: tab) => {});
 ```
 
-### Configuration
+#### Yasgui Configuration
 
 This configuration object is accessible/changeable via `Yasgui.defaults` or `yasgui.config`. You can pass these along when initializing Yasgui as well. To change settings to the Yasqe and Yasr components used by Yasgui, you are best off changing the `Yasgui.Yasqe.defaults` and `Yasgui.Yasr.defaults` objects before initializing Yasgui.
 
@@ -169,11 +244,11 @@ This configuration object is accessible/changeable via `Yasgui.defaults` or `yas
 }
 ```
 
-## 🎨 Yasqe
+### 🎨 Yasqe
 
 Yasqe uses the Qlue-ls SPARQL language server and Monaco editor.
 
-### Yasqe API
+#### Yasqe API
 
 The Yasqe API can be accessed via `yasqe` (if Yasqe is run standalone) or via a tab `yasgui.getTab().yasqe` when run in Yasgui
 
@@ -208,7 +283,7 @@ yasqe.collapsePrefixes(true);
 yasqe.setTheme("dark");
 ```
 
-### Events
+#### Yasqe Events
 
 Yasqe emits several Events. For information on how to use Events, see [NodeJS's Event documentation](https://nodejs.org/api/events.html).
 
@@ -219,7 +294,7 @@ yasqe.on("query", (instance: Yasqe, req: superagent.SuperAgentRequest) => {});
 yasqe.on("queryResponse", (instance: Yasqe, req: superagent.SuperAgentRequest, duration: number) => {});
 ```
 
-### Configuration
+#### Yasqe Configuration
 
 The configuration options, for Yasqe can be accessed through `Yasgui.Yasqe` or `yasqe.options`.
 
@@ -238,11 +313,11 @@ requestOpts: {
 },
 ```
 
-## 📊 Yasr
+### 📊 Yasr
 
 Yasr is an extendable library that renders SPARQL results. Yasr is responsible for gluing the different visualization plugins together, and providing utilities such as SPARQL result parsers.
 
-### Yasr API
+#### Yasr API
 
 ```ts
 // Set and draw a SPARQL response. The parameter is either
@@ -266,7 +341,7 @@ yasr.selectPlugin("table")
 yasr.download()
 ```
 
-### Events
+#### Yasr Events
 
 ```ts
 // Fires just before a plugins draws the results
@@ -275,7 +350,7 @@ yasr.on("draw",(instance: Yasr, plugin: Plugin) => void);
 yasr.on("drawn",(instance: Yasr, plugin: Plugin) => void);
 ```
 
-### Configuration
+#### Yasr Configuration
 
 This configuration object is accessible/changeable via `Yasr.defaults` and `yasr.options`, and you can pass these along when initializing Yasr as well. Output visualizations are defined separately.
 
@@ -291,12 +366,12 @@ persistencyExpire // default: 30 days
 prefixes: {"dbo":"http://dbpedia.org/ontology/",/*...*/}
 ```
 
-### Yasr plugins
+#### Yasr plugins
 
 Each plugin has its own configuration options.
 These options can be accessed through `Yasr.plugins`.
 
-#### Table
+##### Table
 
 This plugin shows SPARQL results as a table, using the [DataTables.net](https://datatables.net/) plugin. This plugin is defined in `Yasr.plugins.table` and can be configured using `Yasr.plugins.table.defaults`.
 
@@ -305,7 +380,7 @@ This plugin shows SPARQL results as a table, using the [DataTables.net](https://
 openIriInNewWindow = true;
 ```
 
-#### Raw Response
+##### Raw Response
 
 A plugin which uses [CodeMirror](https://codemirror.net/) to present the SPARQL results as-is. This plugin is defined at `Yasr.plugins.response` and can be configured using `Yasr.plugins.response.defaults`.
 
@@ -315,7 +390,7 @@ A plugin which uses [CodeMirror](https://codemirror.net/) to present the SPARQL 
 maxLines = 30;
 ```
 
-### Writing a Yasr plugin
+#### Writing a Yasr plugin
 
 To register a Yasr plugin, add it to Yasr by running `Yasr.registerPlugin(pluginName: string, plugin: Plugin)`. Below is an example implementation for rendering the result of an Ask query, which returns either `true` or `false`. See also the implementations of the [Table](https://github.com/TriplyDB/YASGUI.YASR/blob/gh-pages/src/table.js) and [Raw Response](https://github.com/TriplyDB/YASGUI.YASR/blob/gh-pages/src/rawResponse.js) plugins.
 

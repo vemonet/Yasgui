@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yasgui</title>
+    <title>Yasqe + Yasr</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <style>
       body {
@@ -81,16 +81,19 @@
         </div>
       </nav>
     </div>
+    <p>Demo on how to deploy and connect <code>Yasqe</code> and <code>Yasr</code></p>
 
-    <div id="yasgui"></div>
+    <div id="yasqe"></div>
+    <div id="yasr"></div>
 
     <script type="module">
       // For development, use the source code directly:
-      import Yasgui from './packages/yasgui/src/index.ts';
+      import Yasqe from './packages/yasqe/src/index.ts';
+      import Yasr from './packages/yasr/src/index.ts';
 
       // For testing production build:
-      // import Yasgui from './packages/yasgui/dist/yasgui.js';
-      // import './packages/yasgui/dist/yasgui.css';
+      // import Yasqe from './packages/yasqe/dist/yasqe.js';
+      // import Yasqr from './packages/yasr/dist/yasr.js';
       // import './packages/yasqe/dist/yasqe.css';
       // import './packages/yasr/dist/index.css';
 
@@ -106,29 +109,36 @@
           : '🌙';
       }
 
-      // document.addEventListener('DOMContentLoaded', function () {
       // Initialize page theme based on system preference
       let currentTheme = getSystemTheme();
       if (currentTheme === 'dark') document.body.classList.add('dark-theme');
 
-      const yasgui = new Yasgui(document.getElementById("yasgui"), {
+      // Initialize Yasqe and Yasr
+      const yasqe = new Yasqe(document.getElementById("yasqe"), {
         requestConfig: {
           endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
           // endpoint: "https://dbpedia.org/sparql",
         },
-        yasqe: {
-          theme: currentTheme,
-        }
+        theme: currentTheme,
+        showQueryButton: false,
+        createShareableLink: null,
+      });
+      const yasr = new Yasr(document.getElementById("yasr"), {});
+
+      // Connect Yasqe to Yasr - when query response is received, pass it to Yasr
+      yasqe.on("queryResponse", (response, duration) => {
+        // console.log("Query response received:", response);
+        yasr.setResponse(response, duration);
       });
 
+      // Theme toggle button
       const themeToggle = document.getElementById('theme-toggle');
       updateThemeBtn(currentTheme)
-      // Event listener for theme toggle button
       themeToggle.addEventListener('click', async () => {
         currentTheme = currentTheme === 'light' ? 'dark' : 'light';
         try {
           // Update Monaco editor theme
-          await yasgui.getTab().getYasqe().setTheme(currentTheme);
+          await yasqe.setTheme(currentTheme);
           // Update page theme
           if (currentTheme === 'dark') {
             document.body.classList.add('dark-theme');
