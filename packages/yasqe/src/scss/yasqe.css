@@ -78,7 +78,7 @@
     visibility: hidden;
     border-radius: 2px;
   }
-  // Show resizeChip when yasqe is hovered
+  /* Show resizeChip when yasqe is hovered */
   &:hover {
     .resizeChip {
       visibility: visible;

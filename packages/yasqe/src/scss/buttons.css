@@ -1,7 +1,9 @@
-.yasqe {
-  $queryButtonWidth: 40px;
-  $queryButtonHeight: 40px;
+:root {
+  --queryButtonWidth: 40px;
+  --queryButtonHeight: 40px;
+}
 
+.yasqe {
   .yasqe_btn {
     color: #333;
     border: 1px solid transparent;
@@ -137,14 +139,14 @@
       background: none;
       padding: 0;
       cursor: pointer;
-      width: $queryButtonWidth;
-      height: $queryButtonHeight;
+      width: var(--queryButtonWidth);
+      height: var(--queryButtonHeight);
 
       .queryIcon {
         display: block;
         svg {
-          width: $queryButtonWidth;
-          height: $queryButtonHeight;
+          width: var(--queryButtonWidth);
+          height: var(--queryButtonHeight);
         }
       }
       .svgImg {

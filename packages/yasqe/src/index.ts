@@ -15,8 +15,8 @@ import getDefaults from "./defaults";
 import { YasqeAjaxConfig } from "./sparql";
 import { EndpointMetadata } from "./editor/endpointMetadata";
 // import tooltip from "./tooltip";
-import "./scss/yasqe.scss";
-import "./scss/buttons.scss";
+import "./scss/yasqe.css";
+import "./scss/buttons.css";
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
