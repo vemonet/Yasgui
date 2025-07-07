@@ -5,7 +5,6 @@
   "type": "module",
   "main": "dist/yasgui.umd.cjs",
   "module": "dist/yasgui.js",
-  "types": "dist/types/index.d.ts",
   "license": "MIT",
   "author": "Triply <info@triply.cc>",
   "homepage": "https://github.com/zazuko/Yasgui",
