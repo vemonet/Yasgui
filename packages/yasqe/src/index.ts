@@ -1,28 +1,22 @@
-import "./scss/yasqe.scss";
-import "./scss/buttons.scss";
 import { EventEmitter } from "events";
-import { findFirstPrefixLine } from "./prefixFold";
-import { getPrefixesFromQuery, addPrefixes, removePrefixes, Prefixes } from "./prefixUtils";
-import { getPreviousNonWsToken, getNextNonWsToken } from "./tokenUtils";
-import * as sparql11Mode from "../grammar/tokenizer";
 import { Storage as YStorage } from "@sib-swiss/yasgui-utils";
 import * as queryString from "query-string";
 import { drawSvgStringAsElement, addClass, removeClass } from "@sib-swiss/yasgui-utils";
-import * as Sparql from "./sparql";
-import * as imgs from "./imgs";
 import { merge } from "lodash-es";
 import { MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper";
-// import { MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper/dist/";
 import * as monaco from "monaco-editor";
 // import { initialize } from '@codingame/monaco-vscode-api'
 // import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
 
-import { buildWrapperConfig, getVsThemeConfig } from "./editor/config";
-
+import * as Sparql from "./sparql";
+import * as imgs from "./imgs";
+import { buildWrapperConfig, getVsThemeConfig } from "./editor/editorConfig";
 import getDefaults from "./defaults";
 import { YasqeAjaxConfig } from "./sparql";
 import { EndpointMetadata } from "./editor/endpointMetadata";
 // import tooltip from "./tooltip";
+import "./scss/yasqe.scss";
+import "./scss/buttons.scss";
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
@@ -31,7 +25,6 @@ export interface Yasqe {
   off(eventName: "queryAbort", handler: (instance: Yasqe, req: Request) => void): this;
   on(eventName: "queryResponse", handler: (instance: Yasqe, response: any, duration: number) => void): this;
   off(eventName: "queryResponse", handler: (instance: Yasqe, response: any, duration: number) => void): this;
-  showHint: (conf: HintConfig) => void;
   on(eventName: "error", handler: (instance: Yasqe) => void): this;
   off(eventName: "error", handler: (instance: Yasqe) => void): this;
   on(eventName: "blur", handler: (instance: Yasqe) => void): this;
@@ -263,6 +256,7 @@ export class Yasqe extends EventEmitter {
       }
       if (this.config.resizeable) this.drawResizer();
       // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
+      // TODO: add widgets?
       // const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
       // wrapper.getEditor()!.addOverlayWidget(overlay);
     } catch (error) {
@@ -306,9 +300,7 @@ export class Yasqe extends EventEmitter {
     this.config = merge({}, Yasqe.defaults, conf);
 
     // Initialize the editor and then setup everything else
-    this.initEditor(this.rootEl).then(() => {
-      this.setupAfterEditorInit();
-    });
+    this.initEditor(this.rootEl);
   }
 
   private handleBeforeUnload = () => {
@@ -318,91 +310,6 @@ export class Yasqe extends EventEmitter {
   private handleVisibilityChange = () => {
     if (document.hidden) this.saveQuery();
   };
-
-  private setupAfterEditorInit() {}
-
-  public getDoc() {
-    if (!this.editor) throw new Error("Editor not initialized");
-    return {
-      // Get the current cursor position
-      getCursor: (position: string = "head") => {
-        const selection = this.editor!.getSelection();
-        if (!selection) return { line: 0, ch: 0 };
-
-        // In CodeMirror, 'start' is the beginning of selection, 'end' is the end,
-        // 'head' is the moving end, and 'anchor' is the fixed end
-        if (position === "start" || (position === "head" && !selection.isEmpty())) {
-          const pos = selection.getStartPosition();
-          return { line: pos.lineNumber - 1, ch: pos.column - 1 };
-        } else if (position === "end" || position === "head") {
-          const pos = selection.getEndPosition();
-          return { line: pos.lineNumber - 1, ch: pos.column - 1 };
-        } else {
-          // 'anchor'
-          const pos = selection.getPosition();
-          return { line: pos.lineNumber - 1, ch: pos.column - 1 };
-        }
-      },
-      // Get line content
-      getLine: (line: number) => {
-        if (!this.editor?.getModel()) return "";
-        return this.editor.getModel()!.getLineContent(line + 1); // Monaco is 1-based
-      },
-      // Get the last line number
-      lastLine: () => {
-        return this.editor?.getModel()?.getLineCount() ? this.editor!.getModel()!.getLineCount() - 1 : 0;
-      },
-      // Check if something is selected
-      somethingSelected: () => {
-        const selection = this.editor!.getSelection();
-        return selection ? !selection.isEmpty() : false;
-      },
-      // Get the selected text
-      getSelection: () => {
-        if (!this.editor?.getModel()) return "";
-        const selection = this.editor.getSelection();
-        if (!selection) return "";
-        return this.editor.getModel()!.getValueInRange(selection);
-      },
-      // Replace a range of text
-      replaceRange: (text: string, from: Position, to?: Position) => {
-        if (!this.editor?.getModel()) return;
-        const fromPos = {
-          lineNumber: from.line + 1,
-          column: from.ch + 1,
-        };
-        const toPos = to
-          ? {
-              lineNumber: to.line + 1,
-              column: to.ch + 1,
-            }
-          : fromPos;
-        this.editor.executeEdits("api", [
-          {
-            range: new monaco.Range(fromPos.lineNumber, fromPos.column, toPos.lineNumber, toPos.column),
-            text: text,
-          },
-        ]);
-      },
-      // Get index from position
-      indexFromPos: (pos: Position) => {
-        if (!this.editor?.getModel()) return 0;
-        return this.editor.getModel()!.getOffsetAt({
-          lineNumber: pos.line + 1,
-          column: pos.ch + 1,
-        });
-      },
-      // Get position from index
-      posFromIndex: (index: number) => {
-        if (!this.editor?.getModel()) return { line: 0, ch: 0 };
-        const position = this.editor.getModel()!.getPositionAt(index);
-        return {
-          line: position.lineNumber - 1,
-          ch: position.column - 1,
-        };
-      },
-    };
-  }
 
   private handleHashChange = () => {
     this.config.consumeShareLink?.(this);
@@ -678,13 +585,7 @@ export class Yasqe extends EventEmitter {
       this.editor.layout();
     }
   }
-  public duplicateLine() {
-    const cur = this.getDoc().getCursor();
-    if (cur) {
-      const line = this.getDoc().getLine(cur.line);
-      this.getDoc().replaceRange(line + "\n" + line, { ch: 0, line: cur.line }, { ch: line.length, line: cur.line });
-    }
-  }
+
   private updateQueryButton(status?: "valid" | "error") {
     if (!this.queryBtn) return;
 
@@ -756,29 +657,6 @@ export class Yasqe extends EventEmitter {
     }
   }
 
-  // public getValueWithoutComments() {
-  //   var cleanedQuery = "";
-  //   (<any>Yasqe).runMode(this.getValue(), "sparql11", function (stringVal: string, className: string) {
-  //     if (className != "comment") {
-  //       cleanedQuery += stringVal;
-  //     }
-  //   });
-  //   return cleanedQuery;
-  // }
-
-  /**
-   * Token management
-   */
-  public getCompleteToken(token?: Token, cur?: Position): Token | undefined {
-    // return getCompleteToken(this, token, cur);
-    return undefined;
-  }
-  public getPreviousNonWsToken(line: number, token: Token): Token {
-    return getPreviousNonWsToken(this, line, token);
-  }
-  public getNextNonWsToken(lineNumber: number, charNumber?: number): Token | undefined {
-    return getNextNonWsToken(this, lineNumber, charNumber);
-  }
   /**
    * Notification management
    */
@@ -819,24 +697,6 @@ export class Yasqe extends EventEmitter {
     }
   }
 
-  /**
-   * Prefix management
-   */
-  public collapsePrefixes(collapse = true) {
-    const firstPrefixLine = findFirstPrefixLine(this);
-    if (firstPrefixLine === undefined) return; //nothing to collapse
-    // this.foldCode(firstPrefixLine, (<any>CodeMirror).fold.prefix, collapse ? "fold" : "unfold");
-  }
-
-  public getPrefixesFromQuery(): Prefixes {
-    return getPrefixesFromQuery(this);
-  }
-  public addPrefixes(prefixes: string | Prefixes): void {
-    return addPrefixes(this, prefixes);
-  }
-  public removePrefixes(prefixes: Prefixes): void {
-    return removePrefixes(this, prefixes);
-  }
   public updateWidget() {
     if (
       (this as any).cursorCoords &&
@@ -857,6 +717,7 @@ export class Yasqe extends EventEmitter {
     this.abortQuery();
     return Sparql.executeQuery(this, config);
   }
+
   public getUrlParams() {
     //first try hash
     let urlParams: queryString.ParsedQuery = {};
@@ -871,6 +732,7 @@ export class Yasqe extends EventEmitter {
     }
     return urlParams;
   }
+
   public configToQueryParams(): queryString.ParsedQuery {
     //extend existing link, so first fetch current arguments
     let urlParams: any = {};
@@ -878,6 +740,7 @@ export class Yasqe extends EventEmitter {
     urlParams["query"] = this.getValue();
     return urlParams;
   }
+
   public queryParamsToConfig(params: queryString.ParsedQuery) {
     if (params && params.query && typeof params.query === "string") {
       this.setValue(params.query);
@@ -934,60 +797,6 @@ export class Yasqe extends EventEmitter {
   static defaults = getDefaults();
 }
 
-export type TokenizerState = sparql11Mode.State;
-export type Position = CodeMirror.Position;
-export type Token = CodeMirror.Token;
-
-export interface HintList {
-  list: Hint[];
-  from: Position;
-  to: Position;
-}
-export interface Hint {
-  text: string;
-  displayText?: string;
-  className?: string;
-  render?: (el: HTMLElement, self: Hint, data: any) => void;
-  from?: Position;
-  to?: Position;
-}
-
-export type HintFn = { async?: boolean } & (() => Promise<HintList> | HintList);
-export interface HintConfig {
-  completeOnSingleClick?: boolean;
-  container?: HTMLElement;
-  closeCharacters?: RegExp;
-  completeSingle?: boolean;
-  // A hinting function, as specified above. It is possible to set the async property on a hinting function to true, in which case it will be called with arguments (cm, callback, ?options), and the completion interface will only be popped up when the hinting function calls the callback, passing it the object holding the completions. The hinting function can also return a promise, and the completion interface will only be popped when the promise resolves. By default, hinting only works when there is no selection. You can give a hinting function a supportsSelection property with a truthy value to indicate that it supports selections.
-  hint: HintFn;
-
-  // Whether the pop-up should be horizontally aligned with the start of the word (true, default), or with the cursor (false).
-  alignWithWord?: boolean;
-  // When enabled (which is the default), the pop-up will close when the editor is unfocused.
-  closeOnUnfocus?: boolean;
-  // Allows you to provide a custom key map of keys to be active when the pop-up is active. The handlers will be called with an extra argument, a handle to the completion menu, which has moveFocus(n), setFocus(n), pick(), and close() methods (see the source for details), that can be used to change the focused element, pick the current element or close the menu. Additionally menuSize() can give you access to the size of the current dropdown menu, length give you the number of available completions, and data give you full access to the completion returned by the hinting function.
-  customKeys?: any;
-
-  // Like customKeys above, but the bindings will be added to the set of default bindings, instead of replacing them.
-  extraKeys?: {
-    [key: string]: (
-      yasqe: Yasqe,
-      event: {
-        close: () => void;
-        data: {
-          from: Position;
-          to: Position;
-          list: Hint[];
-        };
-        length: number;
-        menuSize: () => void;
-        moveFocus: (movement: number) => void;
-        pick: () => void;
-        setFocus: (index: number) => void;
-      }
-    ) => void;
-  };
-}
 export interface RequestConfig<Y> {
   queryArgument: string | ((yasqe: Y) => string) | undefined;
   endpoint: string | ((yasqe: Y) => string);
@@ -1036,14 +845,11 @@ export interface Config extends Partial<CodeMirror.EditorConfiguration> {
   //Addon specific addon ts defs, or missing props from codemirror conf
   highlightSelectionMatches: { showToken?: RegExp; annotateScrollbar?: boolean };
   tabMode: string;
-  foldGutter: any; //This should be of type boolean, or an object. However, setting it to any to avoid
   //ts complaining about incorrectly extending, as the cm def only defined it has having a boolean type.
   matchBrackets: boolean;
-  hintConfig: Partial<HintConfig>;
   resizeable: boolean;
   editorHeight: string;
   queryingDisabled: string | undefined; // The string will be the message displayed when hovered
-  prefixCcApi: string; // the suggested default prefixes URL API getter
   theme: "light" | "dark";
 }
 
@@ -1052,9 +858,6 @@ export interface PersistentConfig {
   editorHeight: string;
   backends: { [key: string]: EndpointMetadata };
 }
-
-//add missing static functions, added by e.g. addons
-// declare function runMode(text:string, mode:any, out:any):void
 
 export default Yasqe;
 

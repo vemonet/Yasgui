@@ -1,17 +1,20 @@
 import { EventEmitter } from "events";
+import { eq, mergeWith } from "lodash-es";
+
 import { addClass, removeClass, getAsValue } from "@sib-swiss/yasgui-utils";
-import { TabListEl } from "./TabElements";
-import TabPanel from "./TabPanel";
 import { default as Yasqe, PlainRequestConfig } from "@sib-swiss/yasqe";
 import { Parser, PersistentConfig as YasrPersistentConfig } from "@sib-swiss/yasr";
-import { eq, mergeWith } from "lodash-es";
+import { TabListEl } from "./TabElements";
+import TabPanel from "./TabPanel";
 import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
 import "./tab.scss";
 import { getRandomId, default as Yasgui, YasguiRequestConfig } from "./";
+
 export interface PersistedJsonYasr extends YasrPersistentConfig {
   responseSummary: Parser.ResponseSummary;
 }
+
 export interface PersistedJson {
   name: string;
   id: string;
@@ -25,6 +28,7 @@ export interface PersistedJson {
   };
   requestConfig: YasguiRequestConfig;
 }
+
 export interface Tab {
   on(event: string | symbol, listener: (...args: any[]) => void): this;
 
@@ -47,6 +51,7 @@ export interface Tab {
   on(event: "autocompletionClose", listener: (tab: Tab) => void): this;
   emit(event: "autocompletionClose", tab: Tab): boolean;
 }
+
 export class Tab extends EventEmitter {
   private persistentJson: PersistedJson;
   public yasgui: Yasgui;
@@ -414,6 +419,7 @@ export class Tab extends EventEmitter {
     // The configuration will be used by updateYasrForTab in the Yasgui class
     // No need to create instance or bind events here since global instance handles it
   }
+
   destroy() {
     // this.removeAllListeners();
     // this.tabPanel?.destroy();
@@ -423,6 +429,7 @@ export class Tab extends EventEmitter {
     // this.yasr = undefined;
     // this.destroyYasqe();
   }
+
   public static getDefaults(yasgui?: Yasgui): PersistedJson {
     return {
       yasqe: {

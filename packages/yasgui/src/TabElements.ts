@@ -1,9 +1,12 @@
+import sortablejs from "sortablejs";
+
+import { hasClass, addClass, removeClass } from "@sib-swiss/yasgui-utils";
 import Yasgui from "./";
 import TabContextMenu from "./TabContextMenu";
-import { hasClass, addClass, removeClass } from "@sib-swiss/yasgui-utils";
-import sortablejs from "sortablejs";
 import "./TabElements.scss";
+
 export interface TabList {}
+
 export class TabListEl {
   private tabList: TabList;
   private tabId: string;

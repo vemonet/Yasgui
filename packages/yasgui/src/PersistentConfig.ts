@@ -78,6 +78,7 @@ export default class PersistentConfig {
     delete this.persistedJson.tabConfig[tabId];
     this.toStorage();
   }
+
   private registerListeners() {
     this.yasgui.on("tabChange", (_yasgui, tab) => {
       this.persistedJson.tabConfig[tab.getId()] = tab.getPersistedJson();

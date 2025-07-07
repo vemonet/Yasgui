@@ -489,6 +489,12 @@ Or preview the production build (need to build first):
 npm run demo:preview
 ```
 
+### To do
+
+- [ ] Collapse all prefixes as 1 block
+- [ ] `getPrefixesFromQuery`
+- [ ] Check previous `extraKeys` (see `yasqe/defaults.ts`) are supported in new editor
+
 ## 📜 License
 
 This is a fork from [Zazuko](https://zazuko.com/) fork of a software written by [Triply](https://triplydb.com/).

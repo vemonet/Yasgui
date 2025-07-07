@@ -130,7 +130,7 @@ export async function fetchPrefixMap(endpoint: string): Promise<PrefixMap> {
       }
     });
   } catch (error: any) {
-    console.log(`Error retrieving Prefixes from ${endpoint}:`, error.message || error);
+    console.warn(`Error retrieving Prefixes from ${endpoint}:`, error.message || error);
   }
   if (Object.keys(prefixes).length === 0) {
     return {
@@ -147,6 +147,7 @@ export async function fetchPrefixMap(endpoint: string): Promise<PrefixMap> {
   return prefixes;
 }
 
+/** Base backend used by all endpoints (same completion queries) */
 export const baseBackend = {
   default: false,
   prefixMap: {

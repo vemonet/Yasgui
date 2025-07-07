@@ -480,13 +480,6 @@ export class Yasgui extends EventEmitter {
       createShareableLink: () => this.getActiveTab()?.getShareableLink() || "",
     };
 
-    if (!yasqeConf.hintConfig) {
-      yasqeConf.hintConfig = {};
-    }
-    if (!yasqeConf.hintConfig.container) {
-      yasqeConf.hintConfig.container = this.rootEl;
-    }
-
     this.yasqe = new Yasqe(this.yasqeWrapperEl, yasqeConf);
 
     // Initialize YASR with base configuration
@@ -587,8 +580,9 @@ export class Yasgui extends EventEmitter {
           typeof this.config.yasr.prefixes === "function"
             ? this.config.yasr.prefixes(this.yasr!)
             : this.config.yasr.prefixes;
-        const prefixesFromYasqe = this.yasqe?.getPrefixesFromQuery();
-        return { ...prefixesFromYasrConf, ...prefixesFromYasqe };
+        // TODO: const prefixesFromYasqe = this.yasqe?.getPrefixesFromQuery();
+        // return { ...prefixesFromYasrConf, ...prefixesFromYasqe };
+        return prefixesFromYasrConf;
       };
       // Set response if exists
       if (tabConfig.yasr.response) {

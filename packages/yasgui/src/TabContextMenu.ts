@@ -1,9 +1,11 @@
+import { cloneDeep } from "lodash-es";
+
 import { addClass } from "@sib-swiss/yasgui-utils";
 import { default as Yasgui, getRandomId } from "./";
 import Tab from "./Tab";
 import { TabListEl } from "./TabElements";
-import { cloneDeep } from "lodash-es";
 import "./TabContextMenu.scss";
+
 export interface TabContextConfig {
   name: string;
   action: (this: HTMLElement, ev: MouseEvent) => any;

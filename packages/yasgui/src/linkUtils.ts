@@ -4,6 +4,7 @@ import { default as Tab, PersistedJson } from "./Tab";
 import Yasr from "@sib-swiss/yasr";
 import { PlainRequestConfig } from "@sib-swiss/yasqe";
 import { getAsValue } from "@sib-swiss/yasgui-utils";
+
 const getUrlParams = function (_url?: string) {
   let urlFromWindow = false;
   if (!_url) {
@@ -21,6 +22,7 @@ const getUrlParams = function (_url?: string) {
 };
 
 export type RequestArgs = { [argName: string]: string | string[] };
+
 export function appendArgsToUrl(_url: string, args: RequestArgs): string {
   const url = new JsUri(_url);
   for (const arg in args) {
@@ -41,7 +43,7 @@ export function createShareLink(forUrl: string, tab: Tab) {
   const configObject = createShareConfig(tab);
   let key: keyof ShareConfigObject; // Need to specify here because left hand side of a for..in cannot be typed
   for (key in configObject) {
-    if (!configObject.hasOwnProperty(key)) continue;
+    if (!Object.prototype.hasOwnProperty.call(configObject, key)) continue;
     if (key === "namedGraphs") {
       configObject.namedGraphs.forEach((ng) => tmpUrl.addQueryParam("namedGraph", ng));
     } else if (key === "defaultGraphs") {
@@ -70,6 +72,7 @@ export function createShareLink(forUrl: string, tab: Tab) {
   currentUrl.anchor(tmpUrl.query().substr(1));
   return currentUrl.toString();
 }
+
 export type ShareConfigObject = {
   query: string;
   endpoint: string;

@@ -1,7 +1,10 @@
-import { default as Yasqe, Config, RequestConfig } from "./";
 import { merge, isFunction } from "lodash-es";
 import * as queryString from "query-string";
+
+import { default as Yasqe, Config, RequestConfig } from "./";
+
 export type YasqeAjaxConfig = Config["requestConfig"];
+
 export interface PopulatedAjaxConfig {
   url: string;
   reqMethod: "POST" | "GET";
@@ -10,9 +13,12 @@ export interface PopulatedAjaxConfig {
   args: RequestArgs;
   withCredentials: boolean;
 }
+
 function getRequestConfigSettings(yasqe: Yasqe, conf?: Partial<Config["requestConfig"]>): RequestConfig<Yasqe> {
+  // @ts-ignore
   return isFunction(conf) ? conf(yasqe) : conf;
 }
+
 // type callback = AjaxConfig.callbacks['complete'];
 export function getAjaxConfig(
   yasqe: Yasqe,
@@ -48,6 +54,9 @@ export function getAjaxConfig(
    */
 }
 
+/**
+ * Execute SPARQL query given a Yasqe config
+ */
 export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Promise<any> {
   const queryStart = Date.now();
   try {
@@ -57,7 +66,7 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
       return; // Nothing to query
     }
     const abortController = new AbortController();
-    console.log("Executing query", populatedConfig);
+    // console.log("Executing query", populatedConfig);
 
     const fetchOptions: RequestInit = {
       method: populatedConfig.reqMethod,
@@ -122,9 +131,9 @@ export async function executeQuery(yasqe: Yasqe, config?: YasqeAjaxConfig): Prom
 }
 
 export type RequestArgs = { [argName: string]: string | string[] };
+
 export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]): RequestArgs {
   const queryMode = yasqe.getQueryMode();
-
   const data: RequestArgs = {};
   const config: RequestConfig<Yasqe> = getRequestConfigSettings(yasqe, _config);
   let queryArg = isFunction(config.queryArgument) ? config.queryArgument(yasqe) : config.queryArgument;
@@ -159,9 +168,9 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
         return argsObject;
       }, {})
     );
-
   return data;
 }
+
 export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) {
   const config: RequestConfig<Yasqe> = getRequestConfigSettings(yasqe, _config);
   let acceptHeader = null;
@@ -179,6 +188,7 @@ export function getAcceptHeader(yasqe: Yasqe, _config: Config["requestConfig"]) 
   }
   return acceptHeader;
 }
+
 export function getAsCurlString(yasqe: Yasqe, _config?: Config["requestConfig"]) {
   const ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
   if (!ajaxConfig) return "";
@@ -196,7 +206,6 @@ export function getAsCurlString(yasqe: Yasqe, _config?: Config["requestConfig"])
     }
   }
   const segments: string[] = ["curl"];
-
   if (ajaxConfig.reqMethod === "GET") {
     url += `?${queryString.stringify(ajaxConfig.args)}`;
     segments.push(url);

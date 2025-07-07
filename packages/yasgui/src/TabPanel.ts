@@ -1,14 +1,17 @@
-import { addClass, drawSvgStringAsElement, removeClass } from "@sib-swiss/yasgui-utils";
-import "./TabPanel.scss";
-import Tab from "./Tab";
-import { RequestConfig } from "@sib-swiss/yasqe";
 import { toPairs, fromPairs } from "lodash-es";
+
+import { addClass, drawSvgStringAsElement, removeClass } from "@sib-swiss/yasgui-utils";
+import { RequestConfig } from "@sib-swiss/yasqe";
+import Tab from "./Tab";
+import "./TabPanel.scss";
+
 const AcceptOptionsMap: { key: string; value: string }[] = [
   { key: "JSON", value: "application/sparql-results+json" },
   { key: "XML", value: "application/sparql-results+xml" },
   { key: "CSV", value: "text/csv" },
   { key: "TSV", value: "text/tab-separated-values" },
 ];
+
 const AcceptHeaderGraphMap: { key: string; value: string }[] = [
   { key: "Turtle", value: "text/turtle" },
   { key: "JSON", value: "application/rdf+json" },
@@ -19,7 +22,9 @@ const AcceptHeaderGraphMap: { key: string; value: string }[] = [
   { key: "CSV", value: "text/csv" },
   { key: "TSV", value: "text/tab-separated-values" },
 ];
+
 type TextInputPair = { name: string; value: string };
+
 export default class TabPanel {
   menuElement!: HTMLElement;
   settingsButton!: HTMLButtonElement;
@@ -420,6 +425,7 @@ function createInput(content: string, parent?: HTMLElement) {
   if (parent) parent.appendChild(input);
   return input;
 }
+
 function getRemoveButton(deleteAction: () => void, parent?: HTMLElement) {
   const button = document.createElement("button");
   button.textContent = "X";
@@ -431,6 +437,7 @@ function getRemoveButton(deleteAction: () => void, parent?: HTMLElement) {
   };
   return button;
 }
+
 function drawSingleInput(root: HTMLElement, content: Array<string | undefined>, onBlur: () => void) {
   const lastRow: HTMLDivElement | null = root.querySelector(".graphInput:last-of-type");
   if (!lastRow || getInputValues(lastRow)[0] !== "" || lastRow.getElementsByTagName("button").length !== 0) {
@@ -441,6 +448,7 @@ function drawSingleInput(root: HTMLElement, content: Array<string | undefined>, 
     }
   }
 }
+
 function drawSingleInputWhenEmpty(
   root: HTMLElement,
   index: number,
@@ -472,6 +480,7 @@ function drawDoubleInput(root: HTMLElement, content: Array<TextInputPair | undef
     }
   }
 }
+
 function drawDoubleInputWhenEmpty(
   root: HTMLElement,
   index: number,
