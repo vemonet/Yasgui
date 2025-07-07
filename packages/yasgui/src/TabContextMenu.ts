@@ -1,5 +1,3 @@
-import { cloneDeep } from "lodash-es";
-
 import { addClass } from "@sib-swiss/yasgui-utils";
 import { default as Yasgui, getRandomId } from "./";
 import Tab from "./Tab";
@@ -102,7 +100,7 @@ export default class TabContextMenu {
     // Copy tab functionality`
     this.copyTabEl.onclick = () => {
       if (!tab) return;
-      const config = cloneDeep(tab.getPersistedJson());
+      const config = structuredClone(tab.getPersistedJson());
       config.id = getRandomId();
       this.yasgui.addTab(true, config);
     };

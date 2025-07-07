@@ -1,10 +1,11 @@
+// @ts-ignore
 import Autocomplete from "@tarekraafat/autocomplete.js";
 import { EventEmitter } from "events";
 import { pick } from "lodash-es";
 import { addClass } from "@sib-swiss/yasgui-utils";
-import "./endpointSelect.scss";
 import parse from "autosuggest-highlight/parse";
 import DOMPurify from "dompurify";
+import "./endpointSelect.css";
 
 //Export this here instead of from our custom-types folder of autocomplete-js
 //as this interface is exported via the yasgui config. The custom typings are
@@ -51,6 +52,7 @@ export interface EndpointSelectConfig<T = CatalogueItem> {
   getData: () => T[];
   renderItem: (data: AutocompleteItem<T> & RenderedCatalogueItem<T>, source: HTMLElement) => void;
 }
+
 export interface EndpointSelect {
   on(event: string | symbol, listener: (...args: any[]) => void): this;
   on(event: "remove", listener: (endpoint: string, history: string[]) => void): this;
@@ -65,6 +67,7 @@ export class EndpointSelect extends EventEmitter {
   private value: string;
   private history: CatalogueItem[];
   private inputField!: HTMLInputElement;
+
   constructor(initialValue: string, container: HTMLDivElement, options: EndpointSelectConfig, history: string[]) {
     super();
     this.container = container;
@@ -102,7 +105,7 @@ export class EndpointSelect extends EventEmitter {
         condition: () => true,
       },
       // threshold: -1,
-      searchEngine: (query, record) => {
+      searchEngine: (query: string, record) => {
         if (!query || query.trim().length === 0) {
           //show everything when we've got an empty search string
           return true;
@@ -124,7 +127,7 @@ export class EndpointSelect extends EventEmitter {
       resultsList: {
         render: true,
         destination: this.inputField,
-        container: (element) => {
+        container: (element: HTMLElement) => {
           // Remove id, there can be multiple yasgui's active on one page, we can't delete since the library will then add the default
           element.id = "";
           addClass(element, "autocompleteList");

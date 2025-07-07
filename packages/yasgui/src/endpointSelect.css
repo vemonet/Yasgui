@@ -80,7 +80,7 @@
       opacity: 0.5;
       font-weight: 700;
       text-align: end;
-      margin-left: auto; // Make sure x always appears at the same place
+      margin-left: auto; /* Make sure x always appears at the same place */
       visibility: hidden;
       background: none;
       border: none;
