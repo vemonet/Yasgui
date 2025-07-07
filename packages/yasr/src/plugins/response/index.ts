@@ -20,6 +20,8 @@ import * as faAlignIcon from "@fortawesome/free-solid-svg-icons/faAlignLeft";
 import { DeepReadonly } from "ts-essentials";
 import * as imgs from "../../imgs";
 
+// TODO: replace with Monaco editor
+
 export interface PluginConfig {
   maxLines: number;
 }

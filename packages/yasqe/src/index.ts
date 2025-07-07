@@ -257,9 +257,9 @@ export class Yasqe extends EventEmitter {
 
       // Size editor to the height of the wrapper element
       if (this.persistentConfig && this.persistentConfig.editorHeight) {
-        this.getWrapperElement().style.height = this.persistentConfig.editorHeight;
+        this.setSize(this.persistentConfig.editorHeight);
       } else if (this.config.editorHeight) {
-        this.getWrapperElement().style.height = this.config.editorHeight;
+        this.setSize(this.config.editorHeight);
       }
       if (this.config.resizeable) this.drawResizer();
       // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
@@ -898,21 +898,14 @@ export class Yasqe extends EventEmitter {
   }
 
   public expandEditor() {
-    this.setSize();
-    // Resize the Monaco editor to fit the new container size
-    // if (this.editor) {
-    //   this.editor.layout();
-    // }
+    this.setSize("60vh", "100%");
   }
 
-  public setSize(height: string = "60vh", width: string = "100%") {
-    this.getWrapperElement().style.height = height;
-    this.getWrapperElement().style.width = width;
+  public setSize(height?: string, width?: string) {
+    if (height) this.getWrapperElement().style.height = height;
+    if (width) this.getWrapperElement().style.width = width;
     // Resize the Monaco editor to fit the new container size
-    // if (this.editor) {
-    //   this.editor.layout();
-    // }
-    // TODO: this.setSize(null, "100%");
+    // if (this.editor) this.editor.layout();
   }
 
   public destroy() {
