@@ -8,12 +8,16 @@ Yasgui consists of three components:
 
 ## 🍴 About this fork
 
-This is a fork of [zazuko/Yasgui](zazuko/Yasgui) which introduces these changes:
+This is a fork of [@zazuko/Yasgui](https://github.com/zazuko/Yasgui) which introduces these changes:
 
-- [x] Migrate build tool from webpack to [**vite**](https://vite.dev/), the packages are now available as ES modules and Common JS.
-- [x] Replace CodeMirror editor to use the [**Qlue-ls language server**](https://github.com/IoannisNezis/Qlue-ls) and [**Monaco editor**](https://microsoft.github.io/monaco-editor/) (what powers VSCode)
+- [x] Use the [**Qlue-ls SPARQL language server**](https://github.com/IoannisNezis/Qlue-ls) and [**Monaco editor**](https://microsoft.github.io/monaco-editor/) (what powers VSCode), to replace the [CodeMirror5](https://codemirror.net/5/) editor.
 - [x] Autocomplete is now [built-in based on SPARQL queries](https://arxiv.org/abs/2104.14595) sent to the endpoint, queries can be customized and optimized
+- [x] Migrate build tool to [**vite**](https://vite.dev/) from webpack, the packages are now available as ES modules and Common JS.
 - [x] Built-in support for light/dark themes
+
+> [!CAUTION]
+>
+> This is a work in progress.
 
 ## 📥 Installation
 
@@ -453,22 +457,34 @@ export default function App() {
 
 ## 🛠️ Local development
 
-#### Installing dependencies
+### Installing dependencies
 
 ```sh
 npm i
 ```
 
-#### Running Yasgui locally
+### Running Yasgui locally
 
 ```sh
 npm run dev
 ```
 
-#### Compiling Yasgui
+### Compiling Yasgui
 
 ```sh
 npm run build
+```
+
+### Deploy demo
+
+```sh
+npm run demo:dev
+```
+
+Or preview the production build (need to build first):
+
+```sh
+npm run demo:preview
 ```
 
 ## 📜 License

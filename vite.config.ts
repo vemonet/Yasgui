@@ -4,7 +4,7 @@ import wasm from "vite-plugin-wasm";
 
 /** Function to get alias for packages */
 function getAliasFor(packageName: "yasgui" | "yasr" | "yasqe" | "utils") {
-  const fullPackageName = packageName === "utils" ? "@zazuko/yasgui-utils" : `@zazuko/${packageName}`;
+  const fullPackageName = packageName === "utils" ? "@sib-swiss/yasgui-utils" : `@sib-swiss/${packageName}`;
   const packagePath = resolve(__dirname, "packages", packageName, "src");
   return {
     // Handle deep imports like @zazuko/yasqe/src/editor/endpointMetadata
@@ -83,10 +83,10 @@ export default defineConfig({
 //         minify: isProd ? 'terser' : false,
 //         rollupOptions: {
 //           // Only externalize peer dependencies, bundle everything else
-//           external: buildPackage === 'utils' ? [] : ['@zazuko/yasgui-utils'],
+//           external: buildPackage === 'utils' ? [] : ['@sib-swiss/yasgui-utils'],
 //           output: {
 //             globals: buildPackage === 'utils' ? undefined : {
-//               '@zazuko/yasgui-utils': 'YasguiUtils'
+//               '@sib-swiss/yasgui-utils': 'YasguiUtils'
 //             },
 //             assetFileNames: (assetInfo) => {
 //               if (assetInfo.name?.endsWith('.css')) {

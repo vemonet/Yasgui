@@ -7,7 +7,7 @@ export default defineConfig({
     target: ["es2020"],
     lib: {
       entry: "src/index.ts",
-      name: "@zazuko/yasr",
+      name: "@sib-swiss/yasr",
       fileName: "yasr",
     },
     sourcemap: true,

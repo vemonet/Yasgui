@@ -7,7 +7,7 @@ export default defineConfig({
     target: ["es2020"],
     lib: {
       entry: "./src/index.ts",
-      name: "@zazuko/yasgui-utils",
+      name: "@sib-swiss/yasgui-utils",
       fileName: "yasgui-utils",
     },
     sourcemap: true,

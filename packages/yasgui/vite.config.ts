@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
+// import wasm from "vite-plugin-wasm";
+// import topLevelAwait from "vite-plugin-top-level-await";
 import typescript from "@rollup/plugin-typescript";
-import wasm from "vite-plugin-wasm";
 // import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
 export default defineConfig({
@@ -9,16 +10,16 @@ export default defineConfig({
     target: ["es2020"],
     lib: {
       entry: "src/index.ts",
-      name: "@zazuko/yasgui",
+      name: "@sib-swiss/yasgui",
       fileName: "yasgui",
     },
     sourcemap: true,
     rollupOptions: {
       plugins: [typescript()],
-      external: [],
-      // output: {
-      //   inlineDynamicImports: false,
-      // },
+      external: ["@sib-swiss/yasqe"],
+      output: {
+        inlineDynamicImports: true,
+      },
     },
   },
   css: {
@@ -32,17 +33,23 @@ export default defineConfig({
     include: [
       "vscode-textmate",
       "vscode-oniguruma",
-      // "@zazuko/yasqe",
+      // "@sib-swiss/yasqe",
     ],
     // exclude: [],
-    exclude: ["@zazuko/yasqe"],
+    exclude: ["@sib-swiss/yasqe"],
     // esbuildOptions: {
     //   plugins: [importMetaUrlPlugin],
     // },
   },
-  worker: {
-    format: "es",
-    plugins: () => [wasm()],
-  },
-  plugins: [wasm()],
+  // plugins: [
+  //   wasm(),
+  //   topLevelAwait(),
+  // ],
+  // worker: {
+  //   format: "es",
+  //   plugins: () => [
+  //     wasm(),
+  //     topLevelAwait(),
+  //   ],
+  // },
 });

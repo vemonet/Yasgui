@@ -236,7 +236,7 @@ const getHtml = (plugin) => `
   <link rel="stylesheet" href="build/pro-geo.min.css">
   <link rel="stylesheet" href="build/pro-geo3d.min.css">
   <link rel="stylesheet" href="build/pro-gchart.min.css">
-  <link href="./node_modules/@zazuko/yasqe/build/yasqe.min.css" rel="stylesheet">
+  <link href="./node_modules/@sib-swiss/yasqe/build/yasqe.min.css" rel="stylesheet">
 </head>
 
 <body>
@@ -248,7 +248,7 @@ const getHtml = (plugin) => `
   <script src="build/pro-geo.min.js"></script>
   <script src="build/pro-geo3d.min.js"></script>
   <script src="build/pro-gchart.min.js"></script>
-  <script src="./node_modules/@zazuko/yasqe/build/yasqe.min.js"></script>
+  <script src="./node_modules/@sib-swiss/yasqe/build/yasqe.min.js"></script>
   <script type="text/javascript">
     window.onload = function () {
       console.log('onload')

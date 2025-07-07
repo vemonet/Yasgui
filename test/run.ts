@@ -6,7 +6,7 @@ import * as http from "http";
 import * as chai from "chai";
 import { it, describe, before, beforeEach, after, afterEach } from "mocha";
 const expect = chai.expect;
-import Yasqe from "@zazuko/yasqe";
+import Yasqe from "@sib-swiss/yasqe";
 //@ts-ignore ignore unused warning
 import { setup, destroy, closePage, getPage, makeScreenshot, inspectLive, wait } from "./utils";
 

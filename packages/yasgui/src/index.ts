@@ -7,12 +7,12 @@ import { default as Tab, PersistedJson as PersistedTabJson } from "./Tab";
 import { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
 import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";
-import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@zazuko/yasqe";
-import { Backend, createBackendConf } from "@zazuko/yasqe/src/editor/endpointMetadata";
-import { default as Yasr, Config as YasrConfig } from "@zazuko/yasr";
-import { addClass, removeClass } from "@zazuko/yasgui-utils";
+import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@sib-swiss/yasqe";
+import { Backend, createBackendConf } from "@sib-swiss/yasqe/src/editor/endpointMetadata";
+import { default as Yasr, Config as YasrConfig } from "@sib-swiss/yasr";
+import { addClass, removeClass } from "@sib-swiss/yasgui-utils";
 import "./index.scss";
-import "@zazuko/yasr/src/scss/global.scss";
+import "@sib-swiss/yasr/src/scss/global.scss";
 
 if (window) {
   //We're storing yasqe and yasr as a member of Yasgui, but _also_ in the window

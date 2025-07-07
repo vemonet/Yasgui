@@ -14,10 +14,10 @@
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "@zazuko/yasgui": ["./packages/yasgui/src"],
-      "@zazuko/yasgui-utils": ["./packages/utils/src"],
-      "@zazuko/yasqe": ["./packages/yasqe/src"],
-      "@zazuko/yasr": ["./packages/yasr/src"]
+      "@sib-swiss/yasgui": ["./packages/yasgui/src"],
+      "@sib-swiss/yasgui-utils": ["./packages/utils/src"],
+      "@sib-swiss/yasqe": ["./packages/yasqe/src"],
+      "@sib-swiss/yasr": ["./packages/yasr/src"]
     }
   },
   "include": ["./packages/*/src/**/**/*", "./test/*"],

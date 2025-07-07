@@ -1,5 +1,5 @@
 {
-  "name": "@sib-swiss/qlue-editor-demo",
+  "name": "@sib-swiss/qlue-sparql-editor-demo",
   "version": "0.2.4",
   "description": "A demo website of the Qlue SPARQL editor.",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "upgrade": "npx npm-check-updates -u"
   },
   "dependencies": {
-    "@zazuko/yasgui": "*"
+    "@sib-swiss/yasgui": "*"
   },
   "keywords": [
     "SPARQL",
@@ -28,7 +28,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/sib-swiss/sparql-editor.git"
+    "url": "https://github.com/sib-swiss/yasgui.git"
   },
   "private": true
 }

@@ -31,7 +31,11 @@ export async function buildWrapperConfig(
       // });
 
       instance.onmessage = (event) => {
-        if (event.data.type === "ready") resolve(instance);
+        if (event.data.type === "ready") {
+          resolve(instance);
+        } else if (event.data.type === "error") {
+          reject(new Error(`Language server initialization failed: ${event.data.error}`));
+        }
       };
       instance.onerror = (error) => {
         console.error("Worker error:", error);

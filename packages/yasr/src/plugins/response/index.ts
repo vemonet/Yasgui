@@ -15,7 +15,7 @@ import "./index.scss";
 
 // require("codemirror/mode/javascript/javascript.js");
 // require("codemirror/lib/codemirror.css");
-import { drawSvgStringAsElement, addClass, removeClass, drawFontAwesomeIconAsSvg } from "@zazuko/yasgui-utils";
+import { drawSvgStringAsElement, addClass, removeClass, drawFontAwesomeIconAsSvg } from "@sib-swiss/yasgui-utils";
 import * as faAlignIcon from "@fortawesome/free-solid-svg-icons/faAlignLeft";
 import { DeepReadonly } from "ts-essentials";
 import * as imgs from "../../imgs";

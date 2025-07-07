@@ -1,5 +1,5 @@
 {
-  "name": "@zazuko/yasqe",
+  "name": "@sib-swiss/yasqe",
   "description": "Yet Another SPARQL Query Editor",
   "version": "4.5.0",
   "type": "module",
@@ -32,7 +32,7 @@
     "directory": "packages/yasqe"
   },
   "dependencies": {
-    "@zazuko/yasgui-utils": "*",
+    "@sib-swiss/yasgui-utils": "*",
     "codemirror": "^5.51.0",
     "lodash-es": "^4.17.15",
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^16.1.1",

@@ -1,5 +1,5 @@
 {
-  "name": "@zazuko/yasgui-utils",
+  "name": "@sib-swiss/yasgui-utils",
   "version": "4.5.0",
   "type": "module",
   "description": "Utils for YASGUI libs",

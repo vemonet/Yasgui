@@ -9,7 +9,7 @@ import Parser from "../../parsers";
 import { escape } from "lodash-es";
 import { Plugin, DownloadInfo } from "../";
 import Yasr from "../../";
-import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass } from "@zazuko/yasgui-utils";
+import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass } from "@sib-swiss/yasgui-utils";
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 import { DeepReadonly } from "ts-essentials";
 import { cloneDeep } from "lodash-es";

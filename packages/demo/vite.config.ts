@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  // base: "/qlue-sparql-editor/",
+  base: "/yasgui/",
   // server: {
   //   port: 3000,
   // },

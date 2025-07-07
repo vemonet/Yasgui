@@ -1,9 +1,9 @@
 import JsUri from "jsuri";
 
 import { default as Tab, PersistedJson } from "./Tab";
-import Yasr from "@zazuko/yasr";
-import { PlainRequestConfig } from "@zazuko/yasqe";
-import { getAsValue } from "@zazuko/yasgui-utils";
+import Yasr from "@sib-swiss/yasr";
+import { PlainRequestConfig } from "@sib-swiss/yasqe";
+import { getAsValue } from "@sib-swiss/yasgui-utils";
 const getUrlParams = function (_url?: string) {
   let urlFromWindow = false;
   if (!_url) {

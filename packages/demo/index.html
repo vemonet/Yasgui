@@ -100,10 +100,10 @@
 
   <script type="module">
     // import Yasgui from '../packages/yasgui/src/index.ts';
-    import Yasgui from '@zazuko/yasgui';
-    import '@zazuko/yasgui/dist/yasgui.css';
-    import '@zazuko/yasqe/dist/yasqe.css';
-    import '@zazuko/yasr/dist/index.css';
+    import Yasgui from '@sib-swiss/yasgui';
+    import '@sib-swiss/yasgui/dist/yasgui.css';
+    import '@sib-swiss/yasqe/dist/yasqe.css';
+    import '@sib-swiss/yasr/dist/index.css';
 
     function getSystemTheme() {
       if (typeof window !== "undefined" && window.matchMedia) {
@@ -117,7 +117,6 @@
         : '🌙';
     }
 
-    // document.addEventListener('DOMContentLoaded', function () {
     // Initialize page theme based on system preference
     let currentTheme = getSystemTheme();
     if (currentTheme === 'dark') document.body.classList.add('dark-theme');
@@ -168,6 +167,14 @@
       } catch (error) {
         console.error('Failed to switch theme:', error);
       }
+    });
+
+    document.addEventListener('DOMContentLoaded', function () {
+      // Hack to ensure the editor syntax highlighting is applied on load
+      setTimeout(() => {
+        yasgui.getTab().setQuery(yasgui.getTab().getQuery() + " ")
+        yasgui.getTab().setQuery(yasgui.getTab().getQuery().trim())
+      }, 300);
     });
   </script>
 </body>

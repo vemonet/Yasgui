@@ -1,4 +1,4 @@
-import { Storage as YStorage } from "@zazuko/yasgui-utils";
+import { Storage as YStorage } from "@sib-swiss/yasgui-utils";
 import Yasgui from "./";
 import * as Tab from "./Tab";
 
