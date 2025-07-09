@@ -22,13 +22,6 @@ export default defineConfig({
       },
     },
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@use "sass:math";`,
-      },
-    },
-  },
   optimizeDeps: {
     include: ["vscode-textmate", "vscode-oniguruma", "@codingame/monaco-editor-wrapper", "@sib-swiss/yasqe"],
     exclude: [],

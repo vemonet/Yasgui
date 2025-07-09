@@ -11,8 +11,8 @@ import { default as Yasqe, PartialConfig as YasqeConfig, RequestConfig } from "@
 import { Backend, createBackendConf } from "@sib-swiss/yasqe/src/editor/endpointMetadata";
 import { default as Yasr, Config as YasrConfig } from "@sib-swiss/yasr";
 import { addClass, removeClass } from "@sib-swiss/yasgui-utils";
-import "./index.scss";
-import "@sib-swiss/yasr/src/scss/global.scss";
+import "./style/index.css";
+import "@sib-swiss/yasr/src/style/global.css";
 
 if (window) {
   //We're storing yasqe and yasr as a member of Yasgui, but _also_ in the window

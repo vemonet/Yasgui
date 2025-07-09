@@ -1,7 +1,7 @@
 /**
  * Make sure not to include any deps from our main index file. That way, we can easily publish the plugin as standalone build
  */
-import "./index.scss";
+import "./index.css";
 import "datatables.net-dt/css/dataTables.dataTables.min.css";
 import "datatables.net";
 import $ from "jquery";

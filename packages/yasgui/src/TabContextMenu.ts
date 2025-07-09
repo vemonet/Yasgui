@@ -2,7 +2,7 @@ import { addClass } from "@sib-swiss/yasgui-utils";
 import { default as Yasgui, getRandomId } from "./";
 import Tab from "./Tab";
 import { TabListEl } from "./TabElements";
-import "./TabContextMenu.scss";
+import "./style/TabContextMenu.css";
 
 export interface TabContextConfig {
   name: string;

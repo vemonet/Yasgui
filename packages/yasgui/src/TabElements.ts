@@ -3,7 +3,7 @@ import sortablejs from "sortablejs";
 import { hasClass, addClass, removeClass } from "@sib-swiss/yasgui-utils";
 import Yasgui from "./";
 import TabContextMenu from "./TabContextMenu";
-import "./TabElements.scss";
+import "./style/TabElements.css";
 
 export interface TabList {}
 

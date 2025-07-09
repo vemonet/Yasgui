@@ -15,7 +15,7 @@ export { default as Parser } from "./parsers";
 import { addScript, addCss, sanitize } from "./helpers";
 import * as faDownload from "@fortawesome/free-solid-svg-icons/faDownload";
 import * as faQuestionCircle from "@fortawesome/free-solid-svg-icons/faQuestionCircle";
-import "./main.scss";
+import "./style/main.css";
 
 export interface PersistentConfig {
   selectedPlugin?: string;

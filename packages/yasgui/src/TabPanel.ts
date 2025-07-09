@@ -3,7 +3,7 @@ import { toPairs, fromPairs } from "lodash-es";
 import { addClass, drawSvgStringAsElement, removeClass } from "@sib-swiss/yasgui-utils";
 import { RequestConfig } from "@sib-swiss/yasqe";
 import Tab from "./Tab";
-import "./TabPanel.scss";
+import "./style/TabPanel.css";
 
 const AcceptOptionsMap: { key: string; value: string }[] = [
   { key: "JSON", value: "application/sparql-results+json" },

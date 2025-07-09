@@ -15,11 +15,11 @@ import getDefaults from "./defaults";
 import { YasqeAjaxConfig } from "./sparql";
 import { EndpointMetadata } from "./editor/endpointMetadata";
 // import tooltip from "./tooltip";
-import "./scss/yasqe.css";
-import "./scss/buttons.css";
-import { initialize } from "@codingame/monaco-vscode-api";
-import getLayoutServiceOverride from "@codingame/monaco-vscode-layout-service-override";
-import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
+import "./style/yasqe.css";
+import "./style/buttons.css";
+// import { initialize } from "@codingame/monaco-vscode-api";
+// import getLayoutServiceOverride from "@codingame/monaco-vscode-layout-service-override";
+// import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
 // import getEditorServiceOverride from '@codingame/monaco-vscode-editor-service-override';
 
 export interface Yasqe {

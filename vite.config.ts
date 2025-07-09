@@ -30,13 +30,13 @@ export default defineConfig({
     },
     extensions: [".json", ".js", ".ts", ".scss", ".css"],
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        additionalData: `@use "sass:math";`,
-      },
-    },
-  },
+  // css: {
+  //   preprocessorOptions: {
+  //     scss: {
+  //       additionalData: `@use "sass:math";`,
+  //     },
+  //   },
+  // },
   optimizeDeps: {
     include: ["vscode-textmate", "vscode-oniguruma"],
   },

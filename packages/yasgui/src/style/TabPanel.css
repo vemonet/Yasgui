@@ -16,13 +16,12 @@
     transform-style: preserve-3d;
 
     &.open {
-      // width: 500px;
       visibility: visible;
       transform: translate3d(-100%, 0, 0) rotateY(0deg);
       transition: all 0.5s;
       left: 600px;
 
-      // IE11 Hack
+      /* IE11 Hack */
       @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
         min-width: 600px;
       }
@@ -61,6 +60,7 @@
         &:focus {
           outline: none;
         }
+
         &:focus-visible {
           color: var(--yasgui-focus);
           border-color: var(--yasgui-focus);

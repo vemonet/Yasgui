@@ -8,7 +8,7 @@ import { TabListEl } from "./TabElements";
 import TabPanel from "./TabPanel";
 import * as shareLink from "./linkUtils";
 import EndpointSelect from "./endpointSelect";
-import "./tab.scss";
+import "./style/tab.css";
 import { getRandomId, default as Yasgui, YasguiRequestConfig } from "./";
 
 export interface PersistedJsonYasr extends YasrPersistentConfig {

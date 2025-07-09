@@ -23,30 +23,37 @@ Delimiters used by datatables
     .tableSizer {
       height: 100%;
     }
+
     .switch {
       display: flex;
       align-items: center;
       margin-right: 10px;
     }
   }
+
   .dataTable.ellipseTable {
     white-space: nowrap;
+
     div:not(.expanded) {
       overflow: hidden;
       text-overflow: ellipsis;
     }
   }
+
   .dataTable:not(.ellipseTable) {
     div:not(.expanded) {
       word-break: break-all;
     }
   }
+
   .expanded {
     white-space: normal;
     word-break: break-all;
   }
+
   .expandable:not(.expanded) {
     cursor: pointer;
+
     a {
       pointer-events: none;
     }
@@ -55,18 +62,22 @@ Delimiters used by datatables
   .dataTables_wrapper {
     font-size: 0.9em;
     min-width: 100%;
+
     .grip-container {
       max-width: 100%;
     }
+
     .grip-padding > tbody > tr > td,
     .grip-padding > tbody > tr > th {
       padding-left: 7px !important;
       padding-right: 5px !important;
     }
+
     .dataTable {
       min-width: 100%;
       box-sizing: border-box;
-      // Override border-bottom datatables styling
+
+      /* Override border-bottom datatables styling */
       &.no-footer {
         border-bottom: none;
       }
@@ -76,8 +87,8 @@ Delimiters used by datatables
       }
 
       thead tr th {
-        //cannot select text anyway (as headers are buttons as well)
-        //By setting it to none explicitly, we won't have issues when resizing columns _and_ selecting text at the meantime
+        /* cannot select text anyway (as headers are buttons as well) */
+        /* By setting it to none explicitly, we won't have issues when resizing columns _and_ selecting text at the meantime */
         user-select: none;
         font-weight: bold;
         text-align: start;
@@ -87,10 +98,12 @@ Delimiters used by datatables
         padding: 5px;
         padding-left: 7px;
         min-width: 28px;
+
         &.sorting {
           min-width: 10px;
-          padding-right: 18px; //space for sort icon
+          padding-right: 18px; /* space for sort icon */
         }
+
         &:hover {
           background-color: var(--yasr-fallback-bg);
         }
@@ -98,13 +111,16 @@ Delimiters used by datatables
 
       td {
         padding: 5px;
+
         & > div {
           hyphens: auto;
+
           &.rowNumber {
             word-break: keep-all;
             overflow: visible;
           }
         }
+
         .tableEllipse {
           cursor: pointer;
           font-weight: bold;
@@ -125,7 +141,7 @@ Delimiters used by datatables
         border: none;
         background: transparent;
 
-        // When the buttons are disabled show the default YASR disabled color
+        /* When the buttons are disabled show the default YASR disabled color */
         .disabled {
           color: var(--yasr-btn-text);
         }
@@ -133,16 +149,16 @@ Delimiters used by datatables
         &.current {
           border: none;
           background: transparent;
-          text-decoration: underline !important; // dataTables made the text-decoration important
+          text-decoration: underline !important; /* dataTables made the text-decoration important */
         }
 
         &:hover {
           border: none;
           background: transparent;
 
-          // Don't override the disabled grayed out style
+          /* Don't override the disabled grayed out style */
           &:not(.disabled) {
-            color: var(--yasr-link) !important; // dataTables made the color important
+            color: var(--yasr-link) !important; /* dataTables made the color important */
           }
         }
 

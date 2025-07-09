@@ -4,7 +4,7 @@
 import { Plugin } from "../";
 import Yasr from "../../";
 import { addClass } from "@sib-swiss/yasgui-utils";
-import "./index.scss";
+import "./index.css";
 
 export default class Error implements Plugin<never> {
   private yasr: Yasr;

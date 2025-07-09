@@ -5,7 +5,7 @@ import { pick } from "lodash-es";
 import { addClass } from "@sib-swiss/yasgui-utils";
 import parse from "autosuggest-highlight/parse";
 import DOMPurify from "dompurify";
-import "./endpointSelect.css";
+import "./style/endpointSelect.css";
 
 //Export this here instead of from our custom-types folder of autocomplete-js
 //as this interface is exported via the yasgui config. The custom typings are
@@ -105,7 +105,7 @@ export class EndpointSelect extends EventEmitter {
         condition: () => true,
       },
       // threshold: -1,
-      searchEngine: (query: string, record) => {
+      searchEngine: (query: string, record: any) => {
         if (!query || query.trim().length === 0) {
           //show everything when we've got an empty search string
           return true;
@@ -134,7 +134,7 @@ export class EndpointSelect extends EventEmitter {
         },
       },
       resultItem: {
-        content: (data, source) => {
+        content: (data: any, source: HTMLDivElement) => {
           const endpoint = sanitize(data.value.endpoint);
 
           // Custom handling of items with history, these are able to be removed
@@ -178,7 +178,7 @@ export class EndpointSelect extends EventEmitter {
         },
         element: "li",
       },
-      onSelection: (feedback) => {
+      onSelection: (feedback: any) => {
         const item = feedback.selection.value;
         this.value = item.endpoint;
         this.inputField.value = this.value;

@@ -3,7 +3,7 @@
  */
 import Yasr from "../../";
 import type { Plugin } from "../";
-import "./index.scss";
+import "./index.css";
 export interface PluginConfig {}
 import { drawSvgStringAsElement } from "@sib-swiss/yasgui-utils";
 const cross =

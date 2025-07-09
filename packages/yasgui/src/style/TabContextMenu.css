@@ -9,15 +9,18 @@
   border-bottom-left-radius: 4px;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
   background-clip: padding-box;
+
   hr {
     margin: 8px auto;
     border: none;
     border-top: 1px solid var(--yasgui-border);
     border-bottom: 1px solid var(--yasgui-bg);
   }
+
   .context-menu-list {
     padding: 0;
   }
+
   .context-menu-item {
     display: block;
     padding: 3px 20px;
@@ -27,12 +30,14 @@
     color: var(--yasgui-text);
     white-space: nowrap;
     cursor: pointer;
+
     &:hover {
       text-decoration: none;
       color: var(--yasgui-text);
       background-color: var(--yasgui-border);
       filter: brightness(1.1);
     }
+
     &.disabled {
       text-decoration: none;
       color: var(--yasgui-label);

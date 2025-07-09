@@ -1,9 +1,9 @@
-@use "./variables.scss" as vars;
 /**need to reset this: the modal-dialog class conflicts with bootstrap**/
 .modal-dialog.google-visualization-charteditor-dialog {
-  z-index: vars.$zIndex-global;
+  z-index: var(--z-index-global);
   width: auto;
   margin: inherit;
+
   .charts-flat-menu-button {
     box-sizing: content-box;
   }
