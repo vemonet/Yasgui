@@ -200,10 +200,8 @@ export default class Table implements Plugin<PluginConfig> {
     } else {
       removeClass(this.yasr.rootEl, "isSinglePage");
     }
-
     if (this.dataTable) {
       this.destroyResizer();
-
       this.dataTable.destroy(true);
       this.dataTable = undefined;
     }

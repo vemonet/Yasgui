@@ -1,8 +1,6 @@
 .yasr {
   .yasr_results {
     position: relative;
-    display: flex;
-    flex-direction: column;
     min-width: 0; /* Allow container to shrink */
     overflow: hidden;
 

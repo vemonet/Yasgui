@@ -3,6 +3,7 @@
     padding: 3px 6px;
     margin: 4px 0px;
     border: 2px solid var(--yasgui-border);
+    border-radius: 6px;
     width: 100%;
     background: var(--yasgui-bg);
     color: var(--yasgui-text);
@@ -35,6 +36,7 @@
     list-style: none;
     background: var(--yasgui-bg);
     border: 1px solid var(--yasgui-border);
+    border-radius: 6px;
     box-sizing: border-box;
     left: 0;
     right: 0;
