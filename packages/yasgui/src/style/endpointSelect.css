@@ -9,7 +9,7 @@
     color: var(--yasgui-text);
     &:hover {
       border-color: var(--yasgui-border);
-      filter: brightness(0.9);
+      filter: brightness(0.7);
     }
     &:focus {
       border-color: var(--yasgui-focus);
