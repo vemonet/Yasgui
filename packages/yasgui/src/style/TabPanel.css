@@ -103,8 +103,10 @@
       }
 
       .textRow {
+        display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
+        gap: 0.2em;
         white-space: nowrap;
       }
 

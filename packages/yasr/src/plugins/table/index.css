@@ -14,6 +14,8 @@ Delimiters used by datatables
     padding: 0px;
     padding-right: 5px;
     flex-wrap: wrap;
+    min-width: 0; /* Allow flex container to shrink */
+    overflow: hidden;
 
     .tableFilter {
       margin-right: 10px;
@@ -61,10 +63,16 @@ Delimiters used by datatables
 
   .dataTables_wrapper {
     font-size: 0.9em;
-    min-width: 100%;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Allow container to shrink */
+    overflow: hidden;
 
     .grip-container {
-      max-width: 100%;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow-x: auto; /* Allow table to scroll horizontally if content is too wide */
     }
 
     .grip-padding > tbody > tr > td,
@@ -74,8 +82,9 @@ Delimiters used by datatables
     }
 
     .dataTable {
-      min-width: 100%;
-      box-sizing: border-box;
+      flex: 1;
+      min-width: 0; /* Allow table to shrink */
+      table-layout: auto; /* Let the table adjust column widths */
 
       /* Override border-bottom datatables styling */
       &.no-footer {

@@ -168,18 +168,20 @@ export default class Table implements Plugin<PluginConfig> {
         render: (data: number, type: any) =>
           type === "filter" || type === "sort" || !type ? data : `<div class="rowNumber">${data}</div>`,
       }, //prepend with row numbers column
-      ...this.yasr.results?.getVariables().map((name) => {
-        return <ConfigColumns>{
-          name,
-          title: sanitize(name),
-          render: (data: Parser.BindingValue | "", type: any, _row: any, _meta: CellMetaSettings) => {
-            // Handle empty rows
-            if (data === "") return data;
-            if (type === "filter" || type === "sort" || !type) return sanitize(data.value);
-            return this.getCellContent(data, prefixes);
-          },
-        };
-      }),
+      ...(this.yasr.results
+        ? this.yasr.results.getVariables().map((name) => {
+            return <ConfigColumns>{
+              name,
+              title: sanitize(name),
+              render: (data: Parser.BindingValue | "", type: any) => {
+                // Handle empty rows
+                if (data === "") return data;
+                if (type === "filter" || type === "sort" || !type) return sanitize(data.value);
+                return this.getCellContent(data, prefixes);
+              },
+            };
+          })
+        : []),
     ];
   }
   private getSizeFirstColumn() {
@@ -194,7 +196,6 @@ export default class Table implements Plugin<PluginConfig> {
     const columns = this.getColumns();
 
     if (rows.length <= (persistentConfig?.pageSize || DEFAULT_PAGE_SIZE)) {
-      this.yasr.pluginControls;
       addClass(this.yasr.rootEl, "isSinglePage");
     } else {
       removeClass(this.yasr.rootEl, "isSinglePage");

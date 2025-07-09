@@ -1,12 +1,17 @@
 .yasr {
   .yasr_results {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0; /* Allow container to shrink */
+    overflow: hidden;
 
-    .CodeMirror {
+    /* .CodeMirror {
       border: 1px solid #d1d1d1;
       margin-top: 5px;
       height: 100%;
-
+      flex: 1;
+      min-width: 0;
       &.overflow::before {
         background: linear-gradient(transparent 0%, #ffffffaa 75%, white 100%);
         content: "";
@@ -16,7 +21,7 @@
         position: absolute;
         pointer-events: none;
       }
-    }
+    } */
 
     .overlay {
       width: 100%;
