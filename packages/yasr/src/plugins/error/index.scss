@@ -6,10 +6,11 @@
       overflow: hidden;
       .yasr_tryQuery {
         float: right;
-        // color: #428bca;
+        // color: var(--yasr-link);
         text-decoration: none;
         padding-top: 3px;
         padding-bottom: 3px;
+        color: var(--yasr-link);
       }
       span.status {
         display: inline-block;
@@ -21,7 +22,7 @@
         white-space: nowrap;
         vertical-align: baseline;
         border-radius: 0.25em;
-        color: #fff;
+        color: #ffffff;
         background-color: #dc3545;
       }
     }
@@ -39,9 +40,9 @@
         line-height: 1.42857;
         word-break: break-all;
         word-wrap: break-word;
-        color: #333;
-        background-color: #f5f5f5;
-        border: 1px solid #ccc;
+        color: var(--yasr-text);
+        background-color: var(--yasr-fallback-bg);
+        border: 1px solid var(--yasr-fallback-border);
         border-radius: 4px;
       }
     }

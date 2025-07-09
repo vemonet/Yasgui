@@ -2,13 +2,16 @@
   .autocomplete {
     padding: 3px 6px;
     margin: 4px 0px;
-    border: 2px solid #ccc;
+    border: 2px solid var(--yasgui-border);
     width: 100%;
+    background: var(--yasgui-bg);
+    color: var(--yasgui-text);
     &:hover {
-      border-color: #bbb;
+      border-color: var(--yasgui-border);
+      filter: brightness(0.9);
     }
     &:focus {
-      border-color: #337ab7;
+      border-color: var(--yasgui-focus);
       background: none;
       outline: none;
     }
@@ -30,8 +33,8 @@
     margin-top: -4px;
     padding: 0;
     list-style: none;
-    background: white;
-    border: 1px solid #aaa;
+    background: var(--yasgui-bg);
+    border: 1px solid var(--yasgui-border);
     box-sizing: border-box;
     left: 0;
     right: 0;
@@ -50,20 +53,21 @@
       overflow: hidden;
       display: flex;
       transition: background visibility ease-in 200ms;
+      color: var(--yasgui-text);
       b {
-        color: #1f49a3;
+        color: var(--yasgui-focus);
       }
       .autoComplete_highlighted {
         font-weight: bold;
       }
       &.autoComplete_selected {
-        background: #ccc;
+        background: var(--yasgui-border);
         .removeItem {
           visibility: visible;
         }
       }
       &:hover {
-        background: #ccc;
+        background: var(--yasgui-border);
         .removeItem {
           visibility: visible;
         }
@@ -72,11 +76,12 @@
     .noResults {
       padding: 5px 10px;
       margin: 0;
+      color: var(--yasgui-text);
     }
     .removeItem {
-      color: #000;
+      color: var(--yasgui-text);
       font-size: 15px;
-      text-shadow: 0 1px 0 #fff;
+      text-shadow: 0 1px 0 var(--yasgui-bg);
       opacity: 0.5;
       font-weight: 700;
       text-align: end;
@@ -89,7 +94,7 @@
       padding-right: 20px;
       &:hover {
         opacity: 0.8;
-        color: #1f49a3;
+        color: var(--yasgui-focus);
       }
     }
 

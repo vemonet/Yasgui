@@ -2,7 +2,7 @@
 
 [![Deploy to GitHub Pages](https://github.com/vemonet/Yasgui/actions/workflows/deploy.yml/badge.svg)](https://github.com/vemonet/Yasgui/actions/workflows/deploy.yml)
 
-Yasgui consists of three components: 
+Yasgui consists of three components:
 
 - Yasqe, a SPARQL query editor
 - Yasr, a SPARQL result visualizer
@@ -47,7 +47,7 @@ To include Yasgui in your webpage, all that's needed is importing the Yasgui Jav
   <script type="module">
     import Yasgui from "@zazuko/yasgui";
     import '@zazuko/yasgui/dist/yasgui.css';
-    
+
     const yasgui = new Yasgui(document.getElementById("yasgui"));
   </script>
 </body>
@@ -135,7 +135,7 @@ Otherwise you can manually deploy `Yasqe` (editor) and `Yasr` (query results) se
       import Yasr from '@zazuko/Yasr';
       import '@zazuko/yasqe/dist/yasqe.css';
       import '@zazuko/yasr/dist/yasr.css';
-     
+
       // Initialize Yasqe and Yasr
       const yasqe = new Yasqe(document.getElementById("yasqe"), {
         requestConfig: { endpoint: "https://sparql.uniprot.org/sparql/" },
@@ -153,6 +153,64 @@ Otherwise you can manually deploy `Yasqe` (editor) and `Yasr` (query results) se
   </body>
 </html>
 ```
+
+### 🌗 Light/dark theme
+
+Yasgui comes with a built-in support for light/dark theme.
+
+You can use the following method to change the theme easily:
+
+```ts
+yasgui.yasqe.setTheme("light")
+```
+
+<details><summary>Dark theme configuration is done through `data-theme` variables</summary>
+
+```css
+html[data-theme="dark"] {
+  /* Yasgui */
+  --yasgui-bg: #1e1e1e;
+  --yasgui-text: #eeeeee;
+  --yasgui-border: rgba(255, 255, 255, 0.26);
+  --yasgui-focus: #4fc3f7;
+  --yasgui-link: #4fc3f7;
+  --yasgui-link-hover: #29b6f6;
+  --yasgui-label: rgba(255, 255, 255, 0.54);
+  --yasgui-nav-bg: #2d2d30;
+  --yasgui-nav-text: #cccccc;
+  --yasgui-nav-text-hover: #ffffff;
+  --yasgui-nav-text-active: #e0e0e0;
+  --yasgui-tab-text: #c0c0c0;
+  --yasgui-btn-text: #c0c0c0;
+  --yasgui-panel-bg: #3e3e3e;
+  --yasgui-panel-border: #2d2d30;
+  /* Yasqe */
+  --yasqe-bg: #1e1e1e;
+  --yasqe-text: #d4d4d4;
+  --yasqe-border: #3e3e3e;
+  --yasqe-notification-bg: #2d2d30;
+  --yasqe-notification-text: #cccccc;
+  --yasqe-tooltip-bg: rgba(255, 255, 255, 0.1);
+  --yasqe-tooltip-text: #ffffff;
+  --yasqe-error: #ff6b6b;
+  /* Yasr */
+  --yasr-bg: #1e1e1e;
+  --yasr-text: #d4d4d4;
+  --yasr-border: #3e3e3e;
+  --yasr-link: #4fc3f7;
+  --yasr-link-hover: #29b6f6;
+  --yasr-btn-text: #c0c0c0;
+  --yasr-btn-selected: #4fc3f7;
+  --yasr-fallback-bg: #2d2d30;
+  --yasr-fallback-border: #3e3e3e;
+  --yasr-help-bg: #1a3a4a;
+  --yasr-help-text: #4fc3f7;
+  --yasr-chip-bg: #2d2d30;
+  --yasr-chip-text: #cccccc;
+}
+```
+
+</details>
 
 ## 📚 API Reference
 
@@ -180,9 +238,9 @@ tab.setQuery("select * where {...}");
 // close the tab
 tab.close();
 // access the Yasqe API for the tab
-tab.yasqe;
+tab.getYasqe();
 // access the Yasr API for the tab
-tab.yasr;
+tab.getYasr;
 ```
 
 #### Yasgui Events
@@ -407,7 +465,7 @@ class Boolean {
   priority = 10;
   // Whether to show a select-button for this plugin
   hideFromSelection = true;
-  
+
   constructor(yasr) {
     this.yasr = yasr;
   }

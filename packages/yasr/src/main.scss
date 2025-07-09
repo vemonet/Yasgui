@@ -1,8 +1,46 @@
 @use "./scss/variables.scss";
+
+/* CSS Custom Properties for yasr theming */
+:root {
+  --yasr-bg: #ffffff;
+  --yasr-text: #000000;
+  --yasr-border: #d1d1d1;
+  --yasr-link: #428bca;
+  --yasr-link-hover: #2a6496;
+  --yasr-btn-text: #000000;
+  --yasr-btn-selected: #337ab7;
+  --yasr-fallback-bg: #f7f7f7;
+  --yasr-fallback-border: #d1d1d1;
+  --yasr-help-bg: #dff0ff;
+  --yasr-help-text: #428bca;
+  --yasr-chip-bg: #f5f5f5;
+  --yasr-chip-text: #505050;
+}
+
+html[data-theme="dark"] {
+  --yasr-bg: #1e1e1e;
+  --yasr-text: #d4d4d4;
+  --yasr-border: #3e3e3e;
+  --yasr-link: #4fc3f7;
+  --yasr-link-hover: #29b6f6;
+  --yasr-btn-text: #c0c0c0;
+  --yasr-btn-selected: #4fc3f7;
+  --yasr-fallback-bg: #2d2d30;
+  --yasr-fallback-border: #3e3e3e;
+  --yasr-help-bg: #1a3a4a;
+  --yasr-help-text: #4fc3f7;
+  --yasr-chip-bg: #2d2d30;
+  --yasr-chip-text: #cccccc;
+}
+
 .yasr {
+  background-color: var(--yasr-bg);
+  color: var(--yasr-text);
+
   .yasr_btn {
     border: none;
     background: inherit;
+    color: var(--yasr-btn-text);
   }
   .svgImg {
     display: flex;
@@ -30,12 +68,12 @@
     }
   }
   a {
-    color: #428bca;
+    color: var(--yasr-link);
     text-decoration: none;
     &:hover,
     &:active {
       outline: 0;
-      color: #2a6496;
+      color: var(--yasr-link-hover);
       text-decoration: underline;
     }
   }
@@ -56,7 +94,7 @@
       // redeclared here to target yasr_btns in btnGroup
       border-bottom: 2px solid transparent;
       &.selected {
-        border-bottom: 2px solid #337ab7;
+        border-bottom: 2px solid var(--yasr-btn-selected);
       }
       padding-left: 6px;
       padding-right: 6px;
@@ -84,20 +122,20 @@
   }
   .yasr_fallback_info:not(:empty) {
     margin-top: 5px;
-    border: 1px solid #d1d1d1;
+    border: 1px solid var(--yasr-fallback-border);
     padding: 0.5rem;
-    background: #f7f7f7;
+    background: var(--yasr-fallback-bg);
     p {
       margin: 0;
     }
   }
   .yasr_help_variable {
-    background: #dff0ff;
-    color: #428bca;
+    background: var(--yasr-help-bg);
+    color: var(--yasr-help-text);
   }
   .yasr_response_chip {
-    color: #505050;
-    background: #f5f5f5;
+    color: var(--yasr-chip-text);
+    background: var(--yasr-chip-bg);
     border-radius: 6px;
     display: flex;
     font-size: 11pt;
@@ -123,8 +161,8 @@
     }
   }
   .yasr_btn {
-    color: #505050;
-    fill: #505050;
+    color: var(--yasr-btn-text);
+    fill: var(--yasr-btn-text);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -145,13 +183,13 @@
       box-shadow: none;
     }
     &:not(.disabled):hover {
-      fill: black;
-      color: black;
+      fill: var(--yasr-link);
+      color: var(--yasr-link);
     }
     &:focus,
     &.selected {
-      color: #337ab7;
-      fill: #337ab7;
+      color: var(--yasr-btn-selected);
+      fill: var(--yasr-btn-selected);
     }
   }
   .space_element {

@@ -1,16 +1,61 @@
+// CSS Custom Properties for theming
+:root {
+  --yasgui-bg: #ffffff;
+  --yasgui-text: rgba(0, 0, 0, 0.87);
+  --yasgui-border: rgba(0, 0, 0, 0.26);
+  --yasgui-focus: #337ab7;
+  --yasgui-link: #337ab7;
+  --yasgui-link-hover: #2a6496;
+  --yasgui-label: rgba(0, 0, 0, 0.54);
+  --yasgui-nav-bg: #eeeeee;
+  --yasgui-nav-text: #555555;
+  --yasgui-nav-text-hover: #222222;
+  --yasgui-nav-text-active: #000000;
+  --yasgui-tab-text: #555555;
+  --yasgui-btn-text: #c0c0c0;
+  --yasgui-panel-bg: #f9f9f9;
+  --yasgui-panel-border: #cccccc;
+}
+
+html[data-theme="dark"] {
+  --yasgui-bg: #1e1e1e;
+  --yasgui-text: #eeeeee;
+  --yasgui-border: rgba(255, 255, 255, 0.26);
+  --yasgui-focus: #4fc3f7;
+  --yasgui-link: #4fc3f7;
+  --yasgui-link-hover: #29b6f6;
+  --yasgui-label: rgba(255, 255, 255, 0.54);
+  --yasgui-nav-bg: #2d2d30;
+  --yasgui-nav-text: #cccccc;
+  --yasgui-nav-text-hover: #ffffff;
+  --yasgui-nav-text-active: #e0e0e0;
+  --yasgui-tab-text: #c0c0c0;
+  --yasgui-btn-text: #c0c0c0;
+  --yasgui-panel-bg: #3e3e3e;
+  --yasgui-panel-border: #2d2d30;
+  color-scheme: dark;
+}
+
 .yasgui {
+  background-color: var(--yasgui-bg);
+
   a {
-    color: #337ab7;
+    color: var(--yasgui-link);
     text-decoration: none;
+
+    &:hover,
+    &:active {
+      color: var(--yasgui-link-hover);
+    }
   }
 
   //css taken from https://www.muicss.com/docs/v1/css-js/forms
-  $focusColor: #337ab7;
+  $focusColor: var(--yasgui-focus);
   $font-size: 15px;
-  $font-color: rgba(0, 0, 0, 0.87);
-  $border-color: rgba(0, 0, 0, 0.26);
+  $font-color: var(--yasgui-text);
+  $border-color: var(--yasgui-border);
   $label-font-size: 12px;
-  $label-font-color: rgba(0, 0, 0, 0.54);
+  $label-font-color: var(--yasgui-label);
   $label-line-height: 15px;
   .yasgui_textfield {
     display: block;

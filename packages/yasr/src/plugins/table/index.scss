@@ -72,7 +72,7 @@ Delimiters used by datatables
       }
 
       tbody tr:hover {
-        background-color: #f9f9f9;
+        background-color: var(--yasr-fallback-bg);
       }
 
       thead tr th {
@@ -92,7 +92,7 @@ Delimiters used by datatables
           padding-right: 18px; //space for sort icon
         }
         &:hover {
-          background-color: #f9f9f9;
+          background-color: var(--yasr-fallback-bg);
         }
       }
 
@@ -109,7 +109,8 @@ Delimiters used by datatables
           cursor: pointer;
           font-weight: bold;
           padding: 0 2px;
-          background-color: #428bca33;
+          background-color: var(--yasr-link);
+          opacity: 0.2;
           border-radius: 2px;
           margin: 0 3px;
         }
@@ -126,7 +127,7 @@ Delimiters used by datatables
 
         // When the buttons are disabled show the default YASR disabled color
         .disabled {
-          color: #505050;
+          color: var(--yasr-btn-text);
         }
 
         &.current {
@@ -141,7 +142,7 @@ Delimiters used by datatables
 
           // Don't override the disabled grayed out style
           &:not(.disabled) {
-            color: black !important; // dataTables made the color important
+            color: var(--yasr-link) !important; // dataTables made the color important
           }
         }
 

@@ -79,7 +79,8 @@ $minTabHeight: 35px;
       }
       &.active a {
         border-bottom-color: $activeColor;
-        color: #555;
+        // color: #555;
+        color: var(--yasgui-nav-text-active);
       }
       input {
         display: none;
@@ -99,7 +100,7 @@ $minTabHeight: 35px;
       }
       a {
         font-weight: 600;
-        color: color-mix(in srgb, #555, white 20%);
+        color: var(--yasgui-tab-text, color-mix(in srgb, #555, white 20%));
         font-size: 15px;
         line-height: 1.5rem;
         font-weight: 500;
@@ -109,11 +110,7 @@ $minTabHeight: 35px;
         overflow: hidden;
         &:hover {
           border-bottom-color: $hoverColor;
-          color: #555;
-        }
-        &:focus {
-          border-bottom-color: #faa857;
-          color: #555;
+          filter: brightness(70%);
         }
         .closeTab {
           color: #000;

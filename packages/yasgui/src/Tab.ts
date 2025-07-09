@@ -128,7 +128,7 @@ export class Tab extends EventEmitter {
 
     const yasr = this.getYasr();
     if (yasr) yasr.refresh();
-    //refresh, as other tabs might have changed the endpoint history
+    // Refresh, as other tabs might have changed the endpoint history
     this.setEndpoint(this.getEndpoint(), this.yasgui.persistentConfig.getEndpointHistory());
   }
   public select() {
@@ -138,8 +138,7 @@ export class Tab extends EventEmitter {
     const yasqe = this.getYasqe();
     if (yasqe) yasqe.abortQuery();
     if (this.yasgui.getTab() === this) {
-      //it's the active tab
-      //first select other tab
+      // It's the active tab, first select other tab
       const tabs = this.yasgui.persistentConfig.getTabs();
       const i = tabs.indexOf(this.persistentJson.id);
       if (i > -1) {

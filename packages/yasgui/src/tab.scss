@@ -16,8 +16,8 @@
     align-self: center;
     padding-left: 10px;
     cursor: pointer;
-    color: #505050;
-    fill: #505050;
+    color: var(--yasgui-text);
+    fill: var(--yasgui-text);
 
     .svgImg {
       width: 15px;
@@ -31,8 +31,8 @@
     }
 
     &:hover {
-      color: black;
-      fill: black;
+      color: var(--yasgui-focus);
+      fill: var(--yasgui-focus);
     }
   }
 

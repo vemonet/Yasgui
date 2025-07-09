@@ -295,6 +295,7 @@ export class Yasqe extends EventEmitter {
    * @param theme - The theme to switch to ('light' or 'dark')
    */
   public async setTheme(theme: "light" | "dark"): Promise<void> {
+    document.documentElement.dataset.theme = theme;
     monaco.editor.setTheme(getVsThemeConfig(theme));
     // console.log("Options:", this.monacoWrapper?.getEditor()?.getRawOptions().theme)
   }

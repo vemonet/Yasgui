@@ -97,6 +97,7 @@ export class Yasgui extends EventEmitter {
   private yasrWrapperEl: HTMLDivElement | undefined;
   private addedBackends: Set<string> = new Set();
   private currentEndpoint: string | undefined;
+  private queryingTab: Tab | undefined; // Track which tab initiated the current query
   public static Tab = Tab;
 
   constructor(parent: HTMLElement, config: PartialConfig) {
@@ -307,6 +308,10 @@ export class Yasgui extends EventEmitter {
     tab.on("autocompletionShown", (tab, widget) => this.emit("autocompletionShown", this, tab, widget));
     tab.on("autocompletionClose", (tab) => this.emit("autocompletionClose", this, tab));
     tab.on("endpointChange", (tab, endpoint) => this.handleEndpointChange(tab, endpoint));
+    tab.on("close", (tab) => {
+      // If the tab being closed is the one with an active query, clear the reference
+      if (this.queryingTab === tab) this.queryingTab = undefined;
+    });
   }
 
   /**
@@ -349,14 +354,13 @@ export class Yasgui extends EventEmitter {
    */
   private async setupEndpointBackend(endpoint: string) {
     let backendConf: Backend | undefined;
-    if (this.getTab()?.getYasqe()?.persistentConfig?.backends[endpoint]) {
-      backendConf = this.getTab()?.getYasqe()?.persistentConfig?.backends[endpoint].backend;
+    if (this.yasqe?.persistentConfig?.backends[endpoint]) {
+      backendConf = this.yasqe?.persistentConfig?.backends[endpoint].backend;
     }
     if (!backendConf) {
       backendConf = await createBackendConf(endpoint);
-      if (this.getTab()?.getYasqe()?.persistentConfig) {
-        // @ts-ignore
-        this.getTab().getYasqe().persistentConfig.backends[endpoint] = {
+      if (this.yasqe?.persistentConfig) {
+        this.yasqe.persistentConfig.backends[endpoint] = {
           backend: backendConf,
           lastFetched: Date.now(),
           version: "1.0.0",
@@ -372,7 +376,7 @@ export class Yasgui extends EventEmitter {
    */
   private updateLanguageClientBackend(backendConf: Backend) {
     // Check if backend is already added to avoid duplicates
-    const languageClient = this.getTab()?.getYasqe()?.languageClientWrapper?.getLanguageClient();
+    const languageClient = this.yasqe?.languageClientWrapper?.getLanguageClient();
     if (!languageClient) return;
     // Only add backend if it hasn't been added yet
     if (!this.addedBackends.has(backendConf.backend.name)) {
@@ -420,9 +424,7 @@ export class Yasgui extends EventEmitter {
     // Check if we should copy the endpoint in the new tab and only copy if the tabConfig doesn't contain an endpoint
     if (this.config.copyEndpointOnNewTab && !partialTabConfig?.requestConfig?.endpoint) {
       const currentTab = this.getTab();
-      if (currentTab) {
-        tabConfig.requestConfig.endpoint = currentTab.getEndpoint();
-      }
+      if (currentTab) tabConfig.requestConfig.endpoint = currentTab.getEndpoint();
     }
     if (opts.avoidDuplicateTabs) {
       const foundTabId = this.findTabIdForConfig(tabConfig);
@@ -472,7 +474,7 @@ export class Yasgui extends EventEmitter {
       ...this.config.yasqe,
       // Dynamic persistence ID that changes based on the active tab
       // This ensures the global YASQE instance saves its state per tab
-      persistenceId: (yasqe) => {
+      persistenceId: () => {
         const activeTab = this.getActiveTab();
         return activeTab ? "yasqe_" + activeTab.getId() + "_query" : "yasqe_global_query";
       },
@@ -501,13 +503,18 @@ export class Yasgui extends EventEmitter {
       if (this.yasqe) this.getActiveTab()?.handleYasqeBlur(this.yasqe);
     });
     this.yasqe.on("query", () => {
-      if (this.yasqe) this.getActiveTab()?.handleYasqeQuery(this.yasqe);
+      const activeTab = this.getActiveTab();
+      this.queryingTab = activeTab; // Track which tab initiated the query
+      if (this.yasqe && activeTab) activeTab.handleYasqeQuery(this.yasqe);
     });
     this.yasqe.on("queryBefore", () => {
       this.getActiveTab()?.handleYasqeQueryBefore();
     });
     this.yasqe.on("queryAbort", () => {
-      this.getActiveTab()?.handleYasqeQueryAbort();
+      // Route abort to the tab that initiated the query, not necessarily the active tab
+      const tabToNotify = this.queryingTab || this.getActiveTab();
+      tabToNotify?.handleYasqeQueryAbort();
+      this.queryingTab = undefined; // Clear the querying tab reference
     });
     this.yasqe.on("resize", (yasqe, newSize) => {
       this.getActiveTab()?.handleYasqeResize(yasqe, newSize);
@@ -519,7 +526,10 @@ export class Yasgui extends EventEmitter {
       if (this.yasqe) this.getActiveTab()?.handleAutocompletionClose(this.yasqe);
     });
     this.yasqe.on("queryResponse", (response, duration) => {
-      this.getActiveTab()?.handleQueryResponse(response, duration);
+      // Route response to the tab that initiated the query, not necessarily the active tab
+      const tabToNotify = this.queryingTab || this.getActiveTab();
+      tabToNotify?.handleQueryResponse(response, duration);
+      this.queryingTab = undefined; // Clear the querying tab reference
     });
   }
 
@@ -566,7 +576,7 @@ export class Yasgui extends EventEmitter {
     if (this.yasqe) {
       this.yasqe.setValue(tabConfig.yasqe.value);
       // Update request config function to use current tab's data
-      this.yasqe.config.requestConfig = (yasqe) => tab.getProcessedRequestConfig() as any;
+      this.yasqe.config.requestConfig = () => tab.getProcessedRequestConfig() as any;
       // Update sharelink function
       this.yasqe.config.createShareableLink = () => tab.getShareableLink();
     }

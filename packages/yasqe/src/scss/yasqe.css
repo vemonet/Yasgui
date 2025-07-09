@@ -1,11 +1,37 @@
+/* CSS Custom Properties for yasqe theming */
+:root {
+  --yasqe-bg: #ffffff;
+  --yasqe-text: #000000;
+  --yasqe-border: #d1d1d1;
+  --yasqe-notification-bg: #eeeeee;
+  --yasqe-notification-text: #999999;
+  --yasqe-tooltip-bg: rgba(0, 0, 0, 0.8);
+  --yasqe-tooltip-text: #ffffff;
+  --yasqe-error: #ff0000;
+}
+
+html[data-theme="dark"] {
+  --yasqe-bg: #1e1e1e;
+  --yasqe-text: #d4d4d4;
+  --yasqe-border: #3e3e3e;
+  --yasqe-notification-bg: #2d2d30;
+  --yasqe-notification-text: #cccccc;
+  --yasqe-tooltip-bg: rgba(255, 255, 255, 0.1);
+  --yasqe-tooltip-text: #ffffff;
+  --yasqe-error: #ff6b6b;
+}
+
 .yasqe {
   position: relative;
+  background-color: var(--yasqe-bg);
+  color: var(--yasqe-text);
+
   .svgImg {
     display: inline-block;
   }
   span.shortlinkErr {
     font-size: small;
-    color: red;
+    color: var(--yasqe-error);
     font-weight: bold;
     float: left;
   }
@@ -23,8 +49,8 @@
     z-index: 4;
     padding: 0 5px;
     max-height: 0px;
-    color: #999;
-    background-color: #eee;
+    color: var(--yasqe-notification-text);
+    background-color: var(--yasqe-notification-bg);
     font-size: 90%;
     text-align: center;
     transition: max-height 0.2s ease-in;
@@ -42,16 +68,15 @@
     margin-left: 2px;
     svg {
       g {
-        fill: red;
+        fill: var(--yasqe-error);
       }
     }
   }
 
   .yasqe_tooltip {
-    background: #333;
-    background: rgba(0, 0, 0, 0.8);
+    background: var(--yasqe-tooltip-bg);
     border-radius: 5px;
-    color: #fff;
+    color: var(--yasqe-tooltip-text);
     padding: 5px 15px;
     width: 220px;
     white-space: pre-wrap;
@@ -74,7 +99,7 @@
   .resizeChip {
     width: 20%;
     height: 4px;
-    background-color: #d1d1d1;
+    background-color: var(--yasqe-border);
     visibility: hidden;
     border-radius: 2px;
   }

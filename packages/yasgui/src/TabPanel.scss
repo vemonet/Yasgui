@@ -1,13 +1,13 @@
 .yasgui {
   .tabMenu {
-    background: #f5f5f5;
+    background: var(--yasgui-panel-bg);
     z-index: 7;
     transition: all 0.5s;
     transform: translate3d(-100%, 0, 0) rotateY(90deg);
     transform-origin: 100% 50%;
     visibility: hidden;
     width: 600px;
-    border: 1px #ccc solid;
+    border: 1px var(--yasgui-panel-border) solid;
     position: absolute;
     top: 35px;
     left: 0;
@@ -37,32 +37,33 @@
       overflow: hidden;
       display: flex;
       flex-wrap: nowrap;
-      background: #f5f5f5;
+      background: var(--yasgui-panel-bg);
+      border-bottom: 1px solid var(--yasgui-panel-border);
 
       .selectorButton {
         border: none;
         background-color: transparent;
-        border-bottom: 1px solid #d1d1d1;
+        border-bottom: 1px solid var(--yasgui-panel-border);
         height: 30px;
-        color: #505050;
+        color: var(--yasgui-text);
         cursor: pointer;
 
         &:hover {
-          color: black;
-          border-color: black;
+          color: var(--yasgui-focus);
+          border-color: var(--yasgui-focus);
         }
 
         &.selected {
-          color: #337ab7;
-          border-bottom: 2px solid #337ab7;
+          color: var(--yasgui-focus);
+          border-bottom: 2px solid var(--yasgui-focus);
         }
 
         &:focus {
           outline: none;
         }
         &:focus-visible {
-          color: black;
-          border-color: black;
+          color: var(--yasgui-focus);
+          border-color: var(--yasgui-focus);
         }
       }
     }
@@ -111,18 +112,19 @@
         border: none;
         background: transparent;
         user-select: none;
+        color: var(--yasgui-text);
 
         &:hover {
           background: transparent;
-          border-color: black;
-          color: black;
+          border-color: var(--yasgui-focus);
+          color: var(--yasgui-focus);
           cursor: pointer;
         }
       }
     }
 
     .label {
-      text-decoration: black;
+      color: var(--yasgui-text);
       font-weight: bold;
       white-space: nowrap;
       padding-right: 5px;

@@ -5,25 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yasqe + Yasr</title>
     <style>
+      /* CSS Custom Properties for navigation */
+      :root {
+        --nav-bg: #eeeeee;
+        --nav-text: #555555;
+        --nav-text-hover: #222222;
+        --nav-text-active: #000000;
+        --body-bg: #ffffff;
+        --body-text: #000000;
+      }
+
+      html[data-theme="dark"] {
+        --nav-bg: #2d2d30;
+        --nav-text: #cccccc;
+        --nav-text-hover: #ffffff;
+        --nav-text-active: #e0e0e0;
+        --body-bg: #121212;
+        --body-text: #eeeeee;
+      }
+
       body {
         font-family: sans-serif;
         margin: 0px;
+        background-color: var(--body-bg);
+        color: var(--body-text);
       }
       a:hover, button:hover {
         filter: brightness(70%);
       }
       /* Nav */
+      nav {
+        background: var(--nav-bg) !important;
+      }
       .navItem a {
-        color: #555;
+        color: var(--nav-text);
         text-decoration: none;
         padding: 5px;
         padding-right: 15px;
       }
       .navItem a:hover {
-        color: #222;
+        color: var(--nav-text-hover);
       }
       .navItem.active a {
-        color: black;
+        color: var(--nav-text-active);
         font-size: 110%;
       }
       /* Theme */
@@ -38,38 +62,16 @@
         cursor: pointer;
         font-size: 20px;
         padding: 0;
-      }
-      /* Dark theme styles */
-      body.dark-theme {
-        background-color: #1e1e1e;
-        color: #d4d4d4;
-      }
-      body.dark-theme nav {
-        background: #2d2d30 !important;
-      }
-      body.dark-theme .navItem a {
-        color: #cccccc;
-      }
-      body.dark-theme .navItem a:hover {
-        color: #ffffff;
-      }
-      body.dark-theme .navItem.active a {
-        color: #e0e0e0;
-      }
-      body.dark-theme .yasgui .tabsList .tab a {
-        color: #c0c0c0;
-      }
-      body.dark-theme .yasr .yasr_btn {
-        color: #c0c0c0;
+        color: var(--nav-text);
       }
     </style>
   </head>
 
   <body>
-    <nav style="display: flex; background:#eee">
+    <nav style="display: flex;">
       <ul style="display: flex; list-style: none; align-self: center">
-        <li class="navItem active"><a class="nav-link" href="/">Yasgui</a></li>
-        <li class="navItem"><a class="nav-link" href="/yasqer.html">Yasqe + Yasr</a></li>
+        <li class="navItem"><a class="nav-link" href="/">Yasgui</a></li>
+        <li class="navItem active"><a class="nav-link" href="/yasqer.html">Yasqe + Yasr</a></li>
       </ul>
       <div class="theme-switcher">
         <button id="theme-toggle">🌙</button>
@@ -105,7 +107,7 @@
 
       // Initialize page theme based on system preference
       let currentTheme = getSystemTheme();
-      if (currentTheme === 'dark') document.body.classList.add('dark-theme');
+      if (currentTheme === 'dark') document.documentElement.dataset.theme = 'dark';
 
       // Initialize Yasqe and Yasr
       const yasqe = new Yasqe(document.getElementById("yasqe"), {
@@ -131,14 +133,8 @@
       themeToggle.addEventListener('click', async () => {
         currentTheme = currentTheme === 'light' ? 'dark' : 'light';
         try {
-          // Update Monaco editor theme
+          // Update Monaco editor theme and set data-theme attribute
           await yasqe.setTheme(currentTheme);
-          // Update page theme
-          if (currentTheme === 'dark') {
-            document.body.classList.add('dark-theme');
-          } else {
-            document.body.classList.remove('dark-theme');
-          }
           updateThemeBtn(currentTheme)
         } catch (error) {
           console.error('Failed to switch theme:', error);
