@@ -16,7 +16,7 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       plugins: [typescript()],
-      external: ["@sib-swiss/yasqe"],
+      // external: ["@sib-swiss/yasqe", "@codingame/monaco-editor-wrapper"],
       output: {
         inlineDynamicImports: true,
       },
@@ -30,13 +30,9 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: [
-      "vscode-textmate",
-      "vscode-oniguruma",
-      // "@sib-swiss/yasqe",
-    ],
-    // exclude: [],
-    exclude: ["@sib-swiss/yasqe"],
+    include: ["vscode-textmate", "vscode-oniguruma", "@codingame/monaco-editor-wrapper", "@sib-swiss/yasqe"],
+    exclude: [],
+    // exclude: ["@sib-swiss/yasqe"],
     // esbuildOptions: {
     //   plugins: [importMetaUrlPlugin],
     // },

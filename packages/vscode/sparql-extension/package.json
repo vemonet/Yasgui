@@ -1,0 +1,149 @@
+{
+  "name": "sparql-extension",
+  "displayName": "SPARQL Language Support",
+  "description": "Advanced SPARQL language support with syntax highlighting, auto-completion, and language server integration",
+  "version": "0.0.1",
+  "publisher": "yasgui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-repo/Yasgui"
+  },
+  "engines": {
+    "vscode": "^1.101.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Formatters"
+  ],
+  "keywords": [
+    "sparql",
+    "rdf",
+    "semantic web",
+    "query",
+    "language server"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "sparql",
+        "aliases": ["SPARQL", "sparql"],
+        "extensions": [".rq", ".sparql"],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icons/sparql-light.svg",
+          "dark": "./icons/sparql-dark.svg"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "sparql",
+        "scopeName": "source.sparql",
+        "path": "./syntaxes/sparql.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "SPARQL",
+      "properties": {
+        "sparql.languageServer.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable SPARQL language server features"
+        },
+        "sparql.validation.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable SPARQL query validation"
+        },
+        "sparql.completion.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable auto-completion for SPARQL queries"
+        },
+        "sparql.formatting.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable SPARQL query formatting"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "sparql.validateQuery",
+        "title": "Validate SPARQL Query",
+        "category": "SPARQL"
+      },
+      {
+        "command": "sparql.formatQuery",
+        "title": "Format SPARQL Query",
+        "category": "SPARQL"
+      },
+      {
+        "command": "sparql.executeQuery",
+        "title": "Execute SPARQL Query",
+        "category": "SPARQL"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceLangId == sparql",
+          "command": "sparql.validateQuery",
+          "group": "sparql"
+        },
+        {
+          "when": "resourceLangId == sparql",
+          "command": "sparql.formatQuery",
+          "group": "sparql"
+        },
+        {
+          "when": "resourceLangId == sparql",
+          "command": "sparql.executeQuery",
+          "group": "sparql"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "resourceLangId == sparql",
+          "command": "sparql.executeQuery",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run package",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "npm run check-types && npm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.101.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "eslint": "^9.25.1",
+    "esbuild": "^0.25.3",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.8.3",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}

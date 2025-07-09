@@ -17,6 +17,10 @@ import { EndpointMetadata } from "./editor/endpointMetadata";
 // import tooltip from "./tooltip";
 import "./scss/yasqe.css";
 import "./scss/buttons.css";
+import { initialize } from "@codingame/monaco-vscode-api";
+import getLayoutServiceOverride from "@codingame/monaco-vscode-layout-service-override";
+import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
+// import getEditorServiceOverride from '@codingame/monaco-vscode-editor-service-override';
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
@@ -66,10 +70,16 @@ export class Yasqe extends EventEmitter {
    */
   public async initEditor(el: HTMLElement, conf: PartialConfig = {}) {
     try {
-      // overriding Monaco service with VSCode
-      // await initialize({
-      //     ...getConfigurationServiceOverride(),
+      // try {
+      //   // Trying to fix issue with VSCode services override init in prod
+      //   await initialize({
+      //   // ...getEditorServiceOverride(),
+      //   ...getConfigurationServiceOverride(),
+      //   ...getLayoutServiceOverride(),
       // });
+      // } catch (error) {
+      //   console.warn("Error while initializing Monaco editor services override:", error);
+      // }
       // json config like in vscode settings.json
       // updateUserConfiguration(`{
       //     "editor.fontSize": 30, "editor.lineHeight": 30, "editor.letterSpacing": 0,
@@ -78,7 +88,10 @@ export class Yasqe extends EventEmitter {
       // const codeEditorService = StaticServices.codeEditorService.get();
       const wrapper = new MonacoEditorLanguageClientWrapper();
       const wrapperConfig = await buildWrapperConfig(el, this.config.value, this.config.theme);
+      // console.log("BEFORE ERROR IN INIT AND START")
       await wrapper.initAndStart(wrapperConfig);
+      // console.log("AFTER INIT AND START")
+
       this.monacoWrapper = wrapper;
       this.languageClientWrapper = wrapper.getLanguageClientWrapper("sparql");
       this.editor = this.monacoWrapper.getEditor();

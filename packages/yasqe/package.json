@@ -8,7 +8,7 @@
   "types": "dist/types/index.d.ts",
   "license": "MIT",
   "author": "Triply <info@triply.cc>",
-  "homepage": "https://github.com/zazuko/Yasgui",
+  "homepage": "https://github.com/sib-swiss/Yasgui",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -25,18 +25,17 @@
     "Semantic Web",
     "Linked Data"
   ],
-  "bugs": "https://github.com/zazuko/Yasgui/issues/",
+  "bugs": "https://github.com/sib-swiss/Yasgui/issues/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zazuko/Yasgui.git",
+    "url": "https://github.com/sib-swiss/Yasgui.git",
     "directory": "packages/yasqe"
   },
   "dependencies": {
     "@sib-swiss/yasgui-utils": "*",
-    "codemirror": "^5.51.0",
     "lodash-es": "^4.17.15",
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^16.1.1",
-    "monaco-editor-wrapper": "~6.7.0",
+    "monaco-editor-wrapper": "npm:@codingame/monaco-editor-wrapper@^6.1.1",
     "qlue-ls": "^0.13.2",
     "query-string": "^6.10.1",
     "vscode": "npm:@codingame/monaco-vscode-extension-api@^16.1.1",
@@ -44,7 +43,6 @@
   },
   "devDependencies": {
     "@codingame/monaco-vscode-editor-service-override": "^16.1.1",
-    "@types/codemirror": "0.0.100",
     "@types/lodash-es": "^4.17.3",
     "@types/node": "^22.5.4"
   },

@@ -5,6 +5,8 @@ import type { WrapperConfig } from "monaco-editor-wrapper";
 import { LogLevel, Uri } from "vscode";
 import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
 import LanguageServerWorker from "./languageServer.worker?worker&inline";
+// import 'monaco-editor-wrapper/features/workbench';
+// import 'monaco-editor-wrapper/features/viewPanels';
 
 // https://github.com/vitejs/vite/discussions/15547
 
