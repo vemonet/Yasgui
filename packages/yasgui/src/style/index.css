@@ -1,6 +1,5 @@
 /* CSS Custom Properties for theming */
 :root {
-  --yasgui-bg: #ffffff;
   --yasgui-text: rgba(0, 0, 0, 0.87);
   --yasgui-border: rgba(0, 0, 0, 0.26);
   --yasgui-focus: #337ab7;
@@ -26,7 +25,6 @@
 }
 
 html[data-theme="dark"] {
-  --yasgui-bg: #1e1e1e;
   --yasgui-text: #eeeeee;
   --yasgui-border: rgba(255, 255, 255, 0.26);
   --yasgui-focus: #4fc3f7;
@@ -45,7 +43,7 @@ html[data-theme="dark"] {
 }
 
 .yasgui {
-  background-color: var(--yasgui-bg);
+  /* background-color: var(--yasgui-bg); */
 
   a {
     color: var(--yasgui-link);

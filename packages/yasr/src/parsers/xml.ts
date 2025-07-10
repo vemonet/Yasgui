@@ -45,8 +45,6 @@ function parseResults(node: ChildNode, postProcessBinding: Parser.PostProcessBin
       }
     }
 
-    if (!isEmpty) {
-    }
     if (!isEmpty(binding)) results.bindings.push(postProcessBinding(binding));
   }
   return results;

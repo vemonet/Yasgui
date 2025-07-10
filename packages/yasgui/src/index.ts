@@ -1,9 +1,9 @@
 import { EventEmitter } from "events";
 import { merge, find, isEqual } from "lodash-es";
+
 import initializeDefaults from "./defaults";
 import PersistentConfig from "./PersistentConfig";
 import { default as Tab, PersistedJson as PersistedTabJson } from "./Tab";
-
 import { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
 import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";

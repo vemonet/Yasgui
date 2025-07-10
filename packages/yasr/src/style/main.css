@@ -1,6 +1,5 @@
 /* CSS Custom Properties for yasr theming */
 :root {
-  --yasr-bg: #ffffff;
   --yasr-text: #000000;
   --yasr-border: #d1d1d1;
   --yasr-link: #428bca;
@@ -18,7 +17,6 @@
 }
 
 html[data-theme="dark"] {
-  --yasr-bg: #1e1e1e;
   --yasr-text: #d4d4d4;
   --yasr-border: #3e3e3e;
   --yasr-link: #4fc3f7;
@@ -34,7 +32,6 @@ html[data-theme="dark"] {
 }
 
 .yasr {
-  background-color: var(--yasr-bg);
   color: var(--yasr-text);
 
   .yasr_btn {

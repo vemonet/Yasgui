@@ -26,7 +26,6 @@
     "store": "^2.0.12"
   },
   "devDependencies": {
-    "@types/node": "^22.5.4",
     "@types/store": "^2.0.5"
   },
   "publishConfig": {

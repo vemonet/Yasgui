@@ -15,169 +15,144 @@ function getAliasFor(packageName: "yasgui" | "yasr" | "yasqe" | "utils") {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  // Development server configuration
-  server: {
-    port: 4000,
-  },
-  logLevel: "info",
-  resolve: {
-    alias: {
-      ...getAliasFor("yasgui"),
-      ...getAliasFor("yasr"),
-      ...getAliasFor("yasqe"),
-      ...getAliasFor("utils"),
-    },
-    extensions: [".json", ".js", ".ts", ".scss", ".css"],
-  },
-  // css: {
-  //   preprocessorOptions: {
-  //     scss: {
-  //       additionalData: `@use "sass:math";`,
-  //     },
-  //   },
-  // },
-  optimizeDeps: {
-    include: ["vscode-textmate", "vscode-oniguruma"],
-  },
-  worker: {
-    format: "es",
-    plugins: () => [wasm()],
-  },
-  // plugins: [wasm()],
-});
-
-// /** Build configuration for individual packages */
-// const isProd = process.env.NODE_ENV === "production";
-// const buildPackage = process.env.BUILD_PACKAGE as "yasgui" | "yasr" | "yasqe" | "utils";
-
-// export default defineConfig(() => {
-//   // Package build mode
-//   if (buildPackage && ['yasgui', 'yasr', 'yasqe', 'utils'].includes(buildPackage)) {
-//     const packagePath = resolve(__dirname, "packages", buildPackage);
-//     const entryPath = resolve(packagePath, "src", "index.ts");
-
-//     const globalNames = {
-//       'yasgui': 'Yasgui',
-//       'yasqe': 'Yasqe',
-//       'yasr': 'Yasr',
-//       'utils': 'YasguiUtils'
-//     };
-
-//     return {
-//       build: {
-//         lib: {
-//           entry: entryPath,
-//           name: globalNames[buildPackage],
-//           fileName: () => buildPackage,
-//           // fileName: (format: string) => {
-//           //   const suffix = isProd ? '.min' : '';
-//           //   return format === 'umd' ? `${buildPackage}${suffix}.js` : `${buildPackage}.${format}.js`;
-//           // },
-//           // formats: ['umd', 'es'],
-//         },
-//         outDir: resolve(packagePath, 'build'),
-//         emptyOutDir: true,
-//         sourcemap: true,
-//         cssCodeSplit: false, // Don't split CSS, bundle it together
-//         minify: isProd ? 'terser' : false,
-//         rollupOptions: {
-//           // Only externalize peer dependencies, bundle everything else
-//           external: buildPackage === 'utils' ? [] : ['@sib-swiss/yasgui-utils'],
-//           output: {
-//             globals: buildPackage === 'utils' ? undefined : {
-//               '@sib-swiss/yasgui-utils': 'YasguiUtils'
-//             },
-//             assetFileNames: (assetInfo) => {
-//               if (assetInfo.name?.endsWith('.css')) {
-//                 const suffix = isProd ? '.min' : '';
-//                 return `${buildPackage}${suffix}.css`;
-//               }
-//               return assetInfo.name || '';
-//             },
-//             // Prevent code splitting by putting everything in a single chunk
-//             manualChunks: undefined,
-//           },
-//         },
-//       },
-//       resolve: {
-//         alias: {
-//           ...getAliasFor("yasgui"),
-//           ...getAliasFor("yasr"),
-//           ...getAliasFor("yasqe"),
-//           ...getAliasFor("utils"),
-//         },
-//         extensions: [".json", ".js", ".ts", ".scss", ".css"],
-//       },
-//       css: {
-//         preprocessorOptions: {
-//           scss: {
-//             additionalData: `@use "sass:math";`,
-//           },
-//         },
-//       },
-//       define: {
-//         __DEVELOPMENT__: !isProd,
-//       },
-//       optimizeDeps: {
-//         esbuildOptions: {
-//           plugins: [importMetaUrlPlugin],
-//         },
-//         include: [
-//           'vscode-textmate',
-//           'vscode-oniguruma',
-//         ],
-//         exclude: [],
-//       },
-//       worker: {
-//         format: "es",
-//         plugins: () => [wasm()],
-//       },
-//       logLevel: 'info',
-//     };
-//   }
-
+// export default defineConfig({
 //   // Development server configuration
-//   return {
-//     resolve: {
-//       alias: {
-//         ...getAliasFor("yasgui"),
-//         ...getAliasFor("yasr"),
-//         ...getAliasFor("yasqe"),
-//         ...getAliasFor("utils"),
-//       },
-//       extensions: [".json", ".js", ".ts", ".scss", ".css"],
+//   server: {
+//     port: 4000,
+//   },
+//   logLevel: "info",
+//   resolve: {
+//     alias: {
+//       ...getAliasFor("yasgui"),
+//       ...getAliasFor("yasr"),
+//       ...getAliasFor("yasqe"),
+//       ...getAliasFor("utils"),
 //     },
-//     css: {
-//       preprocessorOptions: {
-//         scss: {
-//           additionalData: `@use "sass:math";`,
-//         },
-//       },
-//     },
-//     define: {
-//       __DEVELOPMENT__: !isProd,
-//     },
-//     optimizeDeps: {
-//       esbuildOptions: {
-//         plugins: [importMetaUrlPlugin],
-//       },
-//       include: [
-//         'vscode-textmate',
-//         'vscode-oniguruma',
-//       ],
-//       exclude: [],
-//     },
-//     worker: {
-//       format: "es",
-//       plugins: () => [wasm()],
-//     },
-//     server: {
-//       port: 4000,
-//       sourcemapIgnoreList: (sourcePath) => {
-//         return sourcePath.includes('node_modules');
-//       },
-//     },
-//     logLevel: 'info',
-//   };
+//     extensions: [".json", ".js", ".ts", ".scss", ".css"],
+//   },
+//   optimizeDeps: {
+//     include: ["vscode-textmate", "vscode-oniguruma"],
+//   },
+//   worker: {
+//     format: "es",
+//     plugins: () => [wasm()],
+//   },
+//   // plugins: [wasm()],
 // });
+
+/** Build configuration for individual packages */
+const isProd = process.env.NODE_ENV === "production";
+const buildPackage = process.env.BUILD_PACKAGE as "yasgui" | "yasr" | "yasqe" | "utils";
+
+const pkgName = (pkgFolder: string) => {
+  return pkgFolder !== "utils" ? `@sib-swiss/${pkgFolder}` : `@sib-swiss/yasgui-${pkgFolder}`;
+};
+
+export default defineConfig(() => {
+  // Package build mode
+  if (buildPackage && ["yasgui", "yasr", "yasqe", "utils"].includes(buildPackage)) {
+    const packagePath = resolve(__dirname, "packages", buildPackage);
+    const entryPath = resolve(packagePath, "src", "index.ts");
+
+    // const globalNames = {
+    //   'yasgui': 'Yasgui',
+    //   'yasqe': 'Yasqe',
+    //   'yasr': 'Yasr',
+    //   'utils': 'YasguiUtils'
+    // };
+
+    return {
+      build: {
+        lib: {
+          entry: entryPath,
+          name: pkgName(buildPackage),
+          fileName: buildPackage,
+          // fileName: (format: string) => {
+          //   const suffix = isProd ? '.min' : '';
+          //   return format === 'umd' ? `${buildPackage}${suffix}.js` : `${buildPackage}.${format}.js`;
+          // },
+          // formats: ['umd', 'es'],
+        },
+        outDir: resolve(packagePath, "dist"),
+        emptyOutDir: true,
+        sourcemap: true,
+        cssCodeSplit: false, // Don't split CSS, bundle it together
+        // minify: isProd ? 'terser' : false,
+        rollupOptions: {
+          // Only externalize peer dependencies, bundle everything else
+          external: buildPackage === "utils" ? [] : ["@sib-swiss/yasgui-utils"],
+          output: {
+            // Enable cleaner file structure
+            inlineDynamicImports: true,
+            // Ensure proper format for dynamic imports
+            format: "es",
+            // globals: buildPackage === 'utils' ? undefined : {
+            //   '@sib-swiss/yasgui-utils': 'YasguiUtils'
+            // },
+            // assetFileNames: (assetInfo) => {
+            //   if (assetInfo.name?.endsWith('.css')) {
+            //     const suffix = isProd ? '.min' : '';
+            //     return `${buildPackage}${suffix}.css`;
+            //   }
+            //   return assetInfo.name || '';
+            // },
+            // Prevent code splitting by putting everything in a single chunk
+            manualChunks: undefined,
+          },
+        },
+      },
+      resolve: {
+        alias: {
+          ...getAliasFor("yasgui"),
+          ...getAliasFor("yasr"),
+          ...getAliasFor("yasqe"),
+          ...getAliasFor("utils"),
+        },
+        extensions: [".json", ".js", ".ts", ".scss", ".css"],
+      },
+      define: {
+        __DEVELOPMENT__: !isProd,
+      },
+      optimizeDeps: {
+        include: ["vscode-textmate", "vscode-oniguruma"],
+        exclude: [],
+      },
+      worker: {
+        format: "es",
+        plugins: () => [wasm()],
+      },
+      logLevel: "info",
+    };
+  }
+
+  // Development server configuration
+  return {
+    resolve: {
+      alias: {
+        ...getAliasFor("yasgui"),
+        ...getAliasFor("yasr"),
+        ...getAliasFor("yasqe"),
+        ...getAliasFor("utils"),
+      },
+      extensions: [".json", ".js", ".ts", ".scss", ".css"],
+    },
+    define: {
+      __DEVELOPMENT__: !isProd,
+    },
+    optimizeDeps: {
+      include: ["vscode-textmate", "vscode-oniguruma"],
+      exclude: [],
+    },
+    worker: {
+      format: "es",
+      plugins: () => [wasm()],
+    },
+    server: {
+      port: 4000,
+      sourcemapIgnoreList: (sourcePath) => {
+        return sourcePath.includes("node_modules");
+      },
+    },
+    logLevel: "info",
+  };
+});

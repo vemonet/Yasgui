@@ -1,7 +1,7 @@
 .yasgui.context-menu {
   position: absolute;
   z-index: 10;
-  background: var(--yasgui-bg);
+  background: var(--yasgui-nav-bg);
   min-width: 160px;
   font-size: 14px;
   border: 1px solid var(--yasgui-border);
@@ -14,7 +14,7 @@
     margin: 8px auto;
     border: none;
     border-top: 1px solid var(--yasgui-border);
-    border-bottom: 1px solid var(--yasgui-bg);
+    border-bottom: 1px solid var(--yasgui-nav-bg);
   }
 
   .context-menu-list {

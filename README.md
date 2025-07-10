@@ -4,9 +4,9 @@
 
 Yasgui consists of three components:
 
-- Yasqe, a SPARQL query editor
-- Yasr, a SPARQL result visualizer
-- Yasgui, which binds the former together.
+- **Yasqe**, a SPARQL query editor
+- **Yasr**, a SPARQL result visualizer
+- **Yasgui**, which binds the former together.
 
 ## 🍴 About this fork
 
@@ -14,8 +14,9 @@ This is a fork of [@zazuko/Yasgui](https://github.com/zazuko/Yasgui) which intro
 
 - [x] Use the [**Qlue-ls SPARQL language server**](https://github.com/IoannisNezis/Qlue-ls) and [**Monaco editor**](https://microsoft.github.io/monaco-editor/) (what powers VSCode), to replace the [CodeMirror5](https://codemirror.net/5/) editor.
 - [x] Autocomplete is now [built-in based on SPARQL queries](https://arxiv.org/abs/2104.14595) sent to the endpoint, queries can be customized and optimized
-- [x] Migrate build tool to [**vite**](https://vite.dev/) from webpack, the packages are now available as ES modules and Common JS.
 - [x] Built-in support for light/dark themes
+- [x] Migrate build tool to [**vite**](https://vite.dev/) from webpack, the packages are now available as ES modules and Common JS.
+- [x] Migrate SCSS to CSS, using regular CSS variables to make style more easily configurable.
 
 > [!CAUTION]
 >
@@ -28,13 +29,13 @@ This is a fork of [@zazuko/Yasgui](https://github.com/zazuko/Yasgui) which intro
 To include Yasgui in a project include the package run the command below.
 
 ```sh
-npm i --save @zazuko/yasgui
+npm i --save @sib-swiss/yasgui
 ```
 
 If you want to work with the Yasqe and Yasr components separately:
 
 ```sh
-npm i --save @zazuko/yasqe @zazuko/yasr
+npm i --save @sib-swiss/yasqe @sib-swiss/yasr
 ```
 
 ### Via CDN
@@ -45,8 +46,8 @@ To include Yasgui in your webpage, all that's needed is importing the Yasgui Jav
 <body>
   <div id="yasgui"></div>
   <script type="module">
-    import Yasgui from "@zazuko/yasgui";
-    import '@zazuko/yasgui/dist/yasgui.css';
+    import Yasgui from "@sib-swiss/yasgui";
+    import "@sib-swiss/yasgui/dist/yasgui.css";
 
     const yasgui = new Yasgui(document.getElementById("yasgui"));
   </script>
@@ -65,8 +66,8 @@ Here is a minimal example to deploy Yasgui directly in a `.html` file:
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Yasgui</title>
     <style>
       body {
@@ -79,8 +80,8 @@ Here is a minimal example to deploy Yasgui directly in a `.html` file:
     <div id="yasgui"></div>
 
     <script type="module">
-      import Yasgui from '@zazuko/Yasgui';
-      import '@zazuko/yasgui/dist/yasgui.css';
+      import Yasgui from "@sib-swiss/Yasgui";
+      import "@sib-swiss/yasgui/dist/yasgui.css";
 
       const yasgui = new Yasgui(document.getElementById("yasgui"), {
         requestConfig: {
@@ -101,12 +102,11 @@ Here is a minimal example to deploy Yasgui directly in a `.html` file:
 >
 > ```html
 > <style>
->     .yasgui .autocompleteWrapper {
->       display: none !important;
->     }
+>   .yasgui .autocompleteWrapper {
+>     display: none !important;
+>   }
 > </style>
 > ```
->
 
 ### 🎨 Deploy Yasqe and Yasr
 
@@ -116,8 +116,8 @@ Otherwise you can manually deploy `Yasqe` (editor) and `Yasr` (query results) se
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Yasqe + Yasr</title>
     <style>
       body {
@@ -131,10 +131,10 @@ Otherwise you can manually deploy `Yasqe` (editor) and `Yasr` (query results) se
     <div id="yasr"></div>
 
     <script type="module">
-      import Yasqe from '@zazuko/Yasqe';
-      import Yasr from '@zazuko/Yasr';
-      import '@zazuko/yasqe/dist/yasqe.css';
-      import '@zazuko/yasr/dist/yasr.css';
+      import Yasqe from "@sib-swiss/Yasqe";
+      import Yasr from "@sib-swiss/Yasr";
+      import "@sib-swiss/yasqe/dist/yasqe.css";
+      import "@sib-swiss/yasr/dist/yasr.css";
 
       // Initialize Yasqe and Yasr
       const yasqe = new Yasqe(document.getElementById("yasqe"), {
@@ -161,7 +161,7 @@ Yasgui comes with a built-in support for light/dark theme.
 You can use the following method to change the theme easily:
 
 ```ts
-yasgui.yasqe.setTheme("light")
+yasgui.getTab().getYasqe().setTheme("light");
 ```
 
 <details><summary>Dark theme configuration is done through `data-theme` variables</summary>
@@ -169,7 +169,6 @@ yasgui.yasqe.setTheme("light")
 ```css
 html[data-theme="dark"] {
   /* Yasgui */
-  --yasgui-bg: #1e1e1e;
   --yasgui-text: #eeeeee;
   --yasgui-border: rgba(255, 255, 255, 0.26);
   --yasgui-focus: #4fc3f7;
@@ -185,7 +184,6 @@ html[data-theme="dark"] {
   --yasgui-panel-bg: #3e3e3e;
   --yasgui-panel-border: #2d2d30;
   /* Yasqe */
-  --yasqe-bg: #1e1e1e;
   --yasqe-text: #d4d4d4;
   --yasqe-border: #3e3e3e;
   --yasqe-notification-bg: #2d2d30;
@@ -194,7 +192,6 @@ html[data-theme="dark"] {
   --yasqe-tooltip-text: #ffffff;
   --yasqe-error: #ff6b6b;
   /* Yasr */
-  --yasr-bg: #1e1e1e;
   --yasr-text: #d4d4d4;
   --yasr-border: #3e3e3e;
   --yasr-link: #4fc3f7;

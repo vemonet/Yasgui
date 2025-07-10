@@ -831,7 +831,10 @@ export type PlainRequestConfig = {
 export type PartialConfig = {
   [P in keyof Config]?: Config[P] extends object ? Partial<Config[P]> : Config[P];
 };
-export interface Config extends Partial<CodeMirror.EditorConfiguration> {
+export interface Config {
+  value: string;
+  lineNumbers: boolean;
+  lineWrapping: boolean;
   mode: string;
   collapsePrefixesOnLoad: boolean;
   syntaxErrorCheck: boolean;

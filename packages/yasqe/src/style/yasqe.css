@@ -1,6 +1,5 @@
 /* CSS Custom Properties for yasqe theming */
 :root {
-  --yasqe-bg: #ffffff;
   --yasqe-text: #000000;
   --yasqe-border: #d1d1d1;
   --yasqe-notification-bg: #eeeeee;
@@ -11,7 +10,6 @@
 }
 
 html[data-theme="dark"] {
-  --yasqe-bg: #1e1e1e;
   --yasqe-text: #d4d4d4;
   --yasqe-border: #3e3e3e;
   --yasqe-notification-bg: #2d2d30;
@@ -23,7 +21,6 @@ html[data-theme="dark"] {
 
 .yasqe {
   position: relative;
-  background-color: var(--yasqe-bg);
   color: var(--yasqe-text);
 
   .svgImg {

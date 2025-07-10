@@ -5,7 +5,7 @@
     border: 2px solid var(--yasgui-border);
     border-radius: 6px;
     width: 100%;
-    background: var(--yasgui-bg);
+    background: var(--yasgui-nav-bg);
     color: var(--yasgui-text);
     &:hover {
       border-color: var(--yasgui-border);
@@ -34,7 +34,7 @@
     margin-top: -4px;
     padding: 0;
     list-style: none;
-    background: var(--yasgui-bg);
+    background: var(--yasgui-nav-bg);
     border: 1px solid var(--yasgui-border);
     border-radius: 6px;
     box-sizing: border-box;

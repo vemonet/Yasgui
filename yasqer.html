@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Yasqe + Yasr</title>
     <style>
       /* CSS Custom Properties for navigation */
@@ -20,7 +20,7 @@
         --nav-text: #cccccc;
         --nav-text-hover: #ffffff;
         --nav-text-active: #e0e0e0;
-        --body-bg: #121212;
+        --body-bg: #1e1e1e;
         --body-text: #eeeeee;
       }
 
@@ -30,7 +30,8 @@
         background-color: var(--body-bg);
         color: var(--body-text);
       }
-      a:hover, button:hover {
+      a:hover,
+      button:hover {
         filter: brightness(70%);
       }
       /* Nav */
@@ -68,7 +69,7 @@
   </head>
 
   <body>
-    <nav style="display: flex;">
+    <nav style="display: flex">
       <ul style="display: flex; list-style: none; align-self: center">
         <li class="navItem"><a class="nav-link" href="/">Yasgui</a></li>
         <li class="navItem active"><a class="nav-link" href="/yasqer.html">Yasqe + Yasr</a></li>
@@ -84,8 +85,8 @@
 
     <script type="module">
       // For development, use the source code directly:
-      import Yasqe from './packages/yasqe/src/index.ts';
-      import Yasr from './packages/yasr/src/index.ts';
+      import Yasqe from "./packages/yasqe/src/index.ts";
+      import Yasr from "./packages/yasr/src/index.ts";
 
       // For testing production build:
       // import Yasqe from './packages/yasqe/dist/yasqe.js';
@@ -95,19 +96,17 @@
 
       function getSystemTheme() {
         if (typeof window !== "undefined" && window.matchMedia) {
-          return (window.matchMedia("(prefers-color-scheme: dark)").matches) ? 'dark' : 'light';
+          return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
         }
-        return 'light';
+        return "light";
       }
       function updateThemeBtn(currentTheme) {
-        document.getElementById('theme-toggle').textContent = currentTheme === 'dark'
-          ? '☀️'
-          : '🌙';
+        document.getElementById("theme-toggle").textContent = currentTheme === "dark" ? "☀️" : "🌙";
       }
 
       // Initialize page theme based on system preference
       let currentTheme = getSystemTheme();
-      if (currentTheme === 'dark') document.documentElement.dataset.theme = 'dark';
+      if (currentTheme === "dark") document.documentElement.dataset.theme = "dark";
 
       // Initialize Yasqe and Yasr
       const yasqe = new Yasqe(document.getElementById("yasqe"), {
@@ -128,16 +127,16 @@
       });
 
       // Theme toggle button
-      const themeToggle = document.getElementById('theme-toggle');
-      updateThemeBtn(currentTheme)
-      themeToggle.addEventListener('click', async () => {
-        currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      const themeToggle = document.getElementById("theme-toggle");
+      updateThemeBtn(currentTheme);
+      themeToggle.addEventListener("click", async () => {
+        currentTheme = currentTheme === "light" ? "dark" : "light";
         try {
           // Update Monaco editor theme and set data-theme attribute
           await yasqe.setTheme(currentTheme);
-          updateThemeBtn(currentTheme)
+          updateThemeBtn(currentTheme);
         } catch (error) {
-          console.error('Failed to switch theme:', error);
+          console.error("Failed to switch theme:", error);
         }
       });
     </script>

@@ -226,12 +226,16 @@ class Parser {
       this.json = SparqlJsonParser(data, applyMustacheToLiterals);
       this.type = "json";
       return true;
-    } catch {}
+    } catch {
+      /* empty */
+    }
     try {
       this.json = SparqlXmlParser(data, applyMustacheToLiterals);
       this.type = "xml";
       return true;
-    } catch {}
+    } catch {
+      /* empty */
+    }
     return false;
   }
 

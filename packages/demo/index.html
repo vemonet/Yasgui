@@ -1,170 +1,171 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qlue SPARQL editor</title>
-  <meta property="og:title" content="SPARQL editor" />
-  <meta
-    name="description"
-    content="SPARQL editor based on Yasgui, using the Qlue-ls language server and Monaco editor"
-  />
-  <meta
-    property="og:description"
-    content="SPARQL editor based on Yasgui, using the Qlue-ls language server and Monaco editor"
-  />
-  <meta property="og:image" content="yasgui.png" />
-  <meta name="author" content="SIB Swiss Institute of Bioinformatics" />
-  <meta name="keywords" content="SPARQL, RDF, Semantic Web, editor" />
-  <link rel="icon" href="/yasgui.png" type="image/png">
-  <style>
-    :root {
-      --nav-bg: #eeeeee;
-      --nav-text: #555555;
-      --nav-text-hover: #222222;
-      --nav-text-active: #000000;
-      --body-bg: #ffffff;
-      --body-text: #000000;
-      --img-filter: none;
-    }
-    html[data-theme="dark"] {
-      --nav-bg: #2d2d30;
-      --nav-text: #cccccc;
-      --nav-text-hover: #ffffff;
-      --nav-text-active: #e0e0e0;
-      --body-bg: #121212;
-      --body-text: #eeeeee;
-      --img-filter: invert(1);
-    }
-    body {
-      font-family: sans-serif;
-      margin: 0px;
-      background-color: var(--body-bg);
-      color: var(--body-text);
-    }
-    a:hover, button:hover {
-      filter: brightness(70%);
-    }
-    nav {
-      background: var(--nav-bg) !important;
-    }
-    nav img {
-      filter: var(--img-filter);
-    }
-    .navItem a {
-      color: var(--nav-text);
-      text-decoration: none;
-      padding: 5px;
-      padding-right: 15px;
-    }
-    .navItem a:hover {
-      color: var(--nav-text-hover);
-    }
-    .navItem.active a {
-      color: var(--nav-text-active);
-      font-size: 110%;
-    }
-    .theme-switcher {
-      margin-left: auto;
-      margin-right: 1em;
-      align-self: center;
-      display: flex;
-      align-items: center;
-      gap: 2em;
-    }
-    .theme-switcher button {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 20px;
-      padding: 0;
-      color: var(--nav-text);
-    }
-  </style>
-</head>
-<body>
-  <nav style="display: flex; background:#eee">
-    <img src="/yasgui.png" style="max-height:50px; padding:5px; margin-left: 10px" alt="Yasgui Logo">
-    <div class="theme-switcher">
-      <button id="theme-toggle" title="Switch theme">🌙</button>
-      <a class="nav-link" href="https://github.com/vemonet/Yasgui" title="See source code on GitHub" target="_blank"><img src="/github.svg" alt="GitHub" style="width: 20px; height: 20px;"></a>
-    </div>
-  </nav>
-
-  <div id="yasgui"></div>
-
-  <script type="module">
-    // import Yasgui from '../packages/yasgui/src/index.ts';
-    import Yasgui from '@sib-swiss/yasgui';
-    import '@sib-swiss/yasgui/dist/yasgui.css';
-    import '@sib-swiss/yasqe/dist/yasqe.css';
-    import '@sib-swiss/yasr/dist/index.css';
-
-    function getSystemTheme() {
-      if (typeof window !== "undefined" && window.matchMedia) {
-        return (window.matchMedia("(prefers-color-scheme: dark)").matches) ? 'dark' : 'light';
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Qlue SPARQL editor</title>
+    <meta property="og:title" content="SPARQL editor" />
+    <meta
+      name="description"
+      content="SPARQL editor based on Yasgui, using the Qlue-ls language server and Monaco editor"
+    />
+    <meta
+      property="og:description"
+      content="SPARQL editor based on Yasgui, using the Qlue-ls language server and Monaco editor"
+    />
+    <meta property="og:image" content="yasgui.png" />
+    <meta name="author" content="SIB Swiss Institute of Bioinformatics" />
+    <meta name="keywords" content="SPARQL, RDF, Semantic Web, editor" />
+    <link rel="icon" href="/yasgui.png" type="image/png" />
+    <style>
+      :root {
+        --nav-bg: #eeeeee;
+        --nav-text: #555555;
+        --nav-text-hover: #222222;
+        --nav-text-active: #000000;
+        --body-bg: #ffffff;
+        --body-text: #000000;
+        --img-filter: none;
       }
-      return 'light';
-    }
-    function updateThemeBtn(currentTheme) {
-      document.getElementById('theme-toggle').textContent = currentTheme === 'dark'
-        ? '☀️'
-        : '🌙';
-    }
+      html[data-theme="dark"] {
+        --nav-bg: #2d2d30;
+        --nav-text: #cccccc;
+        --nav-text-hover: #ffffff;
+        --nav-text-active: #e0e0e0;
+        --body-bg: #1e1e1e;
+        --body-text: #eeeeee;
+        --img-filter: invert(1);
+      }
+      body {
+        font-family: sans-serif;
+        margin: 0px;
+        background-color: var(--body-bg);
+        color: var(--body-text);
+      }
+      a:hover,
+      button:hover {
+        filter: brightness(70%);
+      }
+      nav {
+        background: var(--nav-bg) !important;
+      }
+      nav img {
+        filter: var(--img-filter);
+      }
+      .navItem a {
+        color: var(--nav-text);
+        text-decoration: none;
+        padding: 5px;
+        padding-right: 15px;
+      }
+      .navItem a:hover {
+        color: var(--nav-text-hover);
+      }
+      .navItem.active a {
+        color: var(--nav-text-active);
+        font-size: 110%;
+      }
+      .theme-switcher {
+        margin-left: auto;
+        margin-right: 1em;
+        align-self: center;
+        display: flex;
+        align-items: center;
+        gap: 2em;
+      }
+      .theme-switcher button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        padding: 0;
+        color: var(--nav-text);
+      }
+    </style>
+  </head>
+  <body>
+    <nav style="display: flex; background: #eee; margin-bottom: 1em">
+      <img src="/yasgui.png" style="max-height: 50px; padding: 5px; margin-left: 10px" alt="Yasgui Logo" />
+      <div class="theme-switcher">
+        <button id="theme-toggle" title="Switch theme">🌙</button>
+        <a class="nav-link" href="https://github.com/vemonet/Yasgui" title="See source code on GitHub" target="_blank"
+          ><img src="/github.svg" alt="GitHub" style="width: 20px; height: 20px"
+        /></a>
+      </div>
+    </nav>
 
-    // Initialize page theme based on system preference
-    let currentTheme = getSystemTheme();
-    if (currentTheme === 'dark') document.documentElement.dataset.theme = 'dark';
+    <div id="yasgui"></div>
 
-    const yasgui = new Yasgui(document.getElementById("yasgui"), {
-      requestConfig: {
-        endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
-      },
-      yasqe: {
-        theme: currentTheme,
-      },
-      endpointCatalogueOptions: {
-        ...Yasgui.defaults.endpointCatalogueOptions,
-        getData: () => {
-          return [
-            {
-              endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
-            },
-            {
-              endpoint: "https://sparql.uniprot.org/sparql/",
-            },
-            {
-              endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql",
-            },
-            {
-              endpoint: "https://dbpedia.org/sparql",
-            },
-          ];
+    <script type="module">
+      // import Yasgui from '../packages/yasgui/src/index.ts';
+      import Yasgui from "@sib-swiss/yasgui";
+      import "@sib-swiss/yasgui/dist/yasgui.css";
+      import "@sib-swiss/yasqe/dist/yasqe.css";
+      import "@sib-swiss/yasr/dist/index.css";
+
+      function getSystemTheme() {
+        if (typeof window !== "undefined" && window.matchMedia) {
+          return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        return "light";
+      }
+      function updateThemeBtn(currentTheme) {
+        document.getElementById("theme-toggle").textContent = currentTheme === "dark" ? "☀️" : "🌙";
+      }
+
+      // Initialize page theme based on system preference
+      let currentTheme = getSystemTheme();
+      if (currentTheme === "dark") document.documentElement.dataset.theme = "dark";
+
+      const yasgui = new Yasgui(document.getElementById("yasgui"), {
+        requestConfig: {
+          endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
         },
-      }
-    });
+        yasqe: {
+          theme: currentTheme,
+        },
+        endpointCatalogueOptions: {
+          ...Yasgui.defaults.endpointCatalogueOptions,
+          getData: () => {
+            return [
+              {
+                endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+              },
+              {
+                endpoint: "https://sparql.uniprot.org/sparql/",
+              },
+              {
+                endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql",
+              },
+              {
+                endpoint: "https://dbpedia.org/sparql",
+              },
+            ];
+          },
+        },
+      });
 
-    // Theme toggle button
-    const themeToggle = document.getElementById('theme-toggle');
-    updateThemeBtn(currentTheme)
-    themeToggle.addEventListener('click', async () => {
-      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-      try {
-        // Update Monaco editor theme
-        await yasgui.yasqe.setTheme(currentTheme);
-        updateThemeBtn(currentTheme)
-      } catch (error) {
-        console.error('Failed to switch theme:', error);
-      }
-    });
+      // Theme toggle button
+      const themeToggle = document.getElementById("theme-toggle");
+      updateThemeBtn(currentTheme);
+      themeToggle.addEventListener("click", async () => {
+        currentTheme = currentTheme === "light" ? "dark" : "light";
+        try {
+          // Update Monaco editor theme
+          await yasgui.yasqe.setTheme(currentTheme);
+          updateThemeBtn(currentTheme);
+        } catch (error) {
+          console.error("Failed to switch theme:", error);
+        }
+      });
 
-    document.addEventListener('DOMContentLoaded', function () {
-      // Hack to ensure the editor syntax highlighting is applied on load
-      setTimeout(() => {
-        yasgui.getTab().setQuery(yasgui.getTab().getQuery() + " ")
-        yasgui.getTab().setQuery(yasgui.getTab().getQuery().trim())
-      }, 400);
-    });
-  </script>
-</body>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Hack to ensure the editor syntax highlighting is applied on load
+        setTimeout(() => {
+          yasgui.getTab().setQuery(yasgui.getTab().getQuery() + " ");
+          yasgui.getTab().setQuery(yasgui.getTab().getQuery().trim());
+        }, 400);
+      });
+    </script>
+  </body>
 </html>

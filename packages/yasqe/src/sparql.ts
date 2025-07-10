@@ -164,7 +164,11 @@ export function getUrlArguments(yasqe: Yasqe, _config: Config["requestConfig"]):
     merge(
       data,
       args.reduce((argsObject: { [key: string]: string[] }, arg) => {
-        argsObject[arg.name] ? argsObject[arg.name].push(arg.value) : (argsObject[arg.name] = [arg.value]);
+        if (argsObject[arg.name]) {
+          argsObject[arg.name].push(arg.value);
+        } else {
+          argsObject[arg.name] = [arg.value];
+        }
         return argsObject;
       }, {})
     );

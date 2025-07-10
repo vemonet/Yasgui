@@ -1,4 +1,4 @@
-export interface Plugin<Opts extends any> {
+export interface Plugin<Opts> {
   priority: number;
   canHandleResults(): boolean;
   hideFromSelection?: boolean;
