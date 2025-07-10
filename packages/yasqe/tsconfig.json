@@ -3,6 +3,9 @@
   "compilerOptions": {
     "rootDir": "./src",
     "outDir": "./dist/types",
+    "paths": {
+      "@sib-swiss/yasgui-utils": ["../utils/dist/types"]
+    }
   },
   "include": ["./src/**/*"],
   "exclude": ["./dist/**/*", "./src/**/*.test.*", "./src/**/__tests__/**/*"]

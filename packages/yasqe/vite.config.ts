@@ -15,7 +15,7 @@ export default defineConfig({
       fileName: "yasqe",
     },
     sourcemap: true,
-    // cssCodeSplit: true, //  Trigger oom
+    // cssCodeSplit: true, // Causes out of memory error
     rollupOptions: {
       plugins: [typescript()],
       // external: ["@codingame/monaco-editor-wrapper"],
@@ -31,12 +31,13 @@ export default defineConfig({
     include: [
       "vscode-textmate",
       "vscode-oniguruma",
+      "@codingame/monaco-vscode-api",
       "@codingame/monaco-editor-wrapper",
-      "monaco-editor/esm/vs/editor/editor.worker",
-      "monaco-editor/esm/vs/language/json/json.worker",
-      "monaco-editor/esm/vs/language/css/css.worker",
-      "monaco-editor/esm/vs/language/html/html.worker",
-      "monaco-editor/esm/vs/language/typescript/ts.worker",
+      // "monaco-editor/esm/vs/editor/editor.worker",
+      // "monaco-editor/esm/vs/language/json/json.worker",
+      // "monaco-editor/esm/vs/language/css/css.worker",
+      // "monaco-editor/esm/vs/language/html/html.worker",
+      // "monaco-editor/esm/vs/language/typescript/ts.worker",
       "qlue-ls",
       // "monaco-editor",
       // "monaco-editor-wrapper",

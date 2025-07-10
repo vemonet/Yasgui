@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
+import typescript from "@rollup/plugin-typescript";
 // import wasm from "vite-plugin-wasm";
 // import topLevelAwait from "vite-plugin-top-level-await";
-import typescript from "@rollup/plugin-typescript";
 // import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
 export default defineConfig({
@@ -23,7 +23,8 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ["vscode-textmate", "vscode-oniguruma", "@codingame/monaco-editor-wrapper", "@sib-swiss/yasqe"],
+    // include: ["vscode-textmate", "vscode-oniguruma", "@codingame/monaco-editor-wrapper", "@sib-swiss/yasqe"],
+    include: ["@sib-swiss/yasqe"],
     exclude: [],
     // exclude: ["@sib-swiss/yasqe"],
     // esbuildOptions: {

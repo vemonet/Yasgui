@@ -11,6 +11,7 @@
     "sourceMap": true,
     "listFiles": false,
     "declaration": true,
+    "emitDeclarationOnly": false,
     "rootDir": ".",
     "baseUrl": ".",
     "paths": {

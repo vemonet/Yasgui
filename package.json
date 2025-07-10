@@ -13,7 +13,6 @@
     "dev": "vite",
     "dev:build": "vite build",
     "dev:preview": "vite preview",
-    "all:build": "BUILD_PACKAGE=yasgui-utils vite build && BUILD_PACKAGE=yasqe vite build && BUILD_PACKAGE=yasr vite build && BUILD_PACKAGE=yasgui vite build",
     "build": "npm run build --workspaces",
     "utils:build": "npm run build -w packages/utils",
     "yasqe:build": "npm run build -w packages/yasqe",

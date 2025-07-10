@@ -34,7 +34,7 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "@json2csv/plainjs": "^7.0.4",
-    "@sib-swiss/yasgui-utils": "^4.5.0",
+    "@sib-swiss/yasgui-utils": "*",
     "@sib-swiss/yasqe": "*",
     "column-resizer": "^1.4.0",
     "datatables.net": "^2.0.5",
