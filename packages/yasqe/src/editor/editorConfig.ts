@@ -2,13 +2,14 @@ import { configureDefaultWorkerFactory } from "monaco-editor-wrapper/workers/wor
 import { sparqlThemeDark, sparqlThemeLight, sparqlThemeSolarizedDark } from "./sparqlTheme";
 import { sparqlTextmateGrammar, sparqlLanguageConfig } from "./sparqlGrammar";
 import type { WrapperConfig } from "monaco-editor-wrapper";
-import { LogLevel, Uri } from "vscode";
-import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
+import { Uri } from "@codingame/monaco-vscode-editor-api";
+import { LogLevel } from "vscode";
 import LanguageServerWorker from "./languageServer.worker?worker&inline";
-// import 'monaco-editor-wrapper/features/workbench';
-// import 'monaco-editor-wrapper/features/viewPanels';
-
-// https://github.com/vitejs/vite/discussions/15547
+// NOTE: imports below do not work.
+// // Import textmate service for syntax highlighting in extended mode
+// import '@codingame/monaco-vscode-textmate-service-override';
+// // Import theme service for custom theme support
+// import '@codingame/monaco-vscode-theme-service-override';
 
 /**
  * Gets the appropriate theme configuration based on system preference or explicit theme
@@ -18,6 +19,11 @@ import LanguageServerWorker from "./languageServer.worker?worker&inline";
 export function getVsThemeConfig(theme?: "light" | "dark") {
   return theme === "dark" ? "vs-dark" : "vs";
 }
+
+// Related discussions:
+// https://github.com/TypeFox/monaco-languageclient/blob/main/packages/examples/src/browser/main.ts
+// https://github.com/TypeFox/monaco-languageclient/issues/546
+// https://github.com/vitejs/vite/discussions/15547
 
 export async function buildWrapperConfig(
   container: HTMLElement,
@@ -65,7 +71,7 @@ export async function buildWrapperConfig(
   const wrapperConfig: WrapperConfig = {
     $type: "extended",
     htmlContainer: container,
-    logLevel: LogLevel.Debug,
+    logLevel: LogLevel.Debug, // 2 vscode LogLevel.Debug
     languageClientConfigs: {
       configs: {
         sparql: {
@@ -126,7 +132,7 @@ export async function buildWrapperConfig(
     vscodeApiConfig: {
       userConfiguration: {
         json: JSON.stringify({
-          // "workbench.colorTheme": themeConfig.vscodeTheme,
+          // "workbench.colorTheme": (theme === "dark") ? "SPARQL Solarized Dark Theme" : "SPARQL Light Theme";,
           "editor.guides.bracketPairsHorizontal": "active",
           "editor.lightbulb.enabled": "On",
           "editor.wordBasedSuggestions": "off",
@@ -162,7 +168,7 @@ export async function buildWrapperConfig(
       //   },
       // },
       // TODO: trying this to fix error with service override when building for prod
-      serviceOverrides: getConfigurationServiceOverride(),
+      // serviceOverrides: getConfigurationServiceOverride(),
     },
 
     extensions: [
@@ -192,13 +198,13 @@ export async function buildWrapperConfig(
               },
               {
                 id: "custom-dark",
-                label: "SPARQL Custom Dark Theme",
+                label: "SPARQL Dark Theme",
                 uiTheme: "vs-dark",
                 path: "./sparql-theme-dark.json",
               },
               {
                 id: "vs",
-                label: "SPARQL Custom Light Theme",
+                label: "SPARQL Light Theme",
                 uiTheme: "vs",
                 path: "./sparql-theme-light.json",
               },

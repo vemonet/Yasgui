@@ -29,6 +29,7 @@ export default defineConfig({
       ...getAliasFor("utils"),
     },
     extensions: [".json", ".js", ".ts", ".scss", ".css"],
+    dedupe: ["vscode"],
   },
   optimizeDeps: {
     include: ["vscode-textmate", "vscode-oniguruma"],

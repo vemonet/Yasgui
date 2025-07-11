@@ -1,5 +1,5 @@
 export const sparqlThemeDark = {
-  name: "SPARQL Custom Dark Theme",
+  name: "SPARQL Dark Theme",
   type: "dark",
   colors: {
     "editor.foreground": "#928364",
@@ -83,7 +83,7 @@ export const sparqlThemeDark = {
 };
 
 export const sparqlThemeLight = {
-  name: "SPARQL Custom Light Theme",
+  name: "SPARQL Light Theme",
   type: "light",
   colors: {
     "editor.foreground": "#586e75",

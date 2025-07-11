@@ -32,17 +32,17 @@
     "directory": "packages/yasqe"
   },
   "dependencies": {
+    "@codingame/monaco-vscode-editor-api": "~18.1.0",
     "@sib-swiss/yasgui-utils": "*",
     "lodash-es": "^4.17.15",
-    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^16.1.1",
-    "monaco-editor-wrapper": "npm:@codingame/monaco-editor-wrapper@^6.1.1",
+    "monaco-editor-wrapper": "^6.9.0",
     "qlue-ls": "^0.13.2",
     "query-string": "^6.10.1",
-    "vscode": "npm:@codingame/monaco-vscode-extension-api@^16.1.1",
+    "vscode": "npm:@codingame/monaco-vscode-extension-api@~18.1.0",
     "vscode-uri": "~3.1.0"
   },
   "devDependencies": {
-    "@codingame/monaco-vscode-editor-service-override": "^16.1.1"
+    "@codingame/monaco-vscode-editor-service-override": "~18.1.0"
   },
   "publishConfig": {
     "access": "public"

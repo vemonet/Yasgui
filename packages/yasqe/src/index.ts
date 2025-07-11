@@ -4,7 +4,9 @@ import * as queryString from "query-string";
 import { drawSvgStringAsElement, addClass, removeClass } from "@sib-swiss/yasgui-utils";
 import { merge } from "lodash-es";
 import { MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper";
-import * as monaco from "monaco-editor";
+import * as monaco from "@codingame/monaco-vscode-editor-api";
+// import '@codingame/monaco-vscode-python-default-extension';
+
 // import { initialize } from '@codingame/monaco-vscode-api'
 // import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
 
