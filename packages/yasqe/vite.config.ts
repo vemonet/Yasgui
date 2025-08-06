@@ -18,6 +18,7 @@ export default defineConfig({
     // cssCodeSplit: true, // Causes out of memory error
     rollupOptions: {
       plugins: [typescript()],
+      // external: ['monaco-editor-workers'],
       // external: ["@codingame/monaco-editor-wrapper"],
       output: {
         // Enable cleaner file structure
@@ -32,7 +33,10 @@ export default defineConfig({
       "vscode-textmate",
       "vscode-oniguruma",
       "@codingame/monaco-vscode-api",
-      "@codingame/monaco-editor-wrapper",
+      "monaco-editor-wrapper",
+      // "@codingame/monaco-vscode-workbench-service-override",
+      // "@codingame/monaco-vscode-views-service-override",
+      "@codingame/monaco-vscode-editor-service-override",
       // "monaco-editor/esm/vs/editor/editor.worker",
       // "monaco-editor/esm/vs/language/json/json.worker",
       // "monaco-editor/esm/vs/language/css/css.worker",

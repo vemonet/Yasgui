@@ -5,6 +5,11 @@ import type { WrapperConfig } from "monaco-editor-wrapper";
 import { Uri } from "@codingame/monaco-vscode-editor-api";
 import { LogLevel } from "vscode";
 import LanguageServerWorker from "./languageServer.worker?worker&inline";
+import { useOpenEditorStub } from "monaco-editor-wrapper/vscode/services";
+import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
+import getEditorServiceOverride from "@codingame/monaco-vscode-editor-service-override";
+import getKeybindingsServiceOverride from "@codingame/monaco-vscode-keybindings-service-override";
+import "@codingame/monaco-vscode-theme-defaults-default-extension";
 // NOTE: imports below do not work.
 // // Import textmate service for syntax highlighting in extended mode
 // import '@codingame/monaco-vscode-textmate-service-override';
@@ -168,7 +173,11 @@ export async function buildWrapperConfig(
       //   },
       // },
       // TODO: trying this to fix error with service override when building for prod
-      // serviceOverrides: getConfigurationServiceOverride(),
+      serviceOverrides: {
+        ...getConfigurationServiceOverride(),
+        ...getEditorServiceOverride(useOpenEditorStub),
+        ...getKeybindingsServiceOverride(),
+      },
     },
 
     extensions: [
