@@ -4,6 +4,7 @@ import topLevelAwait from "vite-plugin-top-level-await";
 import typescript from "@rollup/plugin-typescript";
 // import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
+// https://github.com/TypeFox/monaco-languageclient/issues/950
 export default defineConfig({
   base: "./",
   assetsInclude: ["**/*.wasm"],
@@ -13,6 +14,7 @@ export default defineConfig({
       entry: "src/index.ts",
       name: "@sib-swiss/yasqe",
       fileName: "yasqe",
+      formats: ["es"],
     },
     sourcemap: true,
     // cssCodeSplit: true, // Causes out of memory error
@@ -21,10 +23,15 @@ export default defineConfig({
       // external: ['monaco-editor-workers'],
       // external: ["@codingame/monaco-editor-wrapper"],
       output: {
-        // Enable cleaner file structure
+        // This needs to be true otherwise we get error
         inlineDynamicImports: true,
+        // But we need to make this false to properly handle dynamic imports in the built library
+        // inlineDynamicImports: false,
         // Ensure proper format for dynamic imports
         format: "es",
+        // dynamicImportInCjs: true,
+        // Ensure all chunks are inlined to avoid path resolution issues
+        // manualChunks: undefined,
       },
     },
   },
@@ -32,22 +39,13 @@ export default defineConfig({
     include: [
       "vscode-textmate",
       "vscode-oniguruma",
-      "@codingame/monaco-vscode-api",
-      "monaco-editor-wrapper",
+      // "@codingame/monaco-vscode-api",
+      // "monaco-editor-wrapper",
+      // Explicitly include the service overrides to ensure they're bundled
+      // "@codingame/monaco-vscode-editor-service-override",
       // "@codingame/monaco-vscode-workbench-service-override",
       // "@codingame/monaco-vscode-views-service-override",
-      "@codingame/monaco-vscode-editor-service-override",
-      // "monaco-editor/esm/vs/editor/editor.worker",
-      // "monaco-editor/esm/vs/language/json/json.worker",
-      // "monaco-editor/esm/vs/language/css/css.worker",
-      // "monaco-editor/esm/vs/language/html/html.worker",
-      // "monaco-editor/esm/vs/language/typescript/ts.worker",
-      "qlue-ls",
-      // "monaco-editor",
-      // "monaco-editor-wrapper",
-    ],
-    exclude: [
-      // "qlue-ls"
+      // "qlue-ls",
     ],
     // esbuildOptions: {
     //   plugins: [importMetaUrlPlugin],
@@ -58,4 +56,13 @@ export default defineConfig({
     format: "es",
     plugins: () => [wasm(), topLevelAwait()],
   },
+  // esbuild: {
+  //   minifySyntax: false
+  // },
+  // resolve: {
+  //   alias: {
+  //     // Ensure vscode modules resolve correctly
+  //     "vscode": "@codingame/monaco-vscode-extension-api"
+  //   }
+  // },
 });

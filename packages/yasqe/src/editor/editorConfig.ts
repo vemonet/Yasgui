@@ -5,10 +5,10 @@ import type { WrapperConfig } from "monaco-editor-wrapper";
 import { Uri } from "@codingame/monaco-vscode-editor-api";
 import { LogLevel } from "vscode";
 import LanguageServerWorker from "./languageServer.worker?worker&inline";
-import { useOpenEditorStub } from "monaco-editor-wrapper/vscode/services";
-import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
-import getEditorServiceOverride from "@codingame/monaco-vscode-editor-service-override";
-import getKeybindingsServiceOverride from "@codingame/monaco-vscode-keybindings-service-override";
+// import { useOpenEditorStub } from "monaco-editor-wrapper/vscode/services";
+// import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
+// import getEditorServiceOverride from "@codingame/monaco-vscode-editor-service-override";
+// import getKeybindingsServiceOverride from "@codingame/monaco-vscode-keybindings-service-override";
 import "@codingame/monaco-vscode-theme-defaults-default-extension";
 // NOTE: imports below do not work.
 // // Import textmate service for syntax highlighting in extended mode
@@ -147,37 +147,16 @@ export async function buildWrapperConfig(
           "editor.detectIndentation": false,
         }),
       },
-      // serviceOverrides: {
-      //   // Prevent workbench layout service startup
-      //   IWorkbenchLayoutService: class {
-      //     _serviceBrand: undefined;
-      //     startup() {
-      //       return Promise.resolve();
-      //     }
-      //     isRestored() {
-      //       return true;
-      //     }
-      //     whenReady() {
-      //       return Promise.resolve();
-      //     }
-      //     whenRestored() {
-      //       return Promise.resolve();
-      //     }
-      //   },
-      //   // Prevent ViewDescriptorService errors
-      //   ViewDescriptorService: class {
-      //     _serviceBrand: undefined;
-      //     getViewContainersByLocation() {
-      //       return [];
-      //     }
-      //   },
-      // },
       // TODO: trying this to fix error with service override when building for prod
-      serviceOverrides: {
-        ...getConfigurationServiceOverride(),
-        ...getEditorServiceOverride(useOpenEditorStub),
-        ...getKeybindingsServiceOverride(),
-      },
+      // serviceOverrides: {
+      //   ...getConfigurationServiceOverride(),
+      //   ...getEditorServiceOverride(useOpenEditorStub),
+      //   ...getKeybindingsServiceOverride(),
+      // },
+      // viewsConfig: {
+      //   viewServiceType: "EditorService",
+      //   // openEditorFunc: useOpenEditorStub
+      // },
     },
 
     extensions: [

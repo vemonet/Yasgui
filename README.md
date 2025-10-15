@@ -544,6 +544,23 @@ Or preview the production build (need to build first):
 npm run demo:preview
 ```
 
+> [!CAUTION]
+>
+> There is an outstanding [issue](https://github.com/TypeFox/monaco-languageclient/issues/950) with the `monaco-editor-wrapper`. To fix it go to `node_modules/monaco-editor-wrapper/dist/vscode/services.js` and comment the following lines:
+>
+> ```js
+> export const augmentViewsServices = async (services, viewsConfig) => {
+> 		// [...]
+>     else if (viewsConfig?.viewServiceType === 'WorkspaceService') {
+>         // const getWorkbenchServiceOverride = (await import('@codingame/monaco-vscode-workbench-service-override')).default;
+>         // mergeServices(services, {
+>         //     ...getWorkbenchServiceOverride()
+>         // });
+>     }
+>     // [...]
+> };
+> ```
+
 ### To do
 
 - [ ] Collapse all prefixes as 1 block

@@ -159,13 +159,13 @@
         }
       });
 
-      document.addEventListener("DOMContentLoaded", function () {
-        // Hack to ensure the editor syntax highlighting is applied on load
-        setTimeout(() => {
-          yasgui.getTab().setQuery(yasgui.getTab().getQuery() + " ");
-          yasgui.getTab().setQuery(yasgui.getTab().getQuery().trim());
-        }, 400);
-      });
+      // document.addEventListener("DOMContentLoaded", function () {
+      //   // Hack to ensure the editor syntax highlighting is applied on load
+      //   setTimeout(() => {
+      //     yasgui.getTab().setQuery(yasgui.getTab().getQuery() + " ");
+      //     yasgui.getTab().setQuery(yasgui.getTab().getQuery().trim());
+      //   }, 400);
+      // });
     </script>
   </body>
 </html>

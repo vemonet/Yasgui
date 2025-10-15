@@ -12,34 +12,39 @@ export default defineConfig({
       entry: "src/index.ts",
       name: "@sib-swiss/yasgui",
       fileName: "yasgui",
+      formats: ["es"],
     },
     sourcemap: true,
     rollupOptions: {
       plugins: [typescript()],
-      // external: ["@sib-swiss/yasqe", "@codingame/monaco-editor-wrapper"],
+      // external: ["@sib-swiss/yasqe"],
       output: {
-        inlineDynamicImports: true,
+        // This needs to be false to avoid issues with dynamic imports in the built library
+        inlineDynamicImports: false,
       },
     },
   },
   optimizeDeps: {
-    // include: ["vscode-textmate", "vscode-oniguruma", "@codingame/monaco-editor-wrapper", "@sib-swiss/yasqe"],
-    include: ["@sib-swiss/yasqe"],
+    // include: ["vscode-textmate", "vscode-oniguruma"],
+    // include: ["@sib-swiss/yasqe"],
     exclude: [],
     // exclude: ["@sib-swiss/yasqe"],
-    // esbuildOptions: {
-    //   plugins: [importMetaUrlPlugin],
-    // },
   },
-  // plugins: [
-  //   wasm(),
-  //   topLevelAwait(),
-  // ],
+  // worker: {
+  //   format: 'es'
+  // },
   // worker: {
   //   format: "es",
   //   plugins: () => [
   //     wasm(),
   //     topLevelAwait(),
   //   ],
+  // },
+  // plugins: [
+  //   wasm(),
+  //   topLevelAwait(),
+  // ],
+  // esbuild: {
+  //   minifySyntax: false
   // },
 });
