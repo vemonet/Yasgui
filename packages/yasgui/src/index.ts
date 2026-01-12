@@ -379,18 +379,18 @@ export class Yasgui extends EventEmitter {
     const languageClient = this.yasqe?.languageClientWrapper?.getLanguageClient();
     if (!languageClient) return;
     // Only add backend if it hasn't been added yet
-    if (!this.addedBackends.has(backendConf.backend.name)) {
+    if (!this.addedBackends.has(backendConf.service.name)) {
       languageClient
         .sendRequest("qlueLs/addBackend", backendConf)
         .then(() => {
-          this.addedBackends.add(backendConf.backend.name);
+          this.addedBackends.add(backendConf.service.name);
         })
         .catch((err: any) => {
           console.error(err);
         });
     }
     // Update the default backend to the new one
-    languageClient.sendRequest("qlueLs/updateDefaultBackend", backendConf.backend.name).catch((err: any) => {
+    languageClient.sendRequest("qlueLs/updateDefaultBackend", backendConf.service.name).catch((err: any) => {
       console.error(err);
     });
   }

@@ -3,7 +3,6 @@
   "description": "Yet Another SPARQL GUI",
   "version": "4.5.0",
   "type": "module",
-  "main": "dist/yasgui.umd.cjs",
   "module": "dist/yasgui.js",
   "types": "dist/types/index.d.ts",
   "license": "MIT",

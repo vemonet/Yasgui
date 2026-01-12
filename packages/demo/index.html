@@ -119,7 +119,7 @@
 
       const yasgui = new Yasgui(document.getElementById("yasgui"), {
         requestConfig: {
-          endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+          endpoint: "https://sparql.uniprot.org/sparql/",
         },
         yasqe: {
           theme: currentTheme,
@@ -129,10 +129,10 @@
           getData: () => {
             return [
               {
-                endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
+                endpoint: "https://sparql.uniprot.org/sparql/",
               },
               {
-                endpoint: "https://sparql.uniprot.org/sparql/",
+                endpoint: "https://qlever.cs.uni-freiburg.de/api/uniprot",
               },
               {
                 endpoint: "https://query.wikidata.org/bigdata/namespace/wdq/sparql",

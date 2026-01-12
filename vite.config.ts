@@ -1,6 +1,7 @@
-import { defineConfig, type LogLevel } from "vite";
+import { defineConfig } from "vite";
 import { resolve } from "path";
 import wasm from "vite-plugin-wasm";
+import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
 /** Function to get alias for packages */
 function getAliasFor(packageName: "yasgui" | "yasr" | "yasqe" | "utils") {
@@ -29,10 +30,25 @@ export default defineConfig({
       ...getAliasFor("utils"),
     },
     extensions: [".json", ".js", ".ts", ".scss", ".css"],
-    dedupe: ["vscode"],
+    // Important: Dedupe vscode and monaco packages to avoid version conflicts
+    dedupe: [
+      "vscode",
+      // "@codingame/monaco-vscode-api",
+      // "@codingame/monaco-vscode-editor-api",
+      // "@codingame/monaco-vscode-extension-api",
+    ],
   },
   optimizeDeps: {
     include: ["vscode-textmate", "vscode-oniguruma"],
+    // Exclude monaco-vscode packages from pre-bundling to avoid webWorkerExtensionHostIframe.html resolution issues
+    // exclude: [
+    //   "@codingame/monaco-vscode-extensions-service-override",
+    //   "@codingame/monaco-vscode-extensionhost-worker-service-override",
+    // ],
+    esbuildOptions: {
+      // This plugin fixes import.meta.url resolution for monaco-vscode-api assets
+      plugins: [importMetaUrlPlugin],
+    },
   },
   worker: {
     format: "es",

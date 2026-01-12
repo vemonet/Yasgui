@@ -3,26 +3,17 @@ import { Storage as YStorage } from "@sib-swiss/yasgui-utils";
 import * as queryString from "query-string";
 import { drawSvgStringAsElement, addClass, removeClass } from "@sib-swiss/yasgui-utils";
 import { merge } from "lodash-es";
-import { MonacoEditorLanguageClientWrapper } from "monaco-editor-wrapper";
-import * as monaco from "@codingame/monaco-vscode-editor-api";
-// import '@codingame/monaco-vscode-python-default-extension';
 
-// import { initialize } from '@codingame/monaco-vscode-api'
-// import getConfigurationServiceOverride, { updateUserConfiguration } from '@codingame/monaco-vscode-configuration-service-override'
+// import { startMonacoEditor } from "./editor/editorConfig";
 
 import * as Sparql from "./sparql";
 import * as imgs from "./imgs";
-import { buildWrapperConfig, getVsThemeConfig } from "./editor/editorConfig";
+
 import getDefaults from "./defaults";
 import { YasqeAjaxConfig } from "./sparql";
 import { EndpointMetadata } from "./editor/endpointMetadata";
-// import tooltip from "./tooltip";
 import "./style/yasqe.css";
 import "./style/buttons.css";
-// import { initialize } from "@codingame/monaco-vscode-api";
-// import getLayoutServiceOverride from "@codingame/monaco-vscode-layout-service-override";
-// import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
-// import getEditorServiceOverride from '@codingame/monaco-vscode-editor-service-override';
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
@@ -61,9 +52,10 @@ export class Yasqe extends EventEmitter {
   public storage: YStorage = new YStorage(Yasqe.storageNamespace);
   public config: Config;
   public persistentConfig: PersistentConfig | undefined;
+
   public languageClientWrapper: any;
-  public monacoWrapper: MonacoEditorLanguageClientWrapper | undefined;
-  public editor: monaco.editor.IStandaloneCodeEditor | undefined; // Monaco editor instance, will be set in initialize
+  public apiWrapper: any;
+  public editor: any | undefined;
 
   /**
    * Initializes the Monaco editor in the given element.
@@ -72,51 +64,14 @@ export class Yasqe extends EventEmitter {
    */
   public async initEditor(el: HTMLElement, conf: PartialConfig = {}) {
     try {
-      // try {
-      //   // Trying to fix issue with VSCode services override init in prod
-      //   await initialize({
-      //   // ...getEditorServiceOverride(),
-      //   ...getConfigurationServiceOverride(),
-      //   ...getLayoutServiceOverride(),
-      // });
-      // } catch (error) {
-      //   console.warn("Error while initializing Monaco editor services override:", error);
-      // }
-      // json config like in vscode settings.json
-      // updateUserConfiguration(`{
-      //     "editor.fontSize": 30, "editor.lineHeight": 30, "editor.letterSpacing": 0,
-      // }`)
-      // import { StaticServices } from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices';
-      // const codeEditorService = StaticServices.codeEditorService.get();
-      const wrapper = new MonacoEditorLanguageClientWrapper();
-      const wrapperConfig = await buildWrapperConfig(el, this.config.value, this.config.theme);
-      // console.log("BEFORE ERROR IN INIT AND START")
-      await wrapper.initAndStart(wrapperConfig);
-      // console.log("AFTER INIT AND START")
+      const { startMonacoEditor } = await import("./editor/editorConfig");
+      const result = await startMonacoEditor(el, this.config.value, this.config.theme);
+      this.editor = result.editorApp.getEditor();
+      this.languageClientWrapper = result.languageClient;
+      this.apiWrapper = result.apiWrapper;
 
-      this.monacoWrapper = wrapper;
-      this.languageClientWrapper = wrapper.getLanguageClientWrapper("sparql");
-      this.editor = this.monacoWrapper.getEditor();
-      // TODO: fix height definition
+      // Set height
       el.style.height = "500px";
-
-      // Add backend SPARQL endpoints
-      if (this.languageClientWrapper && this.languageClientWrapper.getLanguageClient()) {
-        for (const endpointMeta of Object.values(this.persistentConfig?.backends || {})) {
-          this.languageClientWrapper
-            .getLanguageClient()!
-            .sendRequest("qlueLs/addBackend", endpointMeta.backend)
-            .catch((err: any) => {
-              console.error(err);
-            });
-          this.languageClientWrapper
-            .getLanguageClient()!
-            .sendRequest("qlueLs/updateDefaultBackend", endpointMeta.backend.backend.name)
-            .catch((err: any) => {
-              console.error(err);
-            });
-        }
-      }
 
       // Register event listeners first, before setting up Monaco editor events
       this.registerEventListeners();
@@ -135,107 +90,108 @@ export class Yasqe extends EventEmitter {
         this.emit("blur");
       });
 
-      // Add commands for editor actions
-      monaco.editor.addCommand({
-        id: "triggerNewCompletion",
-        run: () => {
-          this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
-        },
-      });
+      // TODO: fix all monaco.editor references
+      // // Add commands for editor actions
+      // monaco.editor.addCommand({
+      //   id: "triggerNewCompletion",
+      //   run: () => {
+      //     this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
+      //   },
+      // });
 
-      monaco.editor.addCommand({
-        id: "jumpToNextPosition",
-        run: () => {
-          this.languageClientWrapper
-            ?.getLanguageClient()!
-            .sendRequest("textDocument/formatting", {
-              textDocument: { uri: this.editor?.getModel()?.uri.toString() },
-              options: {
-                tabSize: 2,
-                insertSpaces: true,
-              },
-            })
-            .then((response: any) => {
-              const edits = response.map((edit: any) => {
-                return {
-                  range: {
-                    startLineNumber: edit.range.start.line + 1,
-                    startColumn: edit.range.start.character + 1,
-                    endLineNumber: edit.range.end.line + 1,
-                    endColumn: edit.range.end.character + 1,
-                  },
-                  text: edit.newText,
-                };
-              });
-              this.editor?.getModel()!.applyEdits(edits);
-              const cursorPosition = this.editor?.getPosition();
-              if (cursorPosition) {
-                this.languageClientWrapper
-                  ?.getLanguageClient()!
-                  .sendRequest("qlueLs/jump", {
-                    textDocument: { uri: this.editor?.getModel()?.uri.toString() },
-                    position: {
-                      line: cursorPosition?.lineNumber - 1,
-                      character: cursorPosition?.column - 1,
-                    },
-                  })
-                  .then((response: any) => {
-                    if (response) {
-                      const newCursorPosition = {
-                        lineNumber: response.position.line + 1,
-                        column: response.position.character + 1,
-                      };
-                      if (response.insertAfter) {
-                        this.editor?.executeEdits("jumpToNextPosition", [
-                          {
-                            range: new monaco.Range(
-                              newCursorPosition.lineNumber,
-                              newCursorPosition.column,
-                              newCursorPosition.lineNumber,
-                              newCursorPosition.column
-                            ),
-                            text: response.insertAfter,
-                          },
-                        ]);
-                      }
-                      this.editor?.setPosition(newCursorPosition, "jumpToNextPosition");
-                      if (response.insertBefore) {
-                        this.editor?.getModel()?.applyEdits([
-                          {
-                            range: new monaco.Range(
-                              newCursorPosition.lineNumber,
-                              newCursorPosition.column,
-                              newCursorPosition.lineNumber,
-                              newCursorPosition.column
-                            ),
-                            text: response.insertBefore,
-                          },
-                        ]);
-                      }
-                      this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
-                    }
-                  });
-              }
-            });
-          this.editor?.trigger("jumpToNextPosition", "editor.action.formatDocument", {});
-          // console.log("jump to next location");
-        },
-      });
-      monaco.editor.addKeybindingRule({
-        command: "jumpToNextPosition",
-        keybinding: monaco.KeyMod.Alt | monaco.KeyCode.KeyN,
-      });
-      wrapper.getEditor()!.addAction({
-        id: "Execute Query",
-        label: "Execute",
-        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
-        contextMenuGroupId: "navigation",
-        contextMenuOrder: 1.5,
-        run: (editor, ...args) => {
-          // run_query(this.getBackend().url, this.getValue())
-          this.query().catch(() => {}); //catch this to avoid unhandled rejection
-        },
-      });
+      // monaco.editor.addCommand({
+      //   id: "jumpToNextPosition",
+      //   run: () => {
+      //     this.languageClientWrapper
+      //       ?.getLanguageClient()!
+      //       .sendRequest("textDocument/formatting", {
+      //         textDocument: { uri: this.editor?.getModel()?.uri.toString() },
+      //         options: {
+      //           tabSize: 2,
+      //           insertSpaces: true,
+      //         },
+      //       })
+      //       .then((response: any) => {
+      //         const edits = response.map((edit: any) => {
+      //           return {
+      //             range: {
+      //               startLineNumber: edit.range.start.line + 1,
+      //               startColumn: edit.range.start.character + 1,
+      //               endLineNumber: edit.range.end.line + 1,
+      //               endColumn: edit.range.end.character + 1,
+      //             },
+      //             text: edit.newText,
+      //           };
+      //         });
+      //         this.editor?.getModel()!.applyEdits(edits);
+      //         const cursorPosition = this.editor?.getPosition();
+      //         if (cursorPosition) {
+      //           this.languageClientWrapper
+      //             ?.getLanguageClient()!
+      //             .sendRequest("qlueLs/jump", {
+      //               textDocument: { uri: this.editor?.getModel()?.uri.toString() },
+      //               position: {
+      //                 line: cursorPosition?.lineNumber - 1,
+      //                 character: cursorPosition?.column - 1,
+      //               },
+      //             })
+      //             .then((response: any) => {
+      //               if (response) {
+      //                 const newCursorPosition = {
+      //                   lineNumber: response.position.line + 1,
+      //                   column: response.position.character + 1,
+      //                 };
+      //                 if (response.insertAfter) {
+      //                   this.editor?.executeEdits("jumpToNextPosition", [
+      //                     {
+      //                       range: new monaco.Range(
+      //                         newCursorPosition.lineNumber,
+      //                         newCursorPosition.column,
+      //                         newCursorPosition.lineNumber,
+      //                         newCursorPosition.column
+      //                       ),
+      //                       text: response.insertAfter,
+      //                     },
+      //                   ]);
+      //                 }
+      //                 this.editor?.setPosition(newCursorPosition, "jumpToNextPosition");
+      //                 if (response.insertBefore) {
+      //                   this.editor?.getModel()?.applyEdits([
+      //                     {
+      //                       range: new monaco.Range(
+      //                         newCursorPosition.lineNumber,
+      //                         newCursorPosition.column,
+      //                         newCursorPosition.lineNumber,
+      //                         newCursorPosition.column
+      //                       ),
+      //                       text: response.insertBefore,
+      //                     },
+      //                   ]);
+      //                 }
+      //                 this.editor?.trigger("editor", "editor.action.triggerSuggest", {});
+      //               }
+      //             });
+      //         }
+      //       });
+      //     this.editor?.trigger("jumpToNextPosition", "editor.action.formatDocument", {});
+      //     // console.log("jump to next location");
+      //   },
+      // });
+      // monaco.editor.addKeybindingRule({
+      //   command: "jumpToNextPosition",
+      //   keybinding: monaco.KeyMod.Alt | monaco.KeyCode.KeyN,
+      // });
+      // this.editor!.addAction({
+      //   id: "Execute Query",
+      //   label: "Execute",
+      //   keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
+      //   contextMenuGroupId: "navigation",
+      //   contextMenuOrder: 1.5,
+      //   run: () => {
+      //     // run_query(this.getBackend().url, this.getValue())
+      //     this.query().catch(() => {}); //catch this to avoid unhandled rejection
+      //   },
+      // });
 
       // Do some post processing, init storage
       this.drawButtons();
@@ -251,6 +207,24 @@ export class Yasqe extends EventEmitter {
         if (!this.persistentConfig)
           this.persistentConfig = { query: this.getValue(), editorHeight: this.config.editorHeight, backends: {} };
         if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
+      }
+
+      // Add backend SPARQL endpoints (after persistentConfig is loaded)
+      if (this.languageClientWrapper && this.languageClientWrapper.getLanguageClient()) {
+        for (const endpointMeta of Object.values(this.persistentConfig?.backends || {})) {
+          this.languageClientWrapper
+            .getLanguageClient()!
+            .sendRequest("qlueLs/addBackend", endpointMeta.backend)
+            .catch((err: any) => {
+              console.error(err);
+            });
+          this.languageClientWrapper
+            .getLanguageClient()!
+            .sendRequest("qlueLs/updateDefaultBackend", endpointMeta.backend.service.name)
+            .catch((err: any) => {
+              console.error(err);
+            });
+        }
       }
 
       if (this.config.consumeShareLink) {
@@ -272,8 +246,8 @@ export class Yasqe extends EventEmitter {
       if (this.config.resizeable) this.drawResizer();
       // if (this.config.collapsePrefixesOnLoad) this.collapsePrefixes(true);
       // TODO: add widgets?
-      // const overlay = new LspInfoOverlayWidget(wrapper.getEditor()!, this.persistentConfig?.backends || {});
-      // wrapper.getEditor()!.addOverlayWidget(overlay);
+      // const overlay = new LspInfoOverlayWidget(this.editor!, this.persistentConfig?.backends || {});
+      // this.editor!.addOverlayWidget(overlay);
     } catch (error) {
       console.error("Failed to initialize Monaco editor:", error);
       // Fallback to show error message in the element
@@ -298,8 +272,15 @@ export class Yasqe extends EventEmitter {
    */
   public async setTheme(theme: "light" | "dark"): Promise<void> {
     document.documentElement.dataset.theme = theme;
-    monaco.editor.setTheme(getVsThemeConfig(theme));
-    // console.log("Options:", this.monacoWrapper?.getEditor()?.getRawOptions().theme)
+    // Use the theme names matching the extensions defined in editorConfig.ts
+    const themeName = theme === "dark" ? "SPARQL Dark Theme" : "SPARQL Light Theme";
+    // Use VS Code API to change the theme at runtime (monaco-languageclient approach)
+    try {
+      const vscode = await import("vscode");
+      await vscode.workspace.getConfiguration("workbench").update("colorTheme", themeName, true);
+    } catch (error) {
+      console.error("Failed to switch theme:", error);
+    }
   }
 
   public getWrapperElement(): HTMLDivElement {

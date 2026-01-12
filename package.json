@@ -108,6 +108,10 @@
     }
   ],
   "overrides": {
-    "brotli-size": "4.0.0"
+    "brotli-size": "4.0.0",
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^24.2.0"
+  },
+  "dependencies": {
+    "vscode": "npm:@codingame/monaco-vscode-extension-api@^24.2.0"
   }
 }

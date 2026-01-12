@@ -3,7 +3,6 @@
   "description": "Yet Another SPARQL Query Editor",
   "version": "4.5.0",
   "type": "module",
-  "main": "dist/yasqe.umd.cjs",
   "module": "dist/yasqe.js",
   "types": "dist/types/index.d.ts",
   "license": "MIT",
@@ -32,14 +31,16 @@
     "directory": "packages/yasqe"
   },
   "dependencies": {
-    "@codingame/monaco-vscode-editor-api": "~18.1.0",
     "@sib-swiss/yasgui-utils": "*",
     "lodash-es": "^4.17.15",
-    "monaco-editor-wrapper": "^6.9.0",
-    "qlue-ls": "^0.13.2",
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^24.2.0",
+    "monaco-languageclient": "~10.5.0",
+    "qlue-ls": "^1.1.0",
     "query-string": "^6.10.1",
-    "vscode": "npm:@codingame/monaco-vscode-extension-api@~18.1.0",
-    "vscode-uri": "~3.1.0"
+    "vscode": "npm:@codingame/monaco-vscode-extension-api@^24.2.0"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "4.17.12"
   },
   "publishConfig": {
     "access": "public"

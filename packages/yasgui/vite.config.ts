@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import typescript from "@rollup/plugin-typescript";
-// import wasm from "vite-plugin-wasm";
+import wasm from "vite-plugin-wasm";
 // import topLevelAwait from "vite-plugin-top-level-await";
 // import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
@@ -23,12 +23,25 @@ export default defineConfig({
         inlineDynamicImports: false,
       },
     },
+    minify: false,
+    assetsInlineLimit: 0,
   },
   optimizeDeps: {
-    // include: ["vscode-textmate", "vscode-oniguruma"],
+    include: ["vscode-textmate", "vscode-oniguruma"],
     // include: ["@sib-swiss/yasqe"],
     exclude: [],
     // exclude: ["@sib-swiss/yasqe"],
+  },
+  resolve: {
+    dedupe: ["vscode"],
+  },
+  plugins: [wasm()],
+  worker: {
+    format: "es",
+    plugins: () => [wasm()],
+  },
+  esbuild: {
+    minifySyntax: false,
   },
   // worker: {
   //   format: 'es'

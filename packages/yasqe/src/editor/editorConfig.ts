@@ -1,173 +1,106 @@
-import { configureDefaultWorkerFactory } from "monaco-editor-wrapper/workers/workerLoaders";
-import { sparqlThemeDark, sparqlThemeLight, sparqlThemeSolarizedDark } from "./sparqlTheme";
-import { sparqlTextmateGrammar, sparqlLanguageConfig } from "./sparqlGrammar";
-import type { WrapperConfig } from "monaco-editor-wrapper";
-import { Uri } from "@codingame/monaco-vscode-editor-api";
-import { LogLevel } from "vscode";
-import LanguageServerWorker from "./languageServer.worker?worker&inline";
-// import { useOpenEditorStub } from "monaco-editor-wrapper/vscode/services";
-// import getConfigurationServiceOverride from "@codingame/monaco-vscode-configuration-service-override";
-// import getEditorServiceOverride from "@codingame/monaco-vscode-editor-service-override";
-// import getKeybindingsServiceOverride from "@codingame/monaco-vscode-keybindings-service-override";
-import "@codingame/monaco-vscode-theme-defaults-default-extension";
-// NOTE: imports below do not work.
-// // Import textmate service for syntax highlighting in extended mode
-// import '@codingame/monaco-vscode-textmate-service-override';
-// // Import theme service for custom theme support
-// import '@codingame/monaco-vscode-theme-service-override';
-
 /**
- * Gets the appropriate theme configuration based on system preference or explicit theme
- * @param theme - Optional theme preference ('light' or 'dark'), defaults to system preference
- * @returns object with theme name and VSCode theme name
+ * Monaco Editor setup with SPARQL language support and qlue-ls language server
  */
-export function getVsThemeConfig(theme?: "light" | "dark") {
-  return theme === "dark" ? "vs-dark" : "vs";
+
+import {
+  configureDefaultWorkerFactory,
+  // useWorkerFactory,
+  // Worker as WorkerWrapper,
+  // type WorkerLoader,
+} from "monaco-languageclient/workerFactory";
+import { type EditorAppConfig, EditorApp } from "monaco-languageclient/editorApp";
+import { type MonacoVscodeApiConfig, MonacoVscodeApiWrapper } from "monaco-languageclient/vscodeApiWrapper";
+import { type LanguageClientConfig, LanguageClientWrapper } from "monaco-languageclient/lcwrapper";
+import { Uri } from "monaco-editor";
+
+// // Worker constructors - use ?worker to get constructors that work with Vite bundling
+// import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+// import TextMateWorker from "@codingame/monaco-vscode-textmate-service-override/worker?worker";
+// // Using Worker URL
+// import editorWorkerUrl from "monaco-editor/esm/vs/editor/editor.worker?worker&url";
+// import TextMateWorkerUrl from "@codingame/monaco-vscode-textmate-service-override/worker?worker&url";
+
+import languageServerWorker from "./languageServer.worker?worker";
+
+// Import SPARQL theme and grammar for syntax highlighting
+import { sparqlThemeDark, sparqlThemeLight } from "./sparqlTheme";
+import { sparqlTextmateGrammar, sparqlLanguageConfig } from "./sparqlGrammar";
+
+export interface MonacoEditorResult {
+  apiWrapper: MonacoVscodeApiWrapper;
+  editorApp: EditorApp;
+  languageClient: LanguageClientWrapper;
+  getContent(): string;
+  setContent(content: string): void;
+  focus(): void;
+  getDocumentUri(): string;
 }
 
-// Related discussions:
-// https://github.com/TypeFox/monaco-languageclient/blob/main/packages/examples/src/browser/main.ts
-// https://github.com/TypeFox/monaco-languageclient/issues/546
-// https://github.com/vitejs/vite/discussions/15547
-
-export async function buildWrapperConfig(
+/**
+ * Creates a Monaco editor with SPARQL syntax highlighting and qlue-ls language server
+ */
+export async function startMonacoEditor(
   container: HTMLElement,
-  initial: string,
-  theme?: "light" | "dark"
-): Promise<WrapperConfig> {
-  const workerPromise: Promise<Worker> = new Promise((resolve, reject) => {
-    try {
-      const instance: Worker = new LanguageServerWorker({ name: "Language Server" });
-      // const instance = new Worker(new URL("./languageServer.worker.ts", import.meta.url), {
-      //   name: "Language Server",
-      //   type: "module",
-      // });
+  initialValue: string,
+  theme: "light" | "dark" = "dark"
+): Promise<MonacoEditorResult> {
+  // Load the language server worker first
+  const lsWorker = await loadLanguageServerWorker();
 
-      instance.onmessage = (event) => {
-        if (event.data.type === "ready") {
-          resolve(instance);
-        } else if (event.data.type === "error") {
-          reject(new Error(`Language server initialization failed: ${event.data.error}`));
-        }
-      };
-      instance.onerror = (error) => {
-        console.error("Worker error:", error);
-        reject(error);
-      };
-      // Add a timeout to prevent indefinite waiting
-      setTimeout(() => {
-        reject(new Error("Worker initialization timeout"));
-      }, 30000); // 30 second timeout
-    } catch (error) {
-      console.error("Failed to create worker:", error);
-      reject(error);
-    }
-  });
-  const worker = await workerPromise;
+  // Worker loaders for Monaco - use worker constructors directly
+  // The workers are instantiated at runtime by the monacoWorkerFactory callback
+  // Cast to any to bypass WorkerLoader type which expects monaco-languageclient Worker wrapper
+  // const workerLoaders: Partial<Record<string, WorkerLoader>> = {
+  //   TextEditorWorker: () => new EditorWorker() as any,
+  //   TextMateWorker: () => new TextMateWorker() as any,
+  // };
+  // // Using worker URLs
+  // const workerLoaders: Partial<Record<string, WorkerLoader>> = {
+  //   TextEditorWorker: () => new WorkerWrapper(editorWorkerUrl),
+  //   TextMateWorker: () => new WorkerWrapper(TextMateWorkerUrl),
+  // };
 
+  // Extension files for SPARQL language support
   const extensionFilesOrContents = new Map<string, string | URL>();
   extensionFilesOrContents.set("/sparql-configuration.json", JSON.stringify(sparqlLanguageConfig));
   extensionFilesOrContents.set("/sparql-grammar.json", JSON.stringify(sparqlTextmateGrammar));
   extensionFilesOrContents.set("/sparql-theme-light.json", JSON.stringify(sparqlThemeLight));
   extensionFilesOrContents.set("/sparql-theme-dark.json", JSON.stringify(sparqlThemeDark));
-  extensionFilesOrContents.set("/sparql-theme-dark-solarized.json", JSON.stringify(sparqlThemeSolarizedDark));
 
-  // Configure the Monaco editor and LS wrapper
-  const wrapperConfig: WrapperConfig = {
+  // MonacoVscodeApiConfig
+  const vscodeApiConfig: MonacoVscodeApiConfig = {
     $type: "extended",
-    htmlContainer: container,
-    logLevel: LogLevel.Debug, // 2 vscode LogLevel.Debug
-    languageClientConfigs: {
-      configs: {
-        sparql: {
-          name: "Qlue-ls",
-          clientOptions: {
-            documentSelector: [{ language: "sparql" }],
-            workspaceFolder: {
-              index: 0,
-              name: "workspace",
-              uri: Uri.file("/"),
-            },
-            progressOnInitialization: true,
-            diagnosticPullOptions: {
-              onChange: true,
-              onSave: false,
-            },
-          },
-          connection: {
-            options: {
-              $type: "WorkerDirect",
-              worker: worker,
-            },
-          },
-          restartOptions: {
-            retries: 5,
-            timeout: 1000,
-            keepWorker: true,
-          },
-        },
-      },
+    viewsConfig: {
+      $type: "EditorService",
     },
-    editorAppConfig: {
-      codeResources: {
-        modified: {
-          uri: "query.rq",
-          text: initial,
-        },
-      },
-      monacoWorkerFactory: configureDefaultWorkerFactory,
-      editorOptions: {
-        tabCompletion: "on",
-        suggestOnTriggerCharacters: true,
-        theme: getVsThemeConfig(theme),
-        fontSize: 14,
-        fontFamily: "Source Code Pro",
-        links: false,
-        minimap: {
-          enabled: false,
-        },
-        overviewRulerLanes: 0,
-        scrollBeyondLastLine: false,
-        padding: {
-          top: 10,
-          bottom: 10,
-        },
-      },
+    userConfiguration: {
+      json: JSON.stringify({
+        "workbench.colorTheme": theme === "dark" ? "SPARQL Dark Theme" : "SPARQL Light Theme",
+        "editor.guides.bracketPairsHorizontal": "active",
+        "editor.lightbulb.enabled": "On",
+        "editor.wordBasedSuggestions": "off",
+        "editor.experimental.asyncTokenization": true,
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.detectIndentation": false,
+        "editor.fontSize": 14,
+        "editor.minimap.enabled": false,
+        "files.eol": "\n",
+      }),
     },
-    vscodeApiConfig: {
-      userConfiguration: {
-        json: JSON.stringify({
-          // "workbench.colorTheme": (theme === "dark") ? "SPARQL Solarized Dark Theme" : "SPARQL Light Theme";,
-          "editor.guides.bracketPairsHorizontal": "active",
-          "editor.lightbulb.enabled": "On",
-          "editor.wordBasedSuggestions": "off",
-          "editor.experimental.asyncTokenization": true,
-          "editor.tabSize": 2,
-          "editor.insertSpaces": true,
-          "editor.detectIndentation": false,
-        }),
-      },
-      // TODO: trying this to fix error with service override when building for prod
-      // serviceOverrides: {
-      //   ...getConfigurationServiceOverride(),
-      //   ...getEditorServiceOverride(useOpenEditorStub),
-      //   ...getKeybindingsServiceOverride(),
-      // },
-      // viewsConfig: {
-      //   viewServiceType: "EditorService",
-      //   // openEditorFunc: useOpenEditorStub
-      // },
-    },
-
+    // Worker factory callback - called by MonacoVscodeApiWrapper at the right time
+    // This ensures MonacoEnvironment.getWorker is set up before Monaco needs workers
+    // monacoWorkerFactory: () => {
+    //   useWorkerFactory({ workerLoaders });
+    // },
+    monacoWorkerFactory: configureDefaultWorkerFactory,
     extensions: [
       {
         config: {
-          name: "langium-sparql",
+          name: "sparql-language",
           publisher: "Ioannis Nezis",
           version: "1.0.0",
-          engines: {
-            vscode: "*",
-          },
+          engines: { vscode: "*" },
           contributes: {
             languages: [
               {
@@ -179,22 +112,16 @@ export async function buildWrapperConfig(
             ],
             themes: [
               {
-                id: "vs-dark",
-                label: "SPARQL Solarized Dark Theme",
-                uiTheme: "vs-dark",
-                path: "./sparql-theme-dark-solarized.json",
-              },
-              {
-                id: "custom-dark",
-                label: "SPARQL Dark Theme",
-                uiTheme: "vs-dark",
-                path: "./sparql-theme-dark.json",
-              },
-              {
-                id: "vs",
+                id: "SPARQL Light Theme",
                 label: "SPARQL Light Theme",
                 uiTheme: "vs",
                 path: "./sparql-theme-light.json",
+              },
+              {
+                id: "SPARQL Dark Theme",
+                label: "SPARQL Dark Theme",
+                uiTheme: "vs-dark",
+                path: "./sparql-theme-dark.json",
               },
             ],
             grammars: [
@@ -210,5 +137,110 @@ export async function buildWrapperConfig(
       },
     ],
   };
-  return wrapperConfig;
+
+  // Language client configuration for qlue-ls
+  const languageClientConfig: LanguageClientConfig = {
+    languageId: "sparql",
+    clientOptions: {
+      documentSelector: [{ language: "sparql" }],
+      workspaceFolder: {
+        index: 0,
+        name: "workspace",
+        uri: Uri.parse("file:/"),
+      },
+      progressOnInitialization: true,
+      diagnosticPullOptions: {
+        onChange: true,
+        onSave: false,
+      },
+    },
+    connection: {
+      options: {
+        $type: "WorkerDirect",
+        worker: lsWorker,
+      },
+    },
+    restartOptions: {
+      retries: 5,
+      timeout: 1000,
+      keepWorker: false,
+    },
+  };
+
+  // EditorAppConfig
+  const editorAppConfig: EditorAppConfig = {
+    codeResources: {
+      modified: {
+        uri: "query.rq",
+        text: initialValue,
+      },
+    },
+    editorOptions: {
+      tabCompletion: "on",
+      suggestOnTriggerCharacters: true,
+      fontSize: 14,
+      fontFamily: "Source Code Pro, monospace",
+      links: false,
+      minimap: { enabled: false },
+      overviewRulerLanes: 0,
+      scrollBeyondLastLine: false,
+      scrollbar: {
+        alwaysConsumeMouseWheel: false,
+      },
+      padding: { top: 8, bottom: 8 },
+      lineDecorationsWidth: 0,
+      lineNumbersMinChars: 2,
+      glyphMargin: true,
+      contextmenu: false,
+      folding: true,
+      foldingImportsByDefault: true,
+      snippetSuggestions: "top",
+      tabSize: 2,
+    },
+  };
+
+  // Create and start the monaco-vscode api wrapper
+  const apiWrapper = new MonacoVscodeApiWrapper(vscodeApiConfig);
+  await apiWrapper.start();
+
+  // Create and start the language client wrapper
+  const lcWrapper = new LanguageClientWrapper(languageClientConfig);
+  await lcWrapper.start();
+  // const languageClient = lcWrapper.getLanguageClient();
+
+  // Create and start the editor app
+  const editorApp = new EditorApp(editorAppConfig);
+  await editorApp.start(container);
+
+  return {
+    apiWrapper,
+    editorApp,
+    languageClient: lcWrapper,
+    getContent(): string {
+      return editorApp.getEditor()?.getValue() ?? "";
+    },
+    setContent(content: string): void {
+      editorApp.getEditor()?.setValue(content);
+    },
+    focus(): void {
+      editorApp.getEditor()?.focus();
+    },
+    getDocumentUri(): string {
+      return editorApp.getEditor()?.getModel()?.uri.toString() ?? "";
+    },
+  };
+}
+
+/**
+ * Load the language server worker and wait for it to be ready
+ */
+function loadLanguageServerWorker(): Promise<Worker> {
+  return new Promise((resolve) => {
+    const instance: Worker = new languageServerWorker({ name: "Language Server" });
+    instance.onmessage = (event) => {
+      if (event.data.type === "ready") {
+        resolve(instance);
+      }
+    };
+  });
 }

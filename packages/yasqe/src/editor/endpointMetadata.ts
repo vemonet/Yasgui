@@ -2,12 +2,19 @@
 // https://qlever.cs.uni-freiburg.de/api/uniprot
 // https://dbpedia.org/sparql/
 
-export interface BackendDetails {
+export interface ServiceDetails {
   name: string;
-  slug: string;
   url: string;
-  healthCheckUrl?: string;
+  engine?: string;
 }
+
+// Engine is one of:
+// QLEVER = 1, "QLever"
+// GRAPH_DB = 2, "GraphDB"
+// VIRTUOSO = 3, "Virtuoso"
+// MILLENNIUM_DB = 4, "MillenniumDB"
+// BLAZEGRAPH = 5, "Blazegraph"
+// JENA = 6, "Jena"
 
 export interface PrefixMap {
   [key: string]: string;
@@ -18,7 +25,7 @@ export interface CompletionQueries {
 }
 
 export interface Backend {
-  backend: BackendDetails;
+  service: ServiceDetails;
   prefixMap: PrefixMap;
   queries: CompletionQueries;
   default: boolean;
@@ -47,11 +54,9 @@ export async function createBackendConf(endpoint: string, options: { prefixMap?:
     }
   }
   return {
-    backend: {
+    service: {
       name: extractEndpointName(endpoint),
-      slug: generateSlug(endpoint),
       url: endpoint,
-      healthCheckUrl: endpoint,
     },
     prefixMap: prefixMap,
     queries: baseBackend.queries,
@@ -88,18 +93,6 @@ function extractEndpointName(endpointUrl: string): string {
     return cleanHostname.charAt(0).toUpperCase() + cleanHostname.slice(1);
   } catch {
     return endpointUrl;
-  }
-}
-
-/**
- * Generate a slug from an endpoint URL
- */
-function generateSlug(endpointUrl: string): string {
-  try {
-    const hostname = new URL(endpointUrl).hostname;
-    return hostname.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-  } catch {
-    return endpointUrl.replace(/[^a-z0-9]/gi, "_").toLowerCase();
   }
 }
 
