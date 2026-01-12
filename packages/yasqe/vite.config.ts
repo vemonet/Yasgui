@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import wasm from "vite-plugin-wasm";
-import topLevelAwait from "vite-plugin-top-level-await";
 import typescript from "@rollup/plugin-typescript";
 import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
@@ -52,13 +51,10 @@ export default defineConfig({
       plugins: [importMetaUrlPlugin],
     },
   },
-  plugins: [wasm(), topLevelAwait()],
+  plugins: [wasm()],
   worker: {
     format: "es",
-    plugins: () => [
-      wasm(),
-      // topLevelAwait(),
-    ],
+    plugins: () => [wasm()],
   },
   esbuild: {
     minifySyntax: false,

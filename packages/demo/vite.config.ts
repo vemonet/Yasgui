@@ -22,13 +22,17 @@ export default defineConfig({
     assetsInlineLimit: 0,
     // Disable minification entirely for Monaco/VSCode API compatibility
     minify: false,
+    // rollupOptions: {
+    //   output: {
+    //     // Use ES format which natively supports top-level await
+    //     format: "es",
+    //     // Ensure proper initialization order by not hoisting exports
+    //     hoistTransitiveImports: false,
+    //   },
+    // },
   },
   optimizeDeps: {
-    include: [
-      "vscode-textmate",
-      "vscode-oniguruma",
-      // "monaco-languageclient",
-    ],
+    include: ["vscode-textmate", "vscode-oniguruma"],
     esbuildOptions: {
       plugins: [importMetaUrlPlugin],
     },
@@ -36,6 +40,7 @@ export default defineConfig({
   // CRITICAL: Disable esbuild minification for Monaco/VSCode API
   // Without this, minification breaks function references (e.g., "MG is not a function")
   esbuild: {
+    // target: "esnext",
     minifySyntax: false,
   },
   plugins: [wasm()],
