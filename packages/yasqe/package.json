@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@sib-swiss/yasgui-utils": "*",
+    "@codingame/monaco-vscode-textmate-service-override": "^24.2.0",
     "lodash-es": "^4.17.15",
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^24.2.0",
     "monaco-languageclient": "~10.5.0",

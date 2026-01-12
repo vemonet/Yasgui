@@ -2,23 +2,11 @@
  * Monaco Editor setup with SPARQL language support and qlue-ls language server
  */
 
-import {
-  configureDefaultWorkerFactory,
-  // useWorkerFactory,
-  // Worker as WorkerWrapper,
-  // type WorkerLoader,
-} from "monaco-languageclient/workerFactory";
+import { configureDefaultWorkerFactory } from "monaco-languageclient/workerFactory";
 import { type EditorAppConfig, EditorApp } from "monaco-languageclient/editorApp";
 import { type MonacoVscodeApiConfig, MonacoVscodeApiWrapper } from "monaco-languageclient/vscodeApiWrapper";
 import { type LanguageClientConfig, LanguageClientWrapper } from "monaco-languageclient/lcwrapper";
 import { Uri } from "monaco-editor";
-
-// // Worker constructors - use ?worker to get constructors that work with Vite bundling
-// import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-// import TextMateWorker from "@codingame/monaco-vscode-textmate-service-override/worker?worker";
-// // Using Worker URL
-// import editorWorkerUrl from "monaco-editor/esm/vs/editor/editor.worker?worker&url";
-// import TextMateWorkerUrl from "@codingame/monaco-vscode-textmate-service-override/worker?worker&url";
 
 import languageServerWorker from "./languageServer.worker?worker";
 
@@ -44,7 +32,7 @@ export async function startMonacoEditor(
   initialValue: string,
   theme: "light" | "dark" = "dark"
 ): Promise<MonacoEditorResult> {
-  // Load the language server worker first
+  // Load the language server worker
   const lsWorker = await loadLanguageServerWorker();
 
   // Worker loaders for Monaco - use worker constructors directly
@@ -88,12 +76,12 @@ export async function startMonacoEditor(
         "files.eol": "\n",
       }),
     },
-    // Worker factory callback - called by MonacoVscodeApiWrapper at the right time
-    // This ensures MonacoEnvironment.getWorker is set up before Monaco needs workers
-    // monacoWorkerFactory: () => {
-    //   useWorkerFactory({ workerLoaders });
-    // },
+    // Use configureDefaultWorkerFactory to set up Monaco workers
+    // This uses new URL() with import.meta.url internally
     monacoWorkerFactory: configureDefaultWorkerFactory,
+    // Worker factory already initialized at the start of startMonacoEditor
+    // Setting to undefined lets the early useWorkerFactory call handle it
+    // monacoWorkerFactory: () => workersFactory,
     extensions: [
       {
         config: {
@@ -206,11 +194,24 @@ export async function startMonacoEditor(
   // Create and start the language client wrapper
   const lcWrapper = new LanguageClientWrapper(languageClientConfig);
   await lcWrapper.start();
-  // const languageClient = lcWrapper.getLanguageClient();
 
   // Create and start the editor app
   const editorApp = new EditorApp(editorAppConfig);
   await editorApp.start(container);
+
+  // // TODO: workaround trigger re-tokenization after a short delay to ensure syntax highlighting
+  // const editor = editorApp.getEditor();
+  // if (editor) {
+  //   setTimeout(() => {
+  //     const model = editor.getModel();
+  //     if (model) {
+  //       // Force a model content change to trigger re-tokenization
+  //       const content = model.getValue();
+  //       model.setValue(content + " ");
+  //       model.setValue(content);
+  //     }
+  //   }, 100);
+  // }
 
   return {
     apiWrapper,

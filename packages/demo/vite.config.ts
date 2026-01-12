@@ -16,23 +16,41 @@ export default defineConfig({
   worker: {
     format: "es",
     plugins: () => [wasm()],
+    // rollupOptions: {
+    //   output: {
+    //     // Ensure workers are output as separate files, not inlined as data URLs
+    //     inlineDynamicImports: false,
+    //   },
+    // },
   },
   build: {
     target: "esnext",
     assetsInlineLimit: 0,
     // Disable minification entirely for Monaco/VSCode API compatibility
     minify: false,
-    // rollupOptions: {
-    //   output: {
-    //     // Use ES format which natively supports top-level await
-    //     format: "es",
-    //     // Ensure proper initialization order by not hoisting exports
-    //     hoistTransitiveImports: false,
-    //   },
-    // },
+    rollupOptions: {
+      output: {
+        // Ensure proper module format for TLA support
+        format: "es",
+      },
+      // external: [
+      //   /^@codingame\/monaco-vscode-.*/,
+      //   /^monaco-editor.*/,
+      //   /^monaco-languageclient.*/,
+      //   /^vscode$/,
+      //   /^vscode-textmate$/,
+      //   /^vscode-oniguruma$/,
+      // ],
+    },
   },
   optimizeDeps: {
-    include: ["vscode-textmate", "vscode-oniguruma"],
+    // Include worker-related packages for proper pre-bundling
+    include: [
+      "vscode-textmate",
+      "vscode-oniguruma",
+      // "@codingame/monaco-vscode-editor-api",
+      // "@codingame/monaco-vscode-textmate-service-override",
+    ],
     esbuildOptions: {
       plugins: [importMetaUrlPlugin],
     },
@@ -40,7 +58,7 @@ export default defineConfig({
   // CRITICAL: Disable esbuild minification for Monaco/VSCode API
   // Without this, minification breaks function references (e.g., "MG is not a function")
   esbuild: {
-    // target: "esnext",
+    target: "esnext",
     minifySyntax: false,
   },
   plugins: [wasm()],

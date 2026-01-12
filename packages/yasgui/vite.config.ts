@@ -1,13 +1,12 @@
 import { defineConfig } from "vite";
 import typescript from "@rollup/plugin-typescript";
 import wasm from "vite-plugin-wasm";
-// import topLevelAwait from "vite-plugin-top-level-await";
-// import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
+import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
 export default defineConfig({
   base: "./",
   build: {
-    target: ["es2020"],
+    target: "esnext",
     lib: {
       entry: "src/index.ts",
       name: "@sib-swiss/yasgui",
@@ -17,47 +16,35 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       plugins: [typescript()],
-      // external: ["@sib-swiss/yasqe"],
       output: {
-        // This needs to be false to avoid issues with dynamic imports in the built library
+        format: "es",
         inlineDynamicImports: false,
       },
     },
     minify: false,
     assetsInlineLimit: 0,
   },
-  optimizeDeps: {
-    include: ["vscode-textmate", "vscode-oniguruma"],
-    // include: ["@sib-swiss/yasqe"],
-    exclude: [],
-    // exclude: ["@sib-swiss/yasqe"],
-  },
   resolve: {
     dedupe: ["vscode"],
   },
-  plugins: [wasm()],
+  optimizeDeps: {
+    include: [
+      "vscode-textmate",
+      "vscode-oniguruma",
+      // "@codingame/monaco-vscode-editor-api",
+      // "@codingame/monaco-vscode-textmate-service-override",
+    ],
+    esbuildOptions: {
+      plugins: [importMetaUrlPlugin],
+    },
+  },
   worker: {
     format: "es",
     plugins: () => [wasm()],
   },
+  plugins: [wasm()],
   esbuild: {
     minifySyntax: false,
+    target: "esnext",
   },
-  // worker: {
-  //   format: 'es'
-  // },
-  // worker: {
-  //   format: "es",
-  //   plugins: () => [
-  //     wasm(),
-  //     topLevelAwait(),
-  //   ],
-  // },
-  // plugins: [
-  //   wasm(),
-  //   topLevelAwait(),
-  // ],
-  // esbuild: {
-  //   minifySyntax: false
-  // },
 });
