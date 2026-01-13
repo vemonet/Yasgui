@@ -367,8 +367,11 @@ export class Yasgui extends EventEmitter {
         };
       }
     }
-    console.debug("Setting up backend for endpoint", endpoint, backendConf);
-    this.updateLanguageClientBackend(backendConf);
+    // TODO: workaround wait 3s for Yasqe to initialize before updating language client backend
+    setTimeout(() => {
+      console.debug("Setting up backend for endpoint", endpoint, backendConf);
+      this.updateLanguageClientBackend(backendConf);
+    }, 3000);
   }
 
   /**

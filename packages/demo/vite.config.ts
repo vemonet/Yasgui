@@ -4,25 +4,6 @@ import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 
 export default defineConfig({
   base: "/Yasgui/",
-  resolve: {
-    // CRITICAL: Dedupe vscode and monaco packages to avoid version conflicts
-    dedupe: [
-      "vscode",
-      // "@codingame/monaco-vscode-api",
-      // "monaco-editor",
-      // "monaco-languageclient",
-    ],
-  },
-  worker: {
-    format: "es",
-    plugins: () => [wasm()],
-    // rollupOptions: {
-    //   output: {
-    //     // Ensure workers are output as separate files, not inlined as data URLs
-    //     inlineDynamicImports: false,
-    //   },
-    // },
-  },
   build: {
     target: "esnext",
     assetsInlineLimit: 0,
@@ -43,6 +24,14 @@ export default defineConfig({
       // ],
     },
   },
+  resolve: {
+    dedupe: [
+      "vscode",
+      // "@codingame/monaco-vscode-api",
+      // "monaco-editor",
+      // "monaco-languageclient",
+    ],
+  },
   optimizeDeps: {
     // Include worker-related packages for proper pre-bundling
     include: [
@@ -55,11 +44,19 @@ export default defineConfig({
       plugins: [importMetaUrlPlugin],
     },
   },
-  // CRITICAL: Disable esbuild minification for Monaco/VSCode API
-  // Without this, minification breaks function references (e.g., "MG is not a function")
   esbuild: {
     target: "esnext",
     minifySyntax: false,
   },
   plugins: [wasm()],
+  worker: {
+    format: "es",
+    plugins: () => [wasm()],
+    // rollupOptions: {
+    //   output: {
+    //     // Ensure workers are output as separate files, not inlined as data URLs
+    //     inlineDynamicImports: false,
+    //   },
+    // },
+  },
 });

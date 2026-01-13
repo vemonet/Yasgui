@@ -211,6 +211,7 @@ export class Yasqe extends EventEmitter {
 
       // Add backend SPARQL endpoints (after persistentConfig is loaded)
       if (this.languageClientWrapper && this.languageClientWrapper.getLanguageClient()) {
+        console.debug("Setting up backend for endpoint in Yasqe");
         for (const endpointMeta of Object.values(this.persistentConfig?.backends || {})) {
           this.languageClientWrapper
             .getLanguageClient()!
