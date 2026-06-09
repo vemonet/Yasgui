@@ -2,8 +2,9 @@
   "name": "@zazuko/yasqe",
   "description": "Yet Another SPARQL Query Editor",
   "version": "4.6.2",
-  "main": "build/yasqe.min.js",
-  "module": "build/yasqe.esm.js",
+  "type": "module",
+  "main": "build/yasqe.js",
+  "module": "build/yasqe.js",
   "types": "build/ts/src/index.d.ts",
   "files": [
     "build"
@@ -11,8 +12,7 @@
   "exports": {
     ".": {
       "types": "./build/ts/src/index.d.ts",
-      "import": "./build/yasqe.esm.js",
-      "require": "./build/yasqe.min.js"
+      "import": "./build/yasqe.js"
     },
     "./*": "./*"
   },
