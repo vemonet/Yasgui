@@ -4,26 +4,11 @@
 import type { Plugin } from "../";
 import Yasr from "../../";
 import "./index.scss";
-import { EditorState } from "@codemirror/state";
-import { EditorView, lineNumbers } from "@codemirror/view";
-import { foldGutter, syntaxHighlighting, defaultHighlightStyle } from "@codemirror/language";
-import { json } from "@codemirror/lang-json";
+import type { ReadOnlyEditor, ReadOnlyEditorHandle } from "@zazuko/yasqe";
 import { drawSvgStringAsElement, addClass, removeClass, drawFontAwesomeIconAsSvg } from "@zazuko/yasgui-utils";
 import * as faAlignIcon from "@fortawesome/free-solid-svg-icons/faAlignLeft";
 import { DeepReadonly } from "ts-essentials";
 import * as imgs from "../../imgs";
-
-const responseTheme = EditorView.theme({
-  "&": {
-    color: "var(--yr-cm-text, #000)",
-    backgroundColor: "var(--yr-cm-bg, #fff)",
-  },
-  ".cm-gutters": {
-    backgroundColor: "var(--yr-cm-gutter-bg, #f5f5f5)",
-    color: "var(--yr-cm-gutter-text, #999)",
-    border: "none",
-  },
-});
 
 export interface PluginConfig {
   maxLines: number;
@@ -35,7 +20,10 @@ export default class Response implements Plugin<PluginConfig> {
   helpReference = "https://vemonet.github.io/Yasgui/docs/plugins#response";
   private config: DeepReadonly<PluginConfig>;
   private overLay: HTMLDivElement | undefined;
-  private cm: EditorView | undefined;
+  private container: HTMLDivElement | undefined;
+  private editorHandle: ReadOnlyEditorHandle | undefined;
+  private editor: ReadOnlyEditor | undefined;
+  private expanded = false;
   constructor(yasr: Yasr) {
     this.yasr = yasr;
     this.config = Response.defaults;
@@ -71,58 +59,61 @@ export default class Response implements Plugin<PluginConfig> {
       title: "Download result",
     };
   }
-  draw(persistentConfig: PluginConfig) {
+  async draw(persistentConfig: PluginConfig) {
     const config: DeepReadonly<PluginConfig> = {
       ...this.config,
       ...persistentConfig,
     };
-    // When the original response is empty, use an empty string
-    let value = this.getResponseString();
-    const lines = value.split("\n");
-    if (lines.length > config.maxLines) {
-      value = lines.slice(0, config.maxLines).join("\n");
-    }
+    const fullValue = this.getResponseString();
+    const lines = fullValue.split("\n");
+    const truncated = lines.length > config.maxLines;
+    this.expanded = !truncated;
+    const value = truncated ? lines.slice(0, config.maxLines).join("\n") : fullValue;
 
-    const extensions = [
-      lineNumbers(),
-      foldGutter(),
-      // syntaxHighlighting(responseHighlight),
-      syntaxHighlighting(defaultHighlightStyle),
-      responseTheme,
-      EditorView.lineWrapping,
-      EditorState.readOnly.of(true),
-      EditorView.editable.of(false),
-    ];
-    const mode = this.yasr.results?.getType();
-    if (mode === "json") {
-      extensions.push(json());
-    }
+    const language = this.yasr.results?.getType() === "json" ? "json" : "plaintext";
 
-    this.cm = new EditorView({
-      parent: this.yasr.resultsEl,
-      state: EditorState.create({
-        doc: value,
-        extensions,
-      }),
-    });
-    // Don't show less originally we've already set the value in the doc
-    if (lines.length > config.maxLines) this.showLess(false);
+    this.container = document.createElement("div");
+    addClass(this.container, "yasr_response_editor");
+    this.yasr.resultsEl.appendChild(this.container);
+
+    // Build the viewer through yasqe's factory so it reuses yasqe's single monaco-vscode instance
+    // (no second Monaco bundled into yasr, no duplicate-instance clash). Lazily pulls Monaco in.
+    const { createReadOnlyEditor } = await import("@zazuko/yasqe");
+    this.editorHandle = await createReadOnlyEditor(this.container, value, language);
+    this.editor = this.editorHandle.editor;
+
+    // Size the container to the editor content (capped when expanded so huge responses keep
+    // Monaco's virtual scrolling instead of rendering one giant div).
+    this.editor?.onDidContentSizeChange(() => this.fitHeight());
+    this.fitHeight();
+
+    if (truncated) this.showLess(false);
   }
-  private limitData(value: string) {
-    const lines = value.split("\n");
-    if (lines.length > this.config.maxLines) {
-      value = lines.slice(0, this.config.maxLines).join("\n");
-    }
-    return value;
+  private fitHeight() {
+    if (!this.editor || !this.container) return;
+    const contentHeight = this.editor.getContentHeight();
+    const cap = this.expanded ? Math.round(window.innerHeight * 0.7) : Infinity;
+    this.container.style.height = `${Math.min(contentHeight, cap)}px`;
+    this.editor.layout();
+  }
+  destroy() {
+    this.editorHandle?.dispose();
+    this.editorHandle = undefined;
+    this.editor = undefined;
+    this.overLay?.remove();
+    this.overLay = undefined;
+    this.container?.remove();
+    this.container = undefined;
   }
   /**
    *
    * @param setValue Optional, if set to false the string will not update
    */
   showLess(setValue = true) {
-    if (!this.cm) return;
+    if (!this.editor || !this.container) return;
+    this.expanded = false;
     // Add overflow
-    addClass(this.cm.dom, "overflow");
+    addClass(this.container, "overflow");
 
     // Remove old instance
     if (this.overLay) {
@@ -160,24 +151,33 @@ export default class Response implements Plugin<PluginConfig> {
 
     overlayContent.appendChild(downloadButton);
     this.overLay.appendChild(overlayContent);
-    this.cm.dom.appendChild(this.overLay);
+    this.container.appendChild(this.overLay);
     if (setValue) {
       this.setValue(this.limitData(this.getResponseString()));
     }
+    this.fitHeight();
+  }
+  private limitData(value: string) {
+    const lines = value.split("\n");
+    if (lines.length > this.config.maxLines) {
+      value = lines.slice(0, this.config.maxLines).join("\n");
+    }
+    return value;
   }
   /**
    * Render the raw response full length
    */
   showMore() {
-    if (!this.cm) return;
-    removeClass(this.cm.dom, "overflow");
+    if (!this.editor || !this.container) return;
+    this.expanded = true;
+    removeClass(this.container, "overflow");
     this.overLay?.remove();
     this.overLay = undefined;
     this.setValue(this.getResponseString());
+    this.fitHeight();
   }
   private setValue(value: string) {
-    if (!this.cm) return;
-    this.cm.dispatch({ changes: { from: 0, to: this.cm.state.doc.length, insert: value } });
+    this.editor?.setValue(value);
   }
   /**
    * The string shown in the editor. JSON responses are pretty-printed with a 2-space indent;
@@ -198,12 +198,3 @@ export default class Response implements Plugin<PluginConfig> {
     maxLines: 30,
   };
 }
-
-// NOTE: to customize JSON token colors:
-// import { tags as t } from "@lezer/highlight";
-// const responseHighlight = HighlightStyle.define([
-//   { tag: t.propertyName, color: "var(--yr-cm-property, #0451a5)" },
-//   { tag: t.string, color: "var(--yr-cm-string, #a31515)" },
-//   { tag: t.number, color: "var(--yr-cm-number, #098658)" },
-//   { tag: [t.bool, t.null], color: "var(--yr-cm-atom, #0000ff)" },
-// ]);

@@ -63,22 +63,12 @@ html[data-theme="dark"] {
       background: var(--yr-d-raised);
     }
 
-    /* Raw response view (CodeMirror 6) ships only a light theme: a glaring white
-       panel in dark mode. Override the editor's CSS variables (set in response/index.ts)
-       to get a grey surface, light-grey gutter and JSON token colors legible on dark. */
-    .yasr_results .cm-editor {
-      --yr-cm-bg: var(--yr-d-surface);
-      --yr-cm-text: var(--yr-d-text);
-      --yr-cm-gutter-bg: var(--yr-d-surface);
-      --yr-cm-gutter-text: var(--yr-d-muted);
-      --yr-cm-property: #9cdcfe;
-      --yr-cm-string: #ce9178;
-      --yr-cm-number: #b5cea8;
-      --yr-cm-atom: #569cd6;
+    /* Raw response view (Monaco) themes its own surface/tokens via the global Monaco theme.
+       We only restyle our own chrome: the border and the white-hardcoded overflow fade + overlay. */
+    .yasr_results .yasr_response_editor {
       border-color: var(--yr-d-border);
     }
-    /* The overflow fade and "show more" overlay are hardcoded white in the source. */
-    .yasr_results .cm-editor.overflow::before {
+    .yasr_results .yasr_response_editor.overflow::before {
       background: linear-gradient(transparent 0%, rgba(37, 37, 38, 0.67) 75%, var(--yr-d-surface) 100%);
     }
     .yasr_results .overlay_content {
@@ -168,22 +158,12 @@ html[data-theme="dark"] {
         background: var(--yr-d-raised);
       }
 
-      /* Raw response view (CodeMirror 6) ships only a light theme: a glaring white
-         panel in dark mode. Override the editor's CSS variables (set in response/index.ts)
-         to get a grey surface, light-grey gutter and JSON token colors legible on dark. */
-      .yasr_results .cm-editor {
-        --yr-cm-bg: var(--yr-d-surface);
-        --yr-cm-text: var(--yr-d-text);
-        --yr-cm-gutter-bg: var(--yr-d-surface);
-        --yr-cm-gutter-text: var(--yr-d-muted);
-        --yr-cm-property: #9cdcfe;
-        --yr-cm-string: #ce9178;
-        --yr-cm-number: #b5cea8;
-        --yr-cm-atom: #569cd6;
+      /* Raw response view (Monaco) themes its own surface/tokens via the global Monaco theme.
+         We only restyle our own chrome: the border and the white-hardcoded overflow fade + overlay. */
+      .yasr_results .yasr_response_editor {
         border-color: var(--yr-d-border);
       }
-      /* The overflow fade and "show more" overlay are hardcoded white in the source. */
-      .yasr_results .cm-editor.overflow::before {
+      .yasr_results .yasr_response_editor.overflow::before {
         background: linear-gradient(transparent 0%, rgba(37, 37, 38, 0.67) 75%, var(--yr-d-surface) 100%);
       }
       .yasr_results .overlay_content {

@@ -11,7 +11,11 @@ const libPackage = process.env.BUILD_PACKAGE as "yasgui" | "yasqe" | "yasr" | "u
 
 const alias = [
   { find: /^@zazuko\/yasgui$/, replacement: resolve(__dirname, "packages/yasgui/src/index.ts") },
-  { find: /^@zazuko\/yasqe$/, replacement: resolve(__dirname, "packages/yasqe/src/index.ts") },
+  // The yasr lib build must NOT bundle yasqe (and its Monaco): yasr reuses yasqe's single Monaco
+  // instance at runtime via `@zazuko/yasqe` (externalized below). So skip the source alias there.
+  ...(libPackage === "yasr"
+    ? []
+    : [{ find: /^@zazuko\/yasqe$/, replacement: resolve(__dirname, "packages/yasqe/src/index.ts") }]),
   { find: /^@zazuko\/yasr$/, replacement: resolve(__dirname, "packages/yasr/src/index.ts") },
   { find: /^@zazuko\/yasgui-utils$/, replacement: resolve(__dirname, "packages/utils/src/index.ts") },
 ];
@@ -78,8 +82,10 @@ export default defineConfig({
         rolldownOptions: {
           // NOTE: Bundle everything (monaco-editor, vscode, monaco-languageclient, qlue-ls) into the lib
           // so a single monaco-vscode instance lives inside yasqe. Externalizing any of these makes the consumer
-          // load a second instance, which breaks the vscode service registry and the editor silently fails to mount
-          external: [],
+          // load a second instance, which breaks the vscode service registry and the editor silently fails to mount.
+          // EXCEPTION: yasr keeps `@zazuko/yasqe` external so it reuses THAT single Monaco instance at runtime
+          // (its raw-response viewer calls yasqe's `createReadOnlyEditor`) instead of bundling a second Monaco.
+          external: libPackage === "yasr" ? [/^@zazuko\/yasqe(\/|$)/] : [],
           output: {
             // Emit 1 self-contained JS file (no code-split sibling chunks)
             codeSplitting: false,

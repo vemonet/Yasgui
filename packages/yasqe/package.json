@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@zazuko/yasgui-utils": "^4.6.1",
+    "@codingame/monaco-vscode-json-default-extension": "^25.1.2",
     "@codingame/monaco-vscode-textmate-service-override": "^25.1.2",
     "lodash-es": "^4.18.1",
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^25.1.2",

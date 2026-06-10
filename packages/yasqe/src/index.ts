@@ -11,6 +11,10 @@ import getDefaults from "./defaults";
 import { YasqeAjaxConfig } from "./sparql";
 export { sparqlThemeDark, sparqlThemeLight } from "./editor/sparqlTheme";
 export type { SparqlThemeOverrides } from "./editor/editorConfig";
+// Lazy factory for a read-only viewer that reuses yasqe's single monaco-vscode instance (used by YASR's
+// raw-response plugin so it doesn't bundle / double-instantiate Monaco).
+export { createReadOnlyEditor } from "./editor/readOnlyEditor";
+export type { ReadOnlyEditor, ReadOnlyEditorHandle } from "./editor/readOnlyEditor";
 import "./style/yasqe.css";
 import "./style/buttons.css";
 

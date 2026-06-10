@@ -38,10 +38,6 @@
     "directory": "packages/yasr"
   },
   "dependencies": {
-    "@codemirror/lang-json": "^6.0.2",
-    "@codemirror/language": "^6.12.3",
-    "@codemirror/state": "^6.6.0",
-    "@codemirror/view": "^6.43.0",
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "@json2csv/plainjs": "^7.0.4",
     "@zazuko/yasgui-utils": "^4.6.1",

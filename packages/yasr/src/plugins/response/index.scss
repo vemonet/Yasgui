@@ -1,10 +1,11 @@
 .yasr {
   .yasr_results {
     position: relative;
-    .cm-editor {
+    .yasr_response_editor {
       border: 1px solid #d1d1d1;
       margin-top: 5px;
-      height: 100%;
+      width: 100%;
+      position: relative;
       &.overflow::before {
         background: linear-gradient(transparent 0%, #ffffffaa 75%, white 100%);
         content: "";
