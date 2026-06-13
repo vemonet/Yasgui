@@ -34,7 +34,10 @@ import {
   syntaxHighlighting,
   indentOnInput,
   bracketMatching,
+  codeFolding,
   foldGutter,
+  foldService,
+  foldEffect,
   foldKeymap,
 } from "@codemirror/language";
 import { indentWithTab, defaultKeymap, history, historyKeymap } from "@codemirror/commands";
@@ -51,6 +54,7 @@ import {
   getQueryType,
   getQueryMode,
   getPrefixesFromQuery,
+  getSparqlBlockFoldingRanges,
   executeQuery,
   getAjaxConfig,
   getUrlArguments,
@@ -105,6 +109,47 @@ const darkTheme = EditorView.theme(
   },
   { dark: true },
 );
+
+// Detect the leading SPARQL prologue (the contiguous run of PREFIX/BASE declarations) for folding
+function prologueFoldRange(state: EditorState): { headFrom: number; from: number; to: number } | null {
+  const doc = state.doc;
+  let first = 0;
+  let last = 0;
+  for (let n = 1; n <= doc.lines; n++) {
+    const t = doc.line(n).text.trim();
+    if (/^(PREFIX|BASE)\b/i.test(t)) {
+      if (!first) first = n;
+      last = n;
+    } else if (t === "" || t.startsWith("#")) {
+      // blank / comment line: skip leading ones, tolerate ones interleaved in the prologue
+      continue;
+    } else {
+      break; // first real (non-prologue) line ends the prologue
+    }
+  }
+  if (!first || last <= first) return null; // need at least two declaration lines to fold
+  const firstLine = doc.line(first);
+  return { headFrom: firstLine.from, from: firstLine.to, to: doc.line(last).to };
+}
+
+// Fold service that offers to fold the prologue block when a fold is requested on its first line
+const prologueFoldService = foldService.of((state, lineStart) => {
+  const range = prologueFoldRange(state);
+  if (!range || range.headFrom !== lineStart) return null;
+  return { from: range.from, to: range.to };
+});
+
+// Fold service for the brace-delimited blocks (WHERE / SERVICE / OPTIONAL / sub-SELECT, …)
+const blockFoldService = foldService.of((state, lineStart, lineEnd) => {
+  let best: { from: number; to: number } | null = null;
+  for (const r of getSparqlBlockFoldingRanges(state.doc.toString())) {
+    const bracePos = r.innerFrom - 1; // position of the opening `{`
+    if (bracePos < lineStart || bracePos > lineEnd) continue;
+    // Prefer the largest block when several open on the same line (e.g. nested `{ { … } }`).
+    if (!best || r.innerTo - r.innerFrom > best.to - best.from) best = { from: r.innerFrom, to: r.innerTo };
+  }
+  return best;
+});
 
 export class Yasqe extends EventEmitter implements IYasqe {
   private static storageNamespace = "triply";
@@ -176,6 +221,11 @@ export class Yasqe extends EventEmitter implements IYasqe {
       }),
     });
 
+    if (this.config.collapsePrefixesOnLoad) {
+      const range = prologueFoldRange(this.cm.state);
+      if (range) this.cm.dispatch({ effects: foldEffect.of({ from: range.from, to: range.to }) });
+    }
+
     this.drawButtons();
 
     if (this.config.consumeShareLink) {
@@ -201,6 +251,9 @@ export class Yasqe extends EventEmitter implements IYasqe {
     }
     base.push(highlightSpecialChars());
     base.push(history());
+    base.push(codeFolding());
+    base.push(prologueFoldService);
+    base.push(blockFoldService);
     if (c.foldGutter) base.push(foldGutter());
     base.push(drawSelection());
     base.push(dropCursor());
@@ -916,7 +969,7 @@ export interface Config {
   lineWrapping: boolean;
   /** Highlight the current line */
   highlightActiveLine: boolean;
-  /** Show fold gutter (currently fold by syntax tree is not yet wired up) */
+  /** Show fold gutter (folds the leading PREFIX / BASE prologue block) */
   foldGutter: boolean;
   /** Highlight matching brackets */
   matchBrackets: boolean;
@@ -956,7 +1009,7 @@ export interface Config {
   editorHeight: string;
   /** Disable querying (also disables the run button); the string is shown as tooltip */
   queryingDisabled: string | undefined;
-  /** Pre-fold prefix declarations on load (no-op until folding is implemented) */
+  /** Pre-fold the leading PREFIX / BASE prologue block on load */
   collapsePrefixesOnLoad: boolean;
   /** Legacy autocompleter names; ignored for now */
   autocompleters: string[];

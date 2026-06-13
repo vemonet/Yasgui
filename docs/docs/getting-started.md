@@ -32,8 +32,7 @@ import "@zazuko/yasgui/style.css";
 
 ## 2. Bundler setup (Vite)
 
-Because the qlue-ls worker loads WebAssembly, your app's Vite config needs `vite-plugin-wasm` and
-ES-module workers:
+Because the qlue-ls worker loads WebAssembly, your app's Vite config needs `vite-plugin-wasm` and ES-module workers:
 
 ```ts
 // vite.config.ts
@@ -50,16 +49,12 @@ export default defineConfig({
 ```
 
 ::: info
-If you don't use a language server at all, none of this is needed, the editor still does syntax
-highlighting.
+If you don't use a language server at all, none of this is needed, the editor still does syntax highlighting.
 :::
 
 ## 3. Set up the qlue-ls language server
 
-The language server runs in a **Web Worker**. The qlue-ls backend/settings plumbing ships with the
-package (the `qlueLs` helpers), so the only file you write is the worker, plus a tiny factory. These
-are also the only files you change to switch to a different SPARQL language server later. See the
-[Language server](./language-server) page for details; here is the minimal setup:
+The language server runs in a **Web Worker**. The qlue-ls backend/settings plumbing ships with the package (the `qlueLs` helpers), so the only file you write is the worker, plus a tiny factory. These are also the only files you change to switch to a different SPARQL language server later. See the [Language server](./language-server) page for details; here is the minimal setup:
 
 :::code-group
 
@@ -136,9 +131,7 @@ const yasgui = new Yasgui(document.getElementById("yasgui")!, {
 ```
 
 ::: tip CodeMirror instead of Monaco
-The factory is also where you choose the editor implementation. To use the CodeMirror 6 editor,
-import `@zazuko/yasqe-codemirror` instead and pass it an LSP client via `lsp: { client }` (see
-[Language server](./language-server)).
+The factory is also where you choose the editor implementation. To use the CodeMirror 6 editor, import `@zazuko/yasqe-codemirror` instead and pass it an LSP client via `lsp: { client }` (see [Language server](./language-server)).
 :::
 
 That is the same setup that powers the [live demo](/). From here:

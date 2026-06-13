@@ -14,8 +14,16 @@ export type {
   Prefixes,
   IYasqe,
   YasqeFactory,
+  SparqlFoldingRange,
 } from "./yasqe";
-export { defaultQueryValue, defaultRequestConfig, getPrefixesFromQuery, getQueryType, getQueryMode } from "./yasqe";
+export {
+  defaultQueryValue,
+  defaultRequestConfig,
+  getPrefixesFromQuery,
+  getQueryType,
+  getQueryMode,
+  getSparqlBlockFoldingRanges,
+} from "./yasqe";
 export * from "./languageServers/qlueLs";
 export * from "./errorNotification";
 export * from "./sparql";

@@ -20,6 +20,7 @@ import { type MonacoVscodeApiConfig, MonacoVscodeApiWrapper } from "monaco-langu
 import { type LanguageClientConfig, LanguageClientWrapper } from "monaco-languageclient/lcwrapper";
 import { Uri, editor, languages } from "monaco-editor";
 import { merge } from "lodash-es";
+import { getSparqlBlockFoldingRanges } from "@zazuko/yasgui-utils";
 
 // SPARQL themes (Monaco standalone theme data is derived from these) and classic-mode grammar
 import { sparqlThemeDark, sparqlThemeLight } from "./sparqlTheme";
@@ -30,6 +31,26 @@ export const SPARQL_THEME_LIGHT = "sparql-light";
 export const SPARQL_THEME_DARK = "sparql-dark";
 
 const LANGUAGE_ID = "sparql";
+
+// Registered once for the language (not per editor) so the brace-block ranges are added on top of
+// whatever the language server reports. qlue-ls only folds the PREFIX/BASE prologue, so this is what
+// makes WHERE / SERVICE / OPTIONAL / sub-SELECT blocks foldable.
+let foldingProviderRegistered = false;
+function registerSparqlFoldingProvider(): void {
+  if (foldingProviderRegistered) return;
+  foldingProviderRegistered = true;
+  languages.registerFoldingRangeProvider(LANGUAGE_ID, {
+    provideFoldingRanges(model) {
+      // Monaco lines are 1-based and the folded area starts/ends at a line's last character; using
+      // `endLine` (0-based line of `}`) as the 1-based end keeps the closing brace line visible.
+      return getSparqlBlockFoldingRanges(model.getValue()).map((r) => ({
+        start: r.startLine + 1,
+        end: r.endLine,
+        kind: languages.FoldingRangeKind.Region,
+      }));
+    },
+  });
+}
 
 export interface MonacoEditorResult {
   apiWrapper: MonacoVscodeApiWrapper;
@@ -217,6 +238,7 @@ export async function startMonacoEditor(
   editor.defineTheme(SPARQL_THEME_DARK, buildSparqlThemeData(darkTheme));
   editor.setTheme(initialThemeName);
   languages.setLanguageConfiguration(LANGUAGE_ID, sparqlLanguageConfiguration);
+  registerSparqlFoldingProvider();
 
   return {
     apiWrapper,

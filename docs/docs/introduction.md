@@ -1,8 +1,6 @@
 # What is Yasgui?
 
-**Yasgui (Yet Another SPARQL GUI)** is a web-based interface for writing, running and exploring
-SPARQL queries against any endpoint. It is built from three packages you can use together or
-independently:
+**Yasgui (Yet Another SPARQL GUI)** is a web-based interface for writing, running and exploring SPARQL queries against any endpoint. It is built from packages you can use together or independently:
 
 | Package | npm | What it is |
 | --- | --- | --- |
@@ -11,24 +9,26 @@ independently:
 | **Yasr** | `@zazuko/yasr` | The SPARQL **result** viewer (table, response, geo, …) |
 | **Yasgui** | `@zazuko/yasgui` | The full **app**: tabs, endpoint selector, editor + Yasr wired together |
 
-Try it now on the [live demo](/). Then head to [Getting started](./getting-started) to embed it in
-your own app.
+Try it now on the [live demo](/). Then head to [Getting started](./getting-started) to embed it in your own app.
 
-## Monaco editor with a language server
+## Powered by language servers
 
-The editor is **Monaco** (the editor that powers VS Code). Syntax highlighting works out of the box
-through a TextMate grammar. The smart features, autocompletion, diagnostics, hover, formatting and
-semantic highlighting, come from a **SPARQL language server (LSP)** that *you* provide.
+Yasgui's smart features, semantic highlighting, diagnostics, code actions, hover, formatting and autocompletion, all come from a **SPARQL language server (LSP)**. Yasgui and Yasqe are language-server agnostic: you provide a ready language server and they wire a language client to it. 
 
-The recommended language server is [**qlue-ls**](https://github.com/IoannisNezis/Qlue-ls), a fast
-WASM SPARQL language server, but Yasqe and Yasgui are language-server **agnostic**, so you can plug
-in any LSP `Worker`.
+All server-specific configuration lives in your app, which keeps the libraries small and lets you swap servers later.
 
-::: tip Key idea
-Yasqe and Yasgui never import a specific language server. You pass them a ready LSP `Worker`, and
-they wire a `monaco-languageclient` to it. All server-specific configuration lives in your app. This
-keeps the libraries small and lets you swap servers later.
-:::
+The recommended server is [qlue-ls](https://github.com/IoannisNezis/Qlue-ls), a fast WASM SPARQL language server, but you can plug in any LSP like [swls](https://github.com/SemanticWebLanguageServer/swls).
+
+## Two editors to choose from
+
+Yasgui is editor-independent, you pick the editor implementation when embedding it:
+
+| Editor | Package | When to use |
+| --- | --- | --- |
+| **Monaco** | `@zazuko/yasqe` | The editor that powers VS Code. More features; the default. |
+| **CodeMirror 6** | `@zazuko/yasqe-codemirror` | More lightweight. |
+
+Both implement the same shared editor interface, so they are interchangeable behind Yasgui's editor factory.
 
 ## Key features
 

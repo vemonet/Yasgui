@@ -73,6 +73,78 @@ export function getPrefixesFromQuery(query: string): Prefixes {
   return out;
 }
 
+/** A foldable `{ ... }` block discovered in a SPARQL query by {@link getSparqlBlockFoldingRanges}. */
+export interface SparqlFoldingRange {
+  /** 0-based line of the opening brace `{`. */
+  startLine: number;
+  /** 0-based line of the closing brace `}`. */
+  endLine: number;
+  /** Absolute character offset just after the opening brace. */
+  innerFrom: number;
+  /** Absolute character offset of the closing brace. */
+  innerTo: number;
+}
+
+/**
+ * Find the foldable brace-delimited blocks (`{ ... }`) in a SPARQL query: `WHERE` blocks, `SERVICE`
+ * / `OPTIONAL` / `GRAPH` groups, sub-`SELECT`s, etc. Shared by both editors so folding behaves the
+ * same in Monaco and CodeMirror (qlue-ls only reports the prologue via `textDocument/foldingRange`).
+ *
+ * Braces inside line comments (`# ...`), string literals (single, double and triple-quoted) and
+ * IRIs (`<...>`) are ignored. Only blocks spanning more than one line are returned.
+ */
+export function getSparqlBlockFoldingRanges(query: string): SparqlFoldingRange[] {
+  const ranges: SparqlFoldingRange[] = [];
+  const stack: { pos: number; line: number }[] = [];
+  const n = query.length;
+  let i = 0;
+  let line = 0;
+  while (i < n) {
+    const ch = query[i];
+    if (ch === "\n") {
+      line++;
+      i++;
+    } else if (ch === "#") {
+      while (i < n && query[i] !== "\n") i++; // skip to end of line comment
+    } else if (ch === "<") {
+      // Possible IRI ref. IRIs contain no whitespace; if a '>' is reached before any forbidden
+      // char, skip the whole IRI, otherwise this is a '<' comparison operator, advance one char.
+      let j = i + 1;
+      while (j < n && !/[\s<>{}"'|^`\\]/.test(query[j])) j++;
+      i = j < n && query[j] === ">" ? j + 1 : i + 1;
+    } else if (ch === '"' || ch === "'") {
+      const triple = query.slice(i, i + 3) === ch + ch + ch;
+      if (triple) {
+        i += 3;
+        while (i < n && query.slice(i, i + 3) !== ch + ch + ch) {
+          if (query[i] === "\n") line++;
+          i++;
+        }
+        i += 3;
+      } else {
+        i++;
+        while (i < n && query[i] !== ch && query[i] !== "\n") {
+          if (query[i] === "\\") i++; // skip escaped char
+          i++;
+        }
+        i++; // closing quote
+      }
+    } else if (ch === "{") {
+      stack.push({ pos: i, line });
+      i++;
+    } else if (ch === "}") {
+      const open = stack.pop();
+      if (open && line > open.line) {
+        ranges.push({ startLine: open.line, endLine: line, innerFrom: open.pos + 1, innerTo: i });
+      }
+      i++;
+    } else {
+      i++;
+    }
+  }
+  return ranges;
+}
+
 /** The SPARQL update forms (everything else is a read-only query). */
 const UPDATE_QUERY_TYPES: ReadonlySet<QueryType> = new Set<QueryType>([
   "INSERT",

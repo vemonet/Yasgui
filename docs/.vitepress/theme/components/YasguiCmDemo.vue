@@ -89,6 +89,7 @@ onBeforeUnmount(() => {
       <div v-show="loading" class="yasgui-demo__loading">Loading the SPARQL editor…</div>
       <div ref="container" class="yasgui-demo__root"></div>
       <div class="yasgui-demo__theme-bar">
+        <a class="yasgui-demo__nav-btn" :href="withBase('/')">Monaco editor</a>
         <button
           class="yasgui-demo__theme-toggle"
           :title="isDark ? 'Switch to light theme' : 'Switch to dark theme'"
@@ -104,7 +105,6 @@ onBeforeUnmount(() => {
             <path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-9.45-9.45 1 1 0 0 0-1.19-1.19A10 10 0 1 0 22 14.05a1 1 0 0 0-.36-1.05Z" />
           </svg>
         </button>
-        <a class="yasgui-demo__nav-btn" :href="withBase('/')">Monaco editor</a>
       </div>
     </div>
     <template #fallback>
