@@ -14,33 +14,31 @@
   background-color: #dbdeed;
 }
 
-/* Semantic-token colors. The embedder's language-server glue marks tokens with
-   `cm-st-<tokenType>` classes (see the qlue-ls demo wiring); we provide the light/dark palette
-   here so highlighting follows the theme without re-instantiating the editor. */
+/* Semantic-token colors: the consumer language server glue marks tokens with `cm-st-<tokenType>` classes */
 .yasqe .cm-st-keyword {
-  color: #708;
+  color: #62036f;
 }
 .yasqe .cm-st-function {
-  color: #00c;
+  color: #cb4b16;
 }
 .yasqe .cm-st-variable {
-  color: #225599;
+  color: #219;
 }
 .yasqe .cm-st-string {
-  color: #a11;
+  color: #aa1011;
 }
 .yasqe .cm-st-number {
-  color: #164;
+  color: #2aa198;
 }
 .yasqe .cm-st-comment {
-  color: #940;
+  color: #708090;
   font-style: italic;
 }
 .yasqe .cm-st-operator {
-  color: #a0a;
+  color: #000000;
 }
 .yasqe .cm-st-namespace {
-  color: #085;
+  color: #ff5600;
 }
 
 /* Dark theme overrides. The CodeMirror editor chrome (background, gutter, selection) is themed via
@@ -53,26 +51,26 @@
   background-color: #3a3d41;
 }
 [data-theme="dark"] .yasqe .cm-st-keyword {
-  color: #c586c0;
+  color: #7f85e7;
 }
 [data-theme="dark"] .yasqe .cm-st-function {
-  color: #4fc1ff;
+  color: #32beb3;
 }
 [data-theme="dark"] .yasqe .cm-st-variable {
-  color: #9cdcfe;
+  color: #adbebe;
 }
 [data-theme="dark"] .yasqe .cm-st-string {
-  color: #ce9178;
+  color: #9db500;
 }
 [data-theme="dark"] .yasqe .cm-st-number {
-  color: #b5cea8;
+  color: #f0591a;
 }
 [data-theme="dark"] .yasqe .cm-st-comment {
-  color: #6a9955;
+  color: #68828a;
 }
 [data-theme="dark"] .yasqe .cm-st-operator {
-  color: #d4d4d4;
+  color: #32beb3;
 }
 [data-theme="dark"] .yasqe .cm-st-namespace {
-  color: #4ec9b0;
+  color: #d6a200;
 }

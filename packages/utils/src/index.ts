@@ -17,7 +17,7 @@ export type {
 } from "./yasqe";
 export { defaultQueryValue, defaultRequestConfig, getPrefixesFromQuery, getQueryType, getQueryMode } from "./yasqe";
 export * from "./languageServers/qlueLs";
-// Shared SPARQL request handling (build/execute the HTTP request + query lifecycle events).
+export * from "./errorNotification";
 export * from "./sparql";
 
 const { sanitize } = DOMPurify;

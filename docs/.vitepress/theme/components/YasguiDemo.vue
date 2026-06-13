@@ -5,7 +5,7 @@ let yasgui: any = null;
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, watch } from "vue";
-import { useData } from "vitepress";
+import { useData, withBase } from "vitepress";
 
 // VitePress dark-mode switch
 const { isDark } = useData();
@@ -63,7 +63,10 @@ onMounted(async () => {
         ...conf,
         theme: isDark.value ? "dark" : "light",
         languageServerWorker: createQlueLsWorker,
-        onLanguageClientReady: (languageClient: any) => qlueLs.configureSettings(languageClient),
+        onLanguageClientReady: (languageClient: any) => {
+          qlueLs.configureSettings(languageClient);
+          qlueLs.configureBackend(languageClient, yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
+        },
       }),
     yasr: { prefixes: qlueLs.fallbackPrefixMap },
     onEndpointChange: (yg: any, endpoint: string) =>
@@ -102,6 +105,7 @@ onBeforeUnmount(() => {
             <path d="M21.64 13a1 1 0 0 0-1.05-.14 8 8 0 0 1-9.45-9.45 1 1 0 0 0-1.19-1.19A10 10 0 1 0 22 14.05a1 1 0 0 0-.36-1.05Z" />
           </svg>
         </button>
+        <a class="yasgui-demo__nav-btn" :href="withBase('/codemirror')">CodeMirror editor</a>
       </div>
     </div>
     <template #fallback>
@@ -123,8 +127,30 @@ onBeforeUnmount(() => {
 .yasgui-demo__theme-bar {
   margin-top: auto;
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 10px;
   padding: 12px 14px;
+}
+.yasgui-demo__nav-btn {
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 17px;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: border-color 0.2s, color 0.2s;
+}
+.yasgui-demo__nav-btn:hover {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
 }
 .yasgui-demo__theme-toggle {
   width: 34px;

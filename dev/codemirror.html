@@ -24,20 +24,16 @@
 
     <script type="module">
       // Yasgui is editor-independent: the consumer imports an editor and passes a factory.
-      // Here we use the CodeMirror 6 editor (@zazuko/yasqe-codemirror) with the qlue-ls language
-      // server (created in the embedder; yasgui/yasqe never depend on it).
+      // Here we use the CodeMirror 6 editor with the qlue-ls language server
       import Yasgui from "@zazuko/yasgui";
       import Yasqe from "@zazuko/yasqe-codemirror";
       import { createQlueLsClient, setQlueLsBackend } from "./qluelsCmClient";
       import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
 
       (async () => {
-        const backend = { endpoint: DEMO_ENDPOINT };
-
-        // Start qlue-ls and connect a single shared LSP client for all tabs.
         let lsp;
         try {
-          const client = await createQlueLsClient(backend, { completion: { timeoutMs: 10000, resultSizeLimit: 50 } });
+          const client = await createQlueLsClient({ completion: { timeoutMs: 1000, resultSizeLimit: 50 } });
           lsp = { client };
         } catch (e) {
           console.warn("Could not start qlue-ls; running editors without a language server", e);
@@ -51,7 +47,7 @@
           yasqe: (parent, conf) => new Yasqe(parent, { ...conf, theme, lsp }),
           // Keep qlue-ls pointed at the active tab's endpoint.
           onEndpointChange: (_yasgui, endpoint) => {
-            if (lsp?.client) setQlueLsBackend(lsp.client, { ...backend, endpoint });
+            if (lsp?.client) setQlueLsBackend(lsp.client, endpoint);
           },
         });
       })();

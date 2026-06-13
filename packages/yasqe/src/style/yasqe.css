@@ -90,6 +90,8 @@ html[data-theme="dark"] {
     z-index: 4;
     padding: 0 5px;
     max-height: 0px;
+    /* Clip while collapsed so the (possibly multi-line) text disappears with the box on dismiss. */
+    overflow: hidden;
     color: var(--yasqe-notification-text);
     background-color: var(--yasqe-notification-bg);
     font-size: 90%;
@@ -101,6 +103,8 @@ html[data-theme="dark"] {
   .notification.active {
     max-height: 3rem;
   }
+  /* Language-server error notifications render via the shared `createLspErrorNotification` helper
+     (@zazuko/yasgui-utils), which injects its own `.yasqe-lsp-error` styles. */
 
   .parseErrorIcon {
     width: 13px;
