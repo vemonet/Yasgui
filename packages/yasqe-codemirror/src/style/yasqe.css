@@ -24,6 +24,8 @@
   z-index: 4;
   padding: 0 5px;
   max-height: 0px;
+  /* Clip while collapsed so the (possibly multi-line) text disappears with the box on dismiss. */
+  overflow: hidden;
   color: #999;
   background-color: #eee;
   font-size: 90%;
@@ -87,3 +89,6 @@
 [data-theme="dark"] .yasqe .resizeChip {
   background-color: #3a3a3a;
 }
+
+/* Language-server error notifications render via the shared `createLspErrorNotification` helper
+   (@zazuko/yasgui-utils), which injects its own `.yasqe-lsp-error` styles. */

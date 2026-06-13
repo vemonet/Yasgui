@@ -18,10 +18,18 @@ import {
   getUrlArguments,
   getAcceptHeader,
   getAsCurlString,
+  createLspErrorNotification,
 } from "@zazuko/yasgui-utils";
 import { merge } from "lodash-es";
-import type { DeepPartial, QueryType, RequestConfig, YasqeAjaxConfig, RequestArgs } from "@zazuko/yasgui-utils";
-// Shared, editor-agnostic types live in utils so the Monaco and CodeMirror editors stay in sync.
+import type {
+  DeepPartial,
+  QueryType,
+  RequestConfig,
+  YasqeAjaxConfig,
+  RequestArgs,
+  LspErrorNotification,
+} from "@zazuko/yasgui-utils";
+
 export type { QueryType, RequestConfig, PlainRequestConfig } from "@zazuko/yasgui-utils";
 
 import * as imgs from "./imgs";
@@ -96,6 +104,7 @@ export class Yasqe extends EventEmitter {
       // optional worker (instance or factory) and hand it to the editor; if none is given,
       // the editor still works with TextMate syntax highlighting only.
       const lsWorker = await this.resolveLanguageServerWorker();
+      if (lsWorker) this.setupLanguageServerErrorNotifications(lsWorker);
       const result = await startMonacoEditor(
         el,
         this.config.value,
@@ -633,6 +642,41 @@ export class Yasqe extends EventEmitter {
    * Notification management
    */
   private notificationEls: { [key: string]: HTMLDivElement } = {};
+  private lsErrorNotification?: LspErrorNotification;
+
+  /**
+   * Surface language-server errors in the shared bottom-right notification (see
+   * `createLspErrorNotification` in `@zazuko/yasgui-utils`). Yasqe is language-server agnostic, so
+   * this only understands generic JSON-RPC: any server->client message carrying an `error` (i.e. a
+   * JSON-RPC error response) is shown. Transient errors (request cancelled / content modified) are
+   * ignored. The qlue-ls helpers send no `window/showMessage`, so this is the only channel through
+   * which its errors (e.g. "No Backend defined") reach the user.
+   */
+  private setupLanguageServerErrorNotifications(worker: Worker) {
+    // Expected-during-typing codes (qlue-ls uses string codes; standard LSP uses these numbers).
+    const ignoredCodes = new Set<number | string>([-32800, -32801, "RequestCancelled", "ContentModified"]);
+    worker.addEventListener("message", (event: MessageEvent) => {
+      let data: any = event.data;
+      if (typeof data === "string") {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          return;
+        }
+      }
+      const error = data?.error;
+      const code = error?.code;
+      const hasCode = typeof code === "number" || (typeof code === "string" && code.length > 0);
+      if (!error || !hasCode || typeof error.message !== "string" || ignoredCodes.has(code)) return;
+      // qlue-ls puts the detail in `message` (often with a quoted blob) but it may also arrive in `data`
+      let message: string = error.message;
+      if (typeof error.data === "string" && error.data && !message.includes(error.data)) {
+        message += "\n" + error.data;
+      }
+      if (!this.lsErrorNotification) this.lsErrorNotification = createLspErrorNotification(this.rootEl);
+      this.lsErrorNotification.show(message);
+    });
+  }
 
   /**
    * Shows notification

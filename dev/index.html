@@ -33,7 +33,16 @@
         const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
         window.yasgui = new Yasgui(document.getElementById("yasgui"), {
           requestConfig: { endpoint: DEMO_ENDPOINT },
-          yasqe: (parent, conf) => new Yasqe(parent, { ...conf, theme, languageServerWorker: createQlueLsWorker }),
+          yasqe: (parent, conf) =>
+            new Yasqe(parent, {
+              ...conf,
+              theme,
+              languageServerWorker: createQlueLsWorker,
+              onLanguageClientReady: (languageClient) => {
+                qlueLs.configureSettings(languageClient);
+                qlueLs.configureBackend(languageClient, window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
+              },
+            }),
           onEndpointChange: (yasgui, endpoint) => qlueLs.configureBackend(yasgui.yasqe?.getLanguageClient(), endpoint),
         });
       };

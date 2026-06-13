@@ -228,7 +228,7 @@ export class Yasr extends EventEmitter {
             this.updatePluginSelectors(compatiblePlugins);
           }
         },
-        (_e) => console.error,
+        (e) => console.error("Error drawing YASR plugin", pluginToDraw, e),
       );
     } else {
       this.resultsEl.textContent = "cannot render result";

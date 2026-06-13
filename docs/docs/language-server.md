@@ -166,13 +166,13 @@ import Yasgui from "@zazuko/yasgui";
 import Yasqe from "@zazuko/yasqe-codemirror";
 import { createQlueLsClient, setQlueLsBackend } from "./qlueLsClient";
 
-const client = await createQlueLsClient({ endpoint });
+const client = await createQlueLsClient();
 const lsp = { client };
 
 new Yasgui(el, {
   requestConfig: { endpoint },
   yasqe: (parent, conf) => new Yasqe(parent, { ...conf, lsp }),
-  onEndpointChange: (_yasgui, endpoint) => setQlueLsBackend(client, { endpoint }),
+  onEndpointChange: (_yasgui, endpoint) => setQlueLsBackend(client, endpoint),
 });
 ```
 

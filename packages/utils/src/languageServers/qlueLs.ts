@@ -100,7 +100,7 @@ export const defaultSettings: Settings = {
     keepEmptyLines: false,
   },
   completion: {
-    timeoutMs: 10000,
+    timeoutMs: 2000,
     resultSizeLimit: 50,
     subjectCompletionTriggerLength: 3,
     objectCompletionSuffix: true,

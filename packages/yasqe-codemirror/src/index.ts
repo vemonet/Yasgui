@@ -51,12 +51,12 @@ import {
   getQueryType,
   getQueryMode,
   getPrefixesFromQuery,
-  // SPARQL request handling is shared across editors and lives in utils.
   executeQuery,
   getAjaxConfig,
   getUrlArguments,
   getAcceptHeader,
   getAsCurlString,
+  createLspErrorNotification,
 } from "@zazuko/yasgui-utils";
 import type {
   DeepPartial,
@@ -66,8 +66,8 @@ import type {
   Prefixes,
   YasqeAjaxConfig,
   RequestArgs,
+  LspErrorNotification,
 } from "@zazuko/yasgui-utils";
-// Shared, editor-agnostic types live in utils so the Monaco and CodeMirror editors stay in sync.
 export type { QueryType, RequestConfig, PlainRequestConfig, Prefixes } from "@zazuko/yasgui-utils";
 
 import getDefaults from "./defaults";
@@ -75,22 +75,31 @@ import * as imgs from "./imgs";
 
 // Editor chrome (background, gutter, selection, cursor) per theme. Both are applied as CodeMirror
 // themes so the editor always has an explicit background matching its own theme, regardless of the
-// surrounding page. Token colors are driven by CSS (see style/codemirrorMods.css, `.cm-st-*` and
-// the `[data-theme="dark"]` overrides) so semantic-token highlighting follows the theme too.
+// surrounding page. Colors mirror the Monaco SPARQL theme (see yasqe/src/editor/sparqlTheme.ts) so
+// the two editors look identical. Token colors are driven by CSS (see style/codemirrorMods.css,
+// `.cm-st-*` and the `[data-theme="dark"]` overrides) so semantic-token highlighting follows too.
 const lightTheme = EditorView.theme({
-  "&": { color: "#000", backgroundColor: "#fff" },
+  "&": { color: "#586e75", backgroundColor: "#f7f7f7" },
+  ".cm-content": { caretColor: "#002b36" },
+  ".cm-cursor, .cm-dropCursor": { borderLeftColor: "#002b36" },
+  "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
+    backgroundColor: "#eee8d5",
+  },
+  ".cm-activeLine": { backgroundColor: "#fdf6e3" },
+  ".cm-gutters": { backgroundColor: "#f7f7f7", color: "#93a1a1", border: "none" },
+  ".cm-activeLineGutter": { backgroundColor: "#fdf6e3" },
 });
 const darkTheme = EditorView.theme(
   {
-    "&": { color: "#d4d4d4", backgroundColor: "#1e1e1e" },
-    ".cm-content": { caretColor: "#fff" },
-    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "#fff" },
+    "&": { color: "#839496", backgroundColor: "#002b36" },
+    ".cm-content": { caretColor: "#fdf6e3" },
+    ".cm-cursor, .cm-dropCursor": { borderLeftColor: "#fdf6e3" },
     "&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection": {
-      backgroundColor: "#264f78",
+      backgroundColor: "#073642",
     },
-    ".cm-activeLine": { backgroundColor: "rgba(255,255,255,0.05)" },
-    ".cm-gutters": { backgroundColor: "#1e1e1e", color: "#858585", border: "none" },
-    ".cm-activeLineGutter": { backgroundColor: "rgba(255,255,255,0.05)" },
+    ".cm-activeLine": { backgroundColor: "#073642" },
+    ".cm-gutters": { backgroundColor: "#002b36", color: "#586e75", border: "none" },
+    ".cm-activeLineGutter": { backgroundColor: "#073642" },
     ".cm-matchhighlight": { backgroundColor: "#3a3d41" },
     ".cm-selectionMatch": { backgroundColor: "#3a3d41" },
   },
@@ -206,9 +215,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
     base.push(highlightSelectionMatches());
     base.push(
       keymap.of([
-        // Custom bindings first: they must win over defaultKeymap, which also binds
-        // Mod-Enter (to insertBlankLine). Ctrl-Enter is added explicitly so it also
-        // works on macOS, where Mod resolves to Cmd only.
+        // Custom bindings first so they take precedence over the default ones
         {
           key: "Mod-Enter",
           run: () => {
@@ -262,6 +269,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
       // Add `LSPClient` to the CM6 extensions, it is the single source of language features:
       // highlighting, diagnostics, completion, hover, formatting...
       base.push(c.lsp.client.plugin(this.getDocumentUri(), c.lsp.languageId ?? "sparql"));
+      this.setupLanguageServerErrorNotifications(c.lsp.client);
     }
     if (c.lineWrapping) base.push(EditorView.lineWrapping);
     base.push(
@@ -424,10 +432,17 @@ export class Yasqe extends EventEmitter implements IYasqe {
         options: { tabSize: 2, insertSpaces: true },
       });
       if (!Array.isArray(edits) || edits.length === 0) return;
+      // Clamp LSP positions to the document: qlue-ls returns a whole-document replacement whose end
+      // is the `u32::MAX` (4294967295) sentinel, which `plugin.fromPosition` would map out of range.
+      const doc = this.cm.state.doc;
+      const toOffset = (p: { line: number; character: number }) => {
+        const line = doc.line(Math.min(p.line + 1, doc.lines));
+        return line.from + Math.min(p.character, line.length);
+      };
       // LSP edits are non-overlapping; map each range to document offsets and apply in one dispatch.
       const changes = edits.map((e) => ({
-        from: plugin.fromPosition(e.range.start),
-        to: plugin.fromPosition(e.range.end),
+        from: toOffset(e.range.start),
+        to: toOffset(e.range.end),
         insert: e.newText,
       }));
       this.cm.dispatch({ changes });
@@ -808,6 +823,47 @@ export class Yasqe extends EventEmitter implements IYasqe {
   }
   public hideNotification(key: string) {
     if (this.notificationEls[key]) removeClass(this.notificationEls[key], "active");
+  }
+  private lsErrorNotification?: LspErrorNotification;
+
+  /**
+   * Surface language-server errors in the shared bottom-right notification (see
+   * `createLspErrorNotification` in `@zazuko/yasgui-utils`). Yasqe is language-server agnostic, so
+   * this only understands generic JSON-RPC: `LSPClient.request` rejects with the raw `error` object
+   * of a JSON-RPC error response. The client is usually shared across tabs, so `request` is wrapped
+   * only once and a per-instance notifier is kept in a listener list
+   */
+  private setupLanguageServerErrorNotifications(client: LSPClient) {
+    const notify = (message: string) => {
+      if (!this.lsErrorNotification) this.lsErrorNotification = createLspErrorNotification(this.rootEl);
+      this.lsErrorNotification.show(message);
+    };
+    const tapped = client as LSPClient & { __yasqeErrorListeners?: ((message: string) => void)[] };
+    if (tapped.__yasqeErrorListeners) {
+      tapped.__yasqeErrorListeners.push(notify);
+      return;
+    }
+    const listeners: ((message: string) => void)[] = [notify];
+    tapped.__yasqeErrorListeners = listeners;
+    // Expected-during-typing codes (qlue-ls uses string codes; standard LSP uses these numbers)
+    const ignoredCodes = new Set<number | string>([-32800, -32801, "RequestCancelled", "ContentModified"]);
+    const original = client.request.bind(client);
+    client.request = function (method: string, params: unknown) {
+      return original(method, params).catch((error: any) => {
+        const code = error?.code;
+        const hasCode = typeof code === "number" || (typeof code === "string" && code.length > 0);
+        if (hasCode && typeof error?.message === "string" && !ignoredCodes.has(code)) {
+          // qlue-ls puts the detail in `message` (often a quoted blob) but it may also arrive in
+          // `data`; append it so the description is surfaced either way.
+          let message: string = error.message;
+          if (typeof error.data === "string" && error.data && !message.includes(error.data)) {
+            message += "\n" + error.data;
+          }
+          for (const l of listeners) l(message);
+        }
+        throw error;
+      });
+    } as typeof client.request;
   }
 
   /* Destroy */

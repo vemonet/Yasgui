@@ -85,7 +85,7 @@ html[data-theme="dark"] {
       background: linear-gradient(to right, transparent, var(--yr-d-surface) 5%, var(--yr-d-surface) 95%, transparent 100%);
     }
 
-    .dataTables_wrapper {
+    .dt-container {
       color: var(--yr-d-text);
     }
     .dataTable {
@@ -95,6 +95,9 @@ html[data-theme="dark"] {
       background-color: var(--yr-d-surface);
       border-color: var(--yr-d-border);
       color: var(--yr-d-text);
+    }
+    .dataTable thead tr th:hover {
+      background-color: var(--yr-d-raised);
     }
     .dataTable tbody tr {
       background-color: var(--yr-d-bg);
@@ -106,10 +109,10 @@ html[data-theme="dark"] {
     .dataTable tbody tr:hover {
       background-color: var(--yr-d-raised);
     }
-    div.dataTables_paginate.paging_simple_numbers a .disabled {
-      color: var(--yr-d-muted);
+    div.dt-paging button.dt-paging-button.disabled {
+      color: var(--yr-d-muted) !important;
     }
-    div.dataTables_paginate.paging_simple_numbers a:hover:not(.disabled) {
+    div.dt-paging button.dt-paging-button:hover:not(.disabled) {
       color: #ffffff !important;
     }
 
@@ -190,7 +193,7 @@ html[data-theme="dark"] {
         background: linear-gradient(to right, transparent, var(--yr-d-surface) 5%, var(--yr-d-surface) 95%, transparent 100%);
       }
 
-      .dataTables_wrapper {
+      .dt-container {
         color: var(--yr-d-text);
       }
       .dataTable {
@@ -200,6 +203,9 @@ html[data-theme="dark"] {
         background-color: var(--yr-d-surface);
         border-color: var(--yr-d-border);
         color: var(--yr-d-text);
+      }
+      .dataTable thead tr th:hover {
+        background-color: var(--yr-d-raised);
       }
       .dataTable tbody tr {
         background-color: var(--yr-d-bg);
@@ -211,10 +217,10 @@ html[data-theme="dark"] {
       .dataTable tbody tr:hover {
         background-color: var(--yr-d-raised);
       }
-      div.dataTables_paginate.paging_simple_numbers a .disabled {
-        color: var(--yr-d-muted);
+      div.dt-paging button.dt-paging-button.disabled {
+        color: var(--yr-d-muted) !important;
       }
-      div.dataTables_paginate.paging_simple_numbers a:hover:not(.disabled) {
+      div.dt-paging button.dt-paging-button:hover:not(.disabled) {
         color: #ffffff !important;
       }
 
