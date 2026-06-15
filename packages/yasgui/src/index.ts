@@ -111,9 +111,13 @@ export class Yasgui extends EventEmitter {
   public yasqe: IYasqe | undefined;
   private yasqeWrapperEl: HTMLDivElement | undefined;
   // The tab that initiated the in-flight query, so async query events route back to it even if the
-  // user switches tabs in the meantime.
+  // user switches tabs in the meantime
   private queryingTab: Tab | undefined;
+  // True while we programmatically restore a per-endpoint language-server preference,
+  // so the resulting languageServerChange event isn't persisted back (redundant write)
+  private applyingStoredLs = false;
   public static Tab = Tab;
+
   constructor(parent: HTMLElement, config: PartialConfig = {}) {
     super();
     if (!parent) throw new Error("No parent passed as argument. Dont know where to draw Yasgui");
@@ -209,7 +213,33 @@ export class Yasgui extends EventEmitter {
 
   /** Notify the consumer that the active endpoint changed (single Yasgui-level hook for all tabs). */
   public emitEndpointChange(endpoint: string) {
-    if (endpoint) this.config.onEndpointChange?.(this, endpoint);
+    if (!endpoint) return;
+    this.config.onEndpointChange?.(this, endpoint);
+    const switching = this.applyStoredLanguageServer(endpoint);
+    // When we switch servers, the new server's `onReady` already configures it for this endpoint;
+    // otherwise fire the active server's per-entry `onEndpointChange` hook.
+    if (!switching) this.yasqe?.notifyEndpointChange?.(endpoint);
+  }
+
+  /**
+   * Apply the stored per-endpoint language-server preference to the shared editor, if any.
+   * Returns true when it triggered a switch to a *different* server.
+   */
+  private applyStoredLanguageServer(endpoint: string): boolean {
+    const yasqe = this.yasqe;
+    if (!yasqe?.setLanguageServer || !yasqe.getLanguageServers) return false;
+    const label = this.persistentConfig.getLanguageServerForEndpoint(endpoint);
+    if (!label) return false;
+    const servers = yasqe.getLanguageServers();
+    // Only switch if that server is configured and is not already the active one.
+    if (!servers.some((s) => s.label === label)) return false;
+    const activeIdx = yasqe.getActiveLanguageServer?.() ?? -1;
+    if (activeIdx >= 0 && servers[activeIdx]?.label === label) return false;
+    this.applyingStoredLs = true;
+    void Promise.resolve(yasqe.setLanguageServer(label)).finally(() => {
+      this.applyingStoredLs = false;
+    });
+    return true;
   }
 
   private setupGlobalYasqeListeners() {
@@ -235,6 +265,12 @@ export class Yasgui extends EventEmitter {
     yasqe.on("queryResponse", (_yasqe: any, response: any, duration: any) => {
       (this.queryingTab || this.getActiveTab())?.handleQueryResponse(yasqe, response, duration);
       this.queryingTab = undefined;
+    });
+    // Remember the user's language-server choice per endpoint
+    yasqe.on("languageServerChange", (_yasqe: any, def: { label: string }) => {
+      if (this.applyingStoredLs) return;
+      const endpoint = this.getActiveTab()?.getEndpoint();
+      if (endpoint && def?.label) this.persistentConfig.setLanguageServerForEndpoint(endpoint, def.label);
     });
   }
 

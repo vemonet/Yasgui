@@ -20,6 +20,8 @@ export default function get() {
     readOnly: false,
     syntaxErrorCheck: true,
     extensions: [],
+    // Language servers are consumer-provided; none by default (Yasqe is then a plain text editor)
+    languageServers: [],
     // Follow the OS/browser preference by default so the editor matches the auto-adapting chrome.
     // Callers can override by passing `theme` explicitly or via Yasqe.setTheme().
     theme:

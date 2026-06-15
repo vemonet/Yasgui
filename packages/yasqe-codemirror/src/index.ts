@@ -1,10 +1,11 @@
 /**
  * Yasqe (CodeMirror 6 edition) · the standalone CodeMirror-based SPARQL query editor.
  *
- * Yasqe is language-server agnostic. The embedder creates and connects an `LSPClient`
- * (with `@codemirror/lsp-client`) and passes it via `config.lsp`. All language features
- * (highlighting, diagnostics, completion, hover, formatting) come from the language server;
- * Yasqe ships no SPARQL grammar of its own.
+ * Yasqe is language-server agnostic. The embedder creates and connects one or more `LSPClient`s
+ * (with `@codemirror/lsp-client`) and lists them via `config.languageServers`. All language
+ * features (highlighting, diagnostics, completion, hover, formatting) come from the active server;
+ * Yasqe ships no SPARQL grammar of its own. When two or more servers are configured, a switcher
+ * dropdown lets the user pick between them at runtime ({@link Yasqe.setLanguageServer}).
  * @module YasqeCodeMirror
  */
 import "./style/yasqe.css";
@@ -171,8 +172,22 @@ export class Yasqe extends EventEmitter implements IYasqe {
   private readOnlyCompartment = new Compartment();
   private extensionsCompartment = new Compartment();
   private themeCompartment = new Compartment();
+  // Holds the active language server's CM6 extension (lint gutter + LSP plugin); reconfigured on switch.
+  private lspCompartment = new Compartment();
   private static uriCounter = 0;
   private documentUri?: string;
+  /** Index of the active language server in `config.languageServers`, or -1 when none is active. */
+  public activeLanguageServerIndex = -1;
+  /** The currently active LSPClient (used by format() and diagnostics). */
+  private activeClient?: LSPClient;
+  /** Resolved LSPClient per server index, so switching back is instant (clients are heavy/WASM). */
+  private lsClients = new Map<number, LSPClient>();
+  /** Serializes language-server switches so concurrent calls (init + a restored preference) don't race. */
+  private lsSwitchQueue: Promise<void> = Promise.resolve();
+  /** The language-server switcher button (only drawn when 2+ servers are configured). */
+  private lsSelectEl?: HTMLButtonElement;
+  /** Document-level click handler that closes the open switcher menu (removed on destroy). */
+  private lsMenuOutsideClick?: (e: MouseEvent) => void;
 
   constructor(parent: HTMLElement, conf: PartialConfig = {}) {
     super();
@@ -184,17 +199,18 @@ export class Yasqe extends EventEmitter implements IYasqe {
     this.editorEl.className = "yasqe_editor";
     this.rootEl.appendChild(this.editorEl);
 
-    // `lsp` (a class instance) and `extensions` (opaque CM6 objects) must not be
-    // deep-merged by lodash, which would clone away their prototypes. Assign them by reference.
+    // `languageServers` (carrying LSPClient instances / factory + callback functions) and
+    // `extensions` (opaque CM6 objects) must not be deep-merged by lodash, which would clone away
+    // their prototypes / identity. Assign them by reference.
     // (cast to `any` to avoid the deep type instantiation lodash.merge triggers over DeepPartial)
     const rawConf = conf as any;
-    const { lsp, extensions } = rawConf;
+    const { languageServers, extensions } = rawConf;
     const mergeableConf = { ...rawConf };
-    delete mergeableConf.lsp;
+    delete mergeableConf.languageServers;
     delete mergeableConf.extensions;
     this.config = merge({}, Yasqe.defaults, mergeableConf) as Config;
     if (extensions) this.config.extensions = extensions as Extension[];
-    if (lsp) this.config.lsp = lsp as Config["lsp"];
+    if (languageServers) this.config.languageServers = languageServers as Config["languageServers"];
     this.storage = new YStorage(Yasqe.storageNamespace);
 
     // Restore persisted query
@@ -227,6 +243,9 @@ export class Yasqe extends EventEmitter implements IYasqe {
     }
 
     this.drawButtons();
+
+    // Activate the first configured language server (the consumer may switch between several).
+    if (this.config.languageServers?.length) void this.setLanguageServer(0);
 
     if (this.config.consumeShareLink) {
       this.config.consumeShareLink(this);
@@ -317,13 +336,9 @@ export class Yasqe extends EventEmitter implements IYasqe {
       ]),
     );
     base.push(search({ top: true }));
-    if (c.lsp?.client) {
-      base.push(lintGutter());
-      // Add `LSPClient` to the CM6 extensions, it is the single source of language features:
-      // highlighting, diagnostics, completion, hover, formatting...
-      base.push(c.lsp.client.plugin(this.getDocumentUri(), c.lsp.languageId ?? "sparql"));
-      this.setupLanguageServerErrorNotifications(c.lsp.client);
-    }
+    // The active language server (lint gutter + LSP plugin) lives in a compartment so it can be
+    // swapped at runtime via setLanguageServer. Starts empty; the first server is activated below.
+    base.push(this.lspCompartment.of([]));
     if (c.lineWrapping) base.push(EditorView.lineWrapping);
     base.push(
       EditorView.updateListener.of((u: ViewUpdate) => {
@@ -382,17 +397,90 @@ export class Yasqe extends EventEmitter implements IYasqe {
   }
 
   /**
-   * The LSP document URI for this editor. Derived from `config.lsp.documentUri`
-   * (string or factory), falling back to an auto-generated unique URI so that
-   * several editors sharing one client (e.g. Yasgui tabs) get distinct URIs.
+   * The LSP document URI for this editor. Stable across server switches. Derived from the active
+   * server's `documentUri` (string or factory), falling back to an auto-generated unique URI so
+   * that several editors sharing one client (e.g. Yasgui tabs) get distinct URIs.
    */
-  public getDocumentUri(): string {
+  public getDocumentUri(def?: LanguageServerDef): string {
     if (this.documentUri) return this.documentUri;
-    const conf = this.config.lsp?.documentUri;
+    const conf = def?.documentUri;
     if (typeof conf === "function") this.documentUri = conf(this);
     else if (typeof conf === "string") this.documentUri = conf;
     else this.documentUri = `file:///query${++Yasqe.uriCounter}.rq`;
     return this.documentUri;
+  }
+
+  /* Language servers */
+  /** The configured language servers, as `{ label, description }` (the switcher-facing subset). */
+  public getLanguageServers(): { label: string; description?: string }[] {
+    return (this.config.languageServers ?? []).map((s) => ({ label: s.label, description: s.description }));
+  }
+  /** Index of the active language server in `config.languageServers`, or -1 when none is active. */
+  public getActiveLanguageServer(): number {
+    return this.activeLanguageServerIndex;
+  }
+  /** The active `LSPClient`, or undefined when no language server is active. */
+  public getLanguageClient(): LSPClient | undefined {
+    return this.activeClient;
+  }
+  /**
+   * Notify the active language server that the endpoint changed, firing only its `onEndpointChange`
+   * (with the active `LSPClient`). Yasgui calls this on endpoint changes; standalone consumers can
+   * call it themselves. No-op when no server is active or it defines no handler.
+   */
+  public notifyEndpointChange(endpoint: string): void {
+    const def = this.config.languageServers?.[this.activeLanguageServerIndex];
+    if (def?.onEndpointChange && this.activeClient && endpoint) {
+      def.onEndpointChange(this.activeClient, endpoint, this);
+    }
+  }
+  /**
+   * Activate a language server by label or index. Resolves (and caches) the target client, runs its
+   * `onReady`, swaps it into the editor via the LSP compartment, refreshes the switcher button and
+   * emits `languageServerChange`. The query/document is preserved.
+   */
+  public setLanguageServer(target: string | number): Promise<void> {
+    // Swallow a prior switch's failure so it doesn't block this one (the chain is reused).
+    this.lsSwitchQueue = this.lsSwitchQueue.catch(() => {}).then(() => this.activateLanguageServer(target));
+    return this.lsSwitchQueue;
+  }
+
+  private async activateLanguageServer(target: string | number): Promise<void> {
+    const servers = this.config.languageServers ?? [];
+    if (!servers.length) return;
+    const index = typeof target === "number" ? target : servers.findIndex((s) => s.label === target);
+    if (index < 0 || index >= servers.length) {
+      console.warn("Unknown language server:", target);
+      return;
+    }
+    if (index === this.activeLanguageServerIndex && this.activeClient) return;
+    const def = servers[index];
+    // Resolve (and cache) the target client. Cached clients make switching back instant.
+    let client = this.lsClients.get(index);
+    if (!client) {
+      client = typeof def.client === "function" ? await def.client() : def.client;
+      if (!client) {
+        console.warn("Language server provided no client:", def.label);
+        return;
+      }
+      this.lsClients.set(index, client);
+    }
+    this.setupLanguageServerErrorNotifications(client);
+    // Only (re)attach the LSP plugin when the client instance actually changes. Several entries may
+    // share one client (differing only by the settings their `onReady` pushes); reattaching the same
+    // client+document would needlessly re-open the document on the server.
+    const clientChanged = client !== this.activeClient;
+    this.activeClient = client;
+    this.activeLanguageServerIndex = index;
+    if (clientChanged) {
+      const uri = this.getDocumentUri(def);
+      this.cm.dispatch({
+        effects: this.lspCompartment.reconfigure([lintGutter(), client.plugin(uri, def.languageId ?? "sparql")]),
+      });
+    }
+    if (def.onReady) def.onReady(client, this);
+    this.updateLanguageServerDropdown();
+    this.emit("languageServerChange", { label: def.label, description: def.description }, index);
   }
 
   /* Events */
@@ -474,7 +562,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
    * the returned edits. No-op when no language server is connected (Yasqe ships no formatter).
    */
   public async format(): Promise<void> {
-    const client = this.config.lsp?.client;
+    const client = this.activeClient;
     const plugin = LSPPlugin.get(this.cm);
     if (!client || !plugin) return;
     // Make sure the server has the latest document before asking it to format.
@@ -551,6 +639,9 @@ export class Yasqe extends EventEmitter implements IYasqe {
     const buttons = document.createElement("div");
     buttons.className = "yasqe_buttons";
     this.rootEl.appendChild(buttons);
+
+    // Language-server switcher, leftmost in the button bar (only when 2+ servers are configured).
+    this.drawLanguageServerDropdown(buttons);
 
     if (this.config.pluginButtons) {
       const pluginButtons = this.config.pluginButtons();
@@ -698,6 +789,70 @@ export class Yasqe extends EventEmitter implements IYasqe {
     if (!this.req && this.queryBtn.className.indexOf("busy") >= 0) {
       this.queryBtn.className = this.queryBtn.className.replace("busy", "");
     }
+  }
+
+  /**
+   * Draw the language-server switcher: a labelled dropdown button (showing the active server's
+   * label) that, when clicked, opens a menu listing each server with its label and a dimmed
+   * description. Only drawn when two or more servers are configured.
+   */
+  private drawLanguageServerDropdown(buttons: HTMLElement) {
+    const servers = this.config.languageServers ?? [];
+    if (servers.length < 2) return;
+    const select = document.createElement("button");
+    select.className = "yasqe_btn yasqe_lsSelect";
+    select.title = "Select language server";
+    select.setAttribute("aria-label", "Select language server");
+    this.lsSelectEl = select;
+    buttons.appendChild(select);
+
+    let menu: HTMLDivElement | undefined;
+    const closeMenu = () => {
+      menu?.remove();
+      menu = undefined;
+    };
+    const openMenu = () => {
+      menu = document.createElement("div");
+      menu.className = "yasqe_lsMenu";
+      servers.forEach((s, i) => {
+        const item = document.createElement("button");
+        item.className = "yasqe_lsMenuItem" + (i === this.activeLanguageServerIndex ? " active" : "");
+        const label = document.createElement("span");
+        label.className = "yasqe_lsMenuLabel";
+        label.textContent = s.label;
+        item.appendChild(label);
+        if (s.description) {
+          const desc = document.createElement("span");
+          desc.className = "yasqe_lsMenuDesc";
+          desc.textContent = s.description;
+          item.appendChild(desc);
+        }
+        item.addEventListener("click", (e) => {
+          e.stopPropagation();
+          closeMenu();
+          void this.setLanguageServer(i);
+        });
+        menu!.appendChild(item);
+      });
+      buttons.appendChild(menu);
+    };
+    select.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (menu) closeMenu();
+      else openMenu();
+    });
+    this.lsMenuOutsideClick = (e: MouseEvent) => {
+      if (menu && e.target !== select && !menu.contains(e.target as Node)) closeMenu();
+    };
+    document.body.addEventListener("click", this.lsMenuOutsideClick, true);
+    this.updateLanguageServerDropdown();
+  }
+
+  /** Refresh the switcher button label to reflect the active server. */
+  private updateLanguageServerDropdown() {
+    if (!this.lsSelectEl) return;
+    const active = (this.config.languageServers ?? [])[this.activeLanguageServerIndex];
+    this.lsSelectEl.textContent = active?.label ?? "Language server";
   }
 
   /* Resizer */
@@ -926,6 +1081,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
     this.resizeWrapper?.removeEventListener("mousedown", this.initDrag, false);
     this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor);
     window.removeEventListener("hashchange", this.handleHashChange);
+    if (this.lsMenuOutsideClick) document.body.removeEventListener("click", this.lsMenuOutsideClick, true);
     this.cm.destroy();
     this.rootEl.remove();
   }
@@ -935,10 +1091,10 @@ export class Yasqe extends EventEmitter implements IYasqe {
   static defaults = getDefaults();
   static Autocompleters: { [name: string]: any } = {};
   static registerAutocompleter(_value: any, _enable = true): void {
-    // No-op: autocomplete is now provided by the language server (see `config.lsp`).
+    // No-op: autocomplete is now provided by the language server (see `config.languageServers`).
   }
   static forkAutocompleter(_from: string, _to: { name: string } & any, _enable = true): void {
-    // No-op: autocomplete is now provided by the language server (see `config.lsp`).
+    // No-op: autocomplete is now provided by the language server (see `config.languageServers`).
   }
   static clearStorage() {
     const storage = new YStorage(Yasqe.storageNamespace);
@@ -977,29 +1133,20 @@ export interface Config {
   readOnly: boolean;
   /** Editor theme. Switch at runtime with {@link Yasqe.setTheme}. */
   theme: "light" | "dark";
-  /** @deprecated No-op. Diagnostics come from the language server (`lsp`); Yasqe ships no built-in syntax checker. */
+  /** @deprecated No-op. Diagnostics come from the language server (`languageServers`); Yasqe ships no built-in syntax checker. */
   syntaxErrorCheck: boolean;
   /** Extra CodeMirror 6 extensions (advanced) */
   extensions: Extension[];
   /**
-   * Language Server Protocol integration. Yasqe ships no SPARQL grammar of its own — all
-   * language features (highlighting, diagnostics, completion, hover, formatting) come from
-   * the server. The embedder creates and connects an `LSPClient` (from `@codemirror/lsp-client`,
-   * configured with `languageServerExtensions()` plus any server-specific glue such as
-   * semantic-token highlighting) and passes it here. qlue-ls (or any SPARQL server) lives in
-   * the embedder, never in Yasqe's dependencies. Without `lsp`, Yasqe is a plain text editor.
+   * Language Server Protocol integration. Yasqe ships no SPARQL grammar of its own, all language
+   * features (highlighting, diagnostics, completion, hover, formatting) come from the server. The
+   * embedder creates and connects each `LSPClient` (from `@codemirror/lsp-client`, configured with
+   * `languageServerExtensions()` plus any server-specific glue such as semantic-token highlighting)
+   * and lists them here. The first is activated on load; when two or more are configured a switcher
+   * appears (a dropdown button in the editor toolbar). qlue-ls (or any SPARQL server) lives in the
+   * embedder, never in Yasqe's dependencies. When empty, Yasqe is a plain text editor.
    */
-  lsp?: {
-    /** A connected LSPClient instance. */
-    client: LSPClient;
-    /**
-     * Document URI for this editor. Provide a function to derive a unique URI per editor
-     * (e.g. one per Yasgui tab). Defaults to an auto-generated unique URI.
-     */
-    documentUri?: string | ((yasqe: Yasqe) => string);
-    /** LSP language id sent to the server. Defaults to "sparql". */
-    languageId?: string;
-  };
+  languageServers: LanguageServerDef[];
 
   /** Show button to run the query */
   showQueryButton: boolean;
@@ -1025,6 +1172,44 @@ export interface Config {
   pluginButtons: (() => HTMLElement[] | HTMLElement) | undefined;
   prefixCcApi: string;
 }
+
+/**
+ * A language server the consumer makes available to Yasqe (CodeMirror edition). Yasqe stays
+ * language-server agnostic: the consumer creates/connects the `LSPClient` and supplies any
+ * server-specific setup.
+ */
+export interface LanguageServerDef {
+  /** Short name shown in the switcher (e.g. "Qlue-LS"). */
+  label: string;
+  /** Optional longer description, shown dimmed under the label in the switcher menu. */
+  description?: string;
+  /** A connected `LSPClient`, or a factory returning one (optionally async, e.g. after WASM init). */
+  client: LSPClient | (() => LSPClient | Promise<LSPClient>);
+  /**
+   * Called when this server becomes active (on load or when switched to), with its `LSPClient`.
+   * Use it for server-specific setup, e.g. registering the SPARQL backend for the current endpoint.
+   */
+  onReady?: (client: LSPClient, yasqe: Yasqe) => void;
+  /**
+   * Called when the active endpoint changes, but only for the currently active server, with its
+   * `LSPClient` and the new endpoint. Use it for server-specific endpoint handling, e.g.
+   * re-registering the SPARQL backend. Driven by Yasgui's endpoint changes (and any caller of
+   * {@link Yasqe.notifyEndpointChange}).
+   */
+  onEndpointChange?: (client: LSPClient, endpoint: string, yasqe: Yasqe) => void;
+  /**
+   * Document URI for this editor. Provide a function to derive a unique URI per editor (e.g. one
+   * per Yasgui tab). Defaults to an auto-generated unique URI. The URI is stable across switches.
+   */
+  documentUri?: string | ((yasqe: Yasqe) => string);
+  /** LSP language id sent to the server. Defaults to "sparql". */
+  languageId?: string;
+  /** Reserved for a generic config UI (JSON-schema describing the server's settings). Not yet implemented. */
+  configSchema?: Record<string, any>;
+  /** Reserved for a generic config UI (applies the generated JSON config to the server). Not yet implemented. */
+  configCallback?: (client: LSPClient, configJson: any) => void;
+}
+
 export interface PersistentConfig {
   query: string;
   editorHeight: string;

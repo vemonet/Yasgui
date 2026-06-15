@@ -16,22 +16,31 @@ const yasgui = new Yasgui(document.getElementById("yasgui")!, {
   yasqe: (parent, conf) =>
     new Yasqe(parent, {
       ...conf,
-      languageServerWorker: createQlueLsWorker,
-      onLanguageClientReady: (languageClient) => qlueLs.configureSettings(languageClient),
+      languageServers: [
+        {
+          label: "Qlue-ls",
+          worker: createQlueLsWorker,
+          onReady: (client) => {
+            qlueLs.configureSettings(client);
+            qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint());
+          },
+          // Per-server, fires only while this server is active.
+          onEndpointChange: (client, endpoint) => qlueLs.configureBackend(client, endpoint),
+        },
+      ],
     }),
-  onEndpointChange: (yasgui, endpoint) =>
-    qlueLs.configureBackend(yasgui.yasqe?.getLanguageClient(), endpoint),
 });
 ```
 
 Yasgui is **editor-independent**: instead of an editor config object, you pass a factory
 `(parent, conf) => IYasqe` that builds the editor. This is where you choose the editor implementation
-(Monaco `@zazuko/yasqe` above, or CodeMirror `@zazuko/yasqe-codemirror`) and wire in its language
-server and theme. `qlueLs` is only exported from `@zazuko/yasqe` (the Monaco editor), not from
+(Monaco `@zazuko/yasqe` above, or CodeMirror `@zazuko/yasqe-codemirror`) and list its language
+servers and theme. `qlueLs` is only exported from `@zazuko/yasqe` (the Monaco editor), not from
 `@zazuko/yasgui`.
 
-`yasgui.yasqe.getLanguageClient()` returns the underlying `monaco-languageclient` so you can send any
-LSP request.
+`yasgui.yasqe.getLanguageClient()` returns the active language client so you can send any LSP request.
+When two or more `languageServers` are configured, a switcher lets users pick one and Yasgui
+remembers the choice **per endpoint**, so each endpoint reopens with its preferred server.
 
 ## Configuration
 

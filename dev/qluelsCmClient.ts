@@ -10,10 +10,8 @@ import { EditorView, ViewPlugin, ViewUpdate, Decoration, DecorationSet } from "@
 import { RangeSetBuilder, StateField, StateEffect } from "@codemirror/state";
 import { setDiagnostics, Diagnostic } from "@codemirror/lint";
 import init, { init_language_server, listen } from "qlue-ls";
-// The shared backend builder (which fetches the endpoint's prefix map and applies the default
-// completion/hover query templates) and server settings live in the shared utils qlue-ls helper.
-import { createBackendConf, defaultSettings } from "@zazuko/yasgui-utils";
-import type { Settings, BackendOptions, DeepPartial } from "@zazuko/yasgui-utils";
+import { qlueLs } from "@zazuko/yasgui-utils";
+import type { DeepPartial } from "@zazuko/yasgui-utils";
 
 const SEVERITY: Record<number, Diagnostic["severity"]> = { 1: "error", 2: "warning", 3: "info", 4: "info" };
 
@@ -305,32 +303,6 @@ function wasmTransport(): Transport {
   };
 }
 
-/** Merge partial overrides over the shared {@link defaultSettings}, section by section, so any
- * omitted field follows the same defaults as the Monaco editor. */
-function mergeSettings(overrides: DeepPartial<Settings>): Settings {
-  return {
-    format: { ...defaultSettings.format, ...overrides.format },
-    completion: { ...defaultSettings.completion, ...overrides.completion },
-    prefixes: { ...defaultSettings.prefixes, ...overrides.prefixes },
-  };
-}
-
-/**
- * Register `endpoint` with qlue-ls and make it the active default. qlue-ls upserts by name, so
- * calling this again for the same endpoint updates it in place — use it to keep the server in sync
- * when the editor's endpoint changes. `options` mirrors Monaco's `configureBackend` ({@link
- * BackendOptions} from `@zazuko/yasgui-utils`).
- */
-export async function setQlueLsBackend(
-  client: LSPClient,
-  endpoint: string,
-  options: BackendOptions = {},
-): Promise<void> {
-  const conf = await createBackendConf(endpoint, { ...options, default: true });
-  client.notification("qlueLs/addBackend", conf);
-  client.notification("qlueLs/updateDefaultBackend", { backendName: conf.name });
-}
-
 /**
  * Initialise qlue-ls and return a connected LSPClient ready to pass to the CodeMirror Yasqe/Yasgui
  * as `yasqe.lsp.client`. Register an endpoint with {@link setQlueLsBackend} to enable
@@ -340,13 +312,13 @@ export async function setQlueLsBackend(
  * `settings` overrides are merged over the shared {@link defaultSettings} and pushed via
  * `qlueLs/changeSettings`. Pass only the fields you want to tune; the rest follow the defaults.
  */
-export async function createQlueLsClient(settings: DeepPartial<Settings> = {}): Promise<LSPClient> {
+export async function createQlueLsClient(settings: DeepPartial<qlueLs.Settings> = {}): Promise<LSPClient> {
   await init();
   const client = new LSPClient({
     extensions: [...languageServerExtensions(), pullDiagnostics(), semanticTokens()],
   }).connect(wasmTransport());
   await client.initializing;
-  client.notification("qlueLs/changeSettings", mergeSettings(settings));
-
+  qlueLs.configureSettings(client, settings);
   return client;
 }
+export { qlueLs };

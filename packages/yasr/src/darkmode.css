@@ -119,7 +119,7 @@ html[data-theme="dark"] {
     .tableControls input,
     .tableControls select {
       color: var(--yr-d-text);
-      background: var(--yr-d-raised);
+      background-color: var(--yr-d-raised);
       border-color: var(--yr-d-border);
     }
   }
@@ -227,7 +227,7 @@ html[data-theme="dark"] {
       .tableControls input,
       .tableControls select {
         color: var(--yr-d-text);
-        background: var(--yr-d-raised);
+        background-color: var(--yr-d-raised);
         border-color: var(--yr-d-border);
       }
     }

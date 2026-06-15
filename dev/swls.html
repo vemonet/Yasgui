@@ -23,16 +23,31 @@
 
     <script type="module">
       import Yasgui from "@zazuko/yasgui";
+      import Yasqe, { qlueLs } from "@zazuko/yasqe";
       import { setupThemeToggle, createQlueLsWorker, DEMO_ENDPOINT } from "./utils";
       // import { createSwlsWorker } from "./swls";
-      // TODO: implement with swls
+      // TODO: add swls as a second language server entry so users can switch between qlue-ls and swls.
       window.onpageshow = function () {
         const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
         window.yasgui = new Yasgui(document.getElementById("yasgui"), {
           requestConfig: { endpoint: DEMO_ENDPOINT },
-          yasqe: { theme },
-          // languageServerWorker: createSwlsWorker,
-          // onEndpointChange: (yasgui, endpoint) => qlueLs.configureBackend(yasgui.yasqe?.getLanguageClient(), endpoint),
+          yasqe: (parent, conf) =>
+            new Yasqe(parent, {
+              ...conf,
+              theme,
+              languageServers: [
+                {
+                  label: "Qlue-ls",
+                  worker: createQlueLsWorker,
+                  onReady: (client) => {
+                    qlueLs.configureSettings(client);
+                    qlueLs.configureBackend(client, window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
+                  },
+                  onEndpointChange: (client, endpoint) => qlueLs.configureBackend(client, endpoint),
+                },
+                // { label: "swls", worker: createSwlsWorker, onReady: ..., onEndpointChange: ... },
+              ],
+            }),
         });
       };
     </script>

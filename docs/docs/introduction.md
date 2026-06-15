@@ -13,7 +13,7 @@ Try it now on the [live demo](/). Then head to [Getting started](./getting-start
 
 ## Powered by language servers
 
-Yasgui's smart features, semantic highlighting, diagnostics, code actions, hover, formatting and autocompletion, all come from a **SPARQL language server (LSP)**. Yasgui and Yasqe are language-server agnostic: you provide a ready language server and they wire a language client to it. 
+Yasgui's smart features, semantic highlighting, diagnostics, code actions, hover, formatting and autocompletion, all come from a **SPARQL language server (LSP)**. Yasgui and Yasqe are language-server agnostic: you provide a ready language server and they wire a language client to it.
 
 All server-specific configuration lives in your app, which keeps the libraries small and lets you swap servers later.
 
@@ -25,7 +25,7 @@ Yasgui is editor-independent, you pick the editor implementation when embedding 
 
 | Editor | Package | When to use |
 | --- | --- | --- |
-| **Monaco** | `@zazuko/yasqe` | The editor that powers VS Code. More features; the default. |
+| **Monaco** | `@zazuko/yasqe` | The editor that powers VS Code, more features. |
 | **CodeMirror 6** | `@zazuko/yasqe-codemirror` | More lightweight. |
 
 Both implement the same shared editor interface, so they are interchangeable behind Yasgui's editor factory.

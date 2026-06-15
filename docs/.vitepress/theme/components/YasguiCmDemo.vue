@@ -33,7 +33,7 @@ onMounted(async () => {
   await import("@zazuko/yasgui/style.css");
   await import("@zazuko/yasqe-codemirror/style.css");
   // The qlue-ls language server (WASM) and the @codemirror/lsp-client wiring live in the embedder.
-  const { createQlueLsClient, setQlueLsBackend } = await import("../qluelsCmClient");
+  const { createQlueLsClient, qlueLs } = await import("../qluelsCmClient");
   const { DEMO_ENDPOINT } = await import("../utils");
 
   syncTheme(isDark.value);
@@ -53,25 +53,42 @@ onMounted(async () => {
   Yasgui.Yasr.registerPlugin("Graph", GraphPlugin as any);
   Yasgui.Yasr.registerPlugin("Geo", GeoPlugin as any);
 
-  let lsp: { client: any } | undefined;
-  try {
-    const client = await createQlueLsClient({ completion: { timeoutMs: 2000, resultSizeLimit: 50 } });
-    lsp = { client };
-  } catch (e) {
-    console.warn("Could not start qlue-ls; running editors without a language server", e);
-  }
+  // qlue-ls compiles to a single-instance WASM module that runs in the main thread here, so both
+  // entries share ONE client and differ only by the settings their `onReady` pushes
+  let clientPromise: Promise<any> | undefined;
+  const getClient = () => (clientPromise ??= createQlueLsClient());
+  const endpointOf = () => yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
+  const onReady = (settings: any) => (client: any) => {
+    qlueLs.configureSettings(client, settings);
+    qlueLs.configureBackend(client, endpointOf());
+  };
+  const onEndpointChange = (client: any, endpoint: string) => qlueLs.configureBackend(client, endpoint);
 
   yasgui = new Yasgui(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
-    // The editor factory: build a CodeMirror Yasqe, wiring in the theme + shared LSP client.
+    // The editor factory: build a CodeMirror Yasqe, wiring in the theme + the available LSP clients.
     yasqe: (parent: HTMLElement, conf: any) =>
-      new Yasqe(parent, { ...conf, theme: isDark.value ? "dark" : "light", lsp }),
-    // Keep qlue-ls pointed at the active tab's endpoint.
-    onEndpointChange: (_yg: any, endpoint: string) => {
-      if (lsp?.client) setQlueLsBackend(lsp.client, endpoint);
-    },
+      new Yasqe(parent, {
+        ...conf,
+        theme: isDark.value ? "dark" : "light",
+        languageServers: [
+          {
+            label: "Qlue-ls",
+            description: "SPARQL language server with endpoint-powered completions",
+            client: getClient,
+            onReady: onReady({ completion: { timeoutMs: 2000, resultSizeLimit: 50 } }),
+            onEndpointChange,
+          },
+          {
+            label: "Qlue-ls (aligned)",
+            description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
+            client: getClient,
+            onReady: onReady({ format: { whereNewLine: true, alignPredicates: true } }),
+            onEndpointChange,
+          },
+        ],
+      }),
   });
-  (window as any).__ygcm = yasgui;
   loading.value = false;
 });
 

@@ -42,7 +42,7 @@ import "./style/buttons.css";
 import type { editor } from "monaco-editor";
 import { MonacoLanguageClient } from "monaco-languageclient";
 export type { SparqlThemeOverrides } from "./editor/editorConfig";
-export * from "./languageServers";
+export { qlueLs } from "@zazuko/yasgui-utils";
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
@@ -65,6 +65,14 @@ export interface Yasqe {
   off(eventName: "autocompletionClose", handler: (instance: Yasqe) => void): this;
   on(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): this;
   off(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): this;
+  on(
+    eventName: "languageServerChange",
+    handler: (instance: Yasqe, def: { label: string; description?: string }, index: number) => void,
+  ): this;
+  off(
+    eventName: "languageServerChange",
+    handler: (instance: Yasqe, def: { label: string; description?: string }, index: number) => void,
+  ): this;
   on(eventName: string, handler: () => void): this;
 }
 
@@ -81,15 +89,29 @@ export class Yasqe extends EventEmitter {
   public editor?: editor.IStandaloneCodeEditor;
   /** Resolves once the Monaco editor has finished initializing (rejects if init fails). */
   public ready: Promise<void>;
+  /** Index of the active language server in `config.languageServers`, or -1 when none is active. */
+  public activeLanguageServerIndex = -1;
+  /** Disposables for the context-menu language-server entries (re-created on every switch). */
+  private lsMenuDisposables: { dispose(): void }[] = [];
+  /** Serializes language server switches so concurrent calls (init + a restored preference) don't race. */
+  private lsSwitchQueue: Promise<void> = Promise.resolve();
+  /** Monaco's internal menu API, used to render the nested "Language servers" right-click submenu.
+   * `undefined` = not loaded yet, `null` = unavailable (then we fall back to flat context-menu actions). Loaded once, lazily.
+   */
+  private lsMenuApi: { MenuRegistry: any; MenuId: any; CommandsRegistry: any; ContextKeyExpr: any } | null | undefined;
+  private lsMenuApiLoading = false;
+  private lsSubmenuId?: any;
+  private static menuInstanceCounter = 0;
+  private readonly menuInstanceId = Yasqe.menuInstanceCounter++;
 
   private req?: Request;
   private abortController?: AbortController;
   private queryStatus?: "valid" | "error";
   private queryBtn?: HTMLButtonElement;
   private resizeWrapper?: HTMLDivElement;
-  // Value requested via setValue() before the async editor finished initializing
+  /** Value requested via setValue() before the async editor finished initializing */
   private pendingValue?: string;
-  // Last height requested via setSize()
+  /** Last height requested via setSize() */
   private currentHeight?: string;
 
   /**
@@ -100,21 +122,18 @@ export class Yasqe extends EventEmitter {
   public async initEditor(el: HTMLElement, conf: PartialConfig = {}) {
     try {
       const { startMonacoEditor } = await import("./editor/editorConfig");
-      // The language server is provided by the consumer (yasqe is LS-agnostic). Resolve the
-      // optional worker (instance or factory) and hand it to the editor; if none is given,
-      // the editor still works with TextMate syntax highlighting only.
-      const lsWorker = await this.resolveLanguageServerWorker();
-      if (lsWorker) this.setupLanguageServerErrorNotifications(lsWorker);
+      // Language servers are provided by the consumer (yasqe is LS-agnostic). The editor is built
+      // here without a server; the active language client is connected separately (see
+      // setLanguageServer) so the consumer can configure several and switch between them. With none
+      // configured the editor still works with Monarch syntax highlighting only.
       const result = await startMonacoEditor(
         el,
         this.config.value,
         this.config.theme,
-        lsWorker,
         this.config.editorOptions,
         this.config.themes,
       );
       this.editor = result.editorApp.getEditor();
-      this.languageClientWrapper = result.languageClient;
       this.vscodeApi = result.apiWrapper;
 
       // Apply any value set via setValue() before the editor finished initializing
@@ -180,13 +199,6 @@ export class Yasqe extends EventEmitter {
         if (this.persistentConfig && this.persistentConfig.query) this.setValue(this.persistentConfig.query);
       }
 
-      // Hand the (consumer-provided) language client to the consumer so it can do any
-      // server-specific setup (e.g. registering a SPARQL endpoint/backend for completions).
-      const languageClient = this.getLanguageClient();
-      if (languageClient && this.config.onLanguageClientReady) {
-        this.config.onLanguageClientReady(languageClient, this);
-      }
-
       if (this.config.consumeShareLink) {
         this.config.consumeShareLink(this);
         window.addEventListener("hashchange", this.handleHashChange);
@@ -243,20 +255,213 @@ export class Yasqe extends EventEmitter {
     return getPrefixesFromQuery(this.getValue());
   }
 
-  /** Resolve the consumer-provided language server worker (a Worker instance or a factory). */
-  private async resolveLanguageServerWorker(): Promise<Worker | undefined> {
-    const provided = this.config.languageServerWorker;
-    if (!provided) return undefined;
-    const worker = typeof provided === "function" ? await provided() : provided;
-    return worker || undefined;
-  }
-
   /**
-   * The active monaco-languageclient `LanguageClient`, or undefined if no language server worker
-   * was provided. Use it to send server-specific requests/notifications (yasqe stays LS-agnostic).
+   * The active monaco-languageclient `LanguageClient`, or undefined if no language server is
+   * active. Use it to send server-specific requests/notifications (yasqe stays LS-agnostic).
    */
   public getLanguageClient(): MonacoLanguageClient | undefined {
     return this.languageClientWrapper?.getLanguageClient?.();
+  }
+
+  /** The configured language servers, as `{ label, description }` (the switcher-facing subset). */
+  public getLanguageServers(): { label: string; description?: string }[] {
+    return (this.config.languageServers ?? []).map((s) => ({ label: s.label, description: s.description }));
+  }
+
+  /** Index of the active language server in `config.languageServers`, or -1 when none is active. */
+  public getActiveLanguageServer(): number {
+    return this.activeLanguageServerIndex;
+  }
+
+  /**
+   * Notify the active language server that the endpoint changed, firing only its `onEndpointChange`
+   * (with the active `LanguageClient`). Yasgui calls this on endpoint changes; standalone consumers
+   * can call it themselves. No-op when no server is active or it defines no handler.
+   */
+  public notifyEndpointChange(endpoint: string): void {
+    const def = this.config.languageServers?.[this.activeLanguageServerIndex];
+    const client = this.getLanguageClient();
+    if (def?.onEndpointChange && client && endpoint) def.onEndpointChange(client, endpoint, this);
+  }
+
+  /**
+   * Activate a language server by label or index. Disposes the current language client (its worker
+   * is terminated), resolves and connects the target server's worker, runs its `onReady`, refreshes
+   * the context-menu switcher and emits `languageServerChange`. The query/editor model is preserved.
+   * Switches are serialized so concurrent calls (e.g. init + a restored preference) run in order.
+   */
+  public setLanguageServer(target: string | number): Promise<void> {
+    // Swallow a prior switch's failure so it doesn't block this one (the chain is reused).
+    this.lsSwitchQueue = this.lsSwitchQueue.catch(() => {}).then(() => this.activateLanguageServer(target));
+    return this.lsSwitchQueue;
+  }
+
+  private async activateLanguageServer(target: string | number): Promise<void> {
+    // Wait for the editor before touching language clients / context-menu actions.
+    await this.ready.catch(() => {});
+    const servers = this.config.languageServers ?? [];
+    if (!servers.length) return;
+    const index = typeof target === "number" ? target : servers.findIndex((s) => s.label === target);
+    if (index < 0 || index >= servers.length) {
+      console.warn("Unknown language server:", target);
+      return;
+    }
+    if (index === this.activeLanguageServerIndex && this.languageClientWrapper) return;
+    const def = servers[index];
+    // Tear down the current client (restartOptions.keepWorker is false, so its worker is terminated)
+    if (this.languageClientWrapper) {
+      try {
+        await this.languageClientWrapper.dispose();
+      } catch (error) {
+        console.warn("Failed to dispose the previous language client:", error);
+      }
+      this.languageClientWrapper = undefined;
+    }
+    // Resolve the target server's worker (instance or factory) and connect a language client to it.
+    const worker = typeof def.worker === "function" ? await def.worker() : def.worker;
+    if (!worker) {
+      console.warn("Language server provided no worker:", def.label);
+      return;
+    }
+    this.setupLanguageServerErrorNotifications(worker);
+    const { connectLanguageClient } = await import("./editor/editorConfig");
+    this.languageClientWrapper = await connectLanguageClient(worker);
+    this.activeLanguageServerIndex = index;
+    const client = this.getLanguageClient();
+    if (client && def.onReady) def.onReady(client, this);
+    this.updateLanguageServerMenu();
+    this.emit("languageServerChange", { label: def.label, description: def.description }, index);
+  }
+
+  /**
+   * Build the right-click "Language servers" switcher. Only shown when two or more servers are
+   * configured. Renders as a nested submenu (a single "Language servers" entry that expands to the
+   * right, with a native checkmark on the active server) when Monaco's internal menu API is
+   * reachable; otherwise falls back to a flat list of actions.
+   */
+  private updateLanguageServerMenu() {
+    for (const d of this.lsMenuDisposables) {
+      try {
+        d.dispose();
+      } catch {
+        // ignore
+      }
+    }
+    this.lsMenuDisposables = [];
+    const servers = this.config.languageServers ?? [];
+    if (!this.editor || servers.length < 2) return;
+    if (this.lsMenuApi === undefined) {
+      // Menu API not resolved yet: render the flat fallback now, then upgrade to the nested submenu
+      // once the (lazy, one-time) import resolves. Subsequent calls are synchronous.
+      this.buildFlatLanguageServerActions(servers);
+      if (!this.lsMenuApiLoading) {
+        this.lsMenuApiLoading = true;
+        void this.loadMenuApi().then((api) => {
+          this.lsMenuApi = api;
+          this.updateLanguageServerMenu();
+        });
+      }
+      return;
+    }
+    if (this.lsMenuApi) {
+      try {
+        this.buildLanguageServerSubmenu(this.lsMenuApi, servers);
+        return;
+      } catch (error) {
+        console.warn("Language-server submenu unavailable, using a flat menu:", error);
+      }
+    }
+    this.buildFlatLanguageServerActions(servers);
+  }
+
+  /** Lazily import Monaco's internal menu API (shared singleton); null when it isn't reachable. */
+  private async loadMenuApi(): Promise<{
+    MenuRegistry: any;
+    MenuId: any;
+    CommandsRegistry: any;
+    ContextKeyExpr: any;
+  } | null> {
+    try {
+      const actions: any = await import("@codingame/monaco-vscode-api/vscode/src/vs/platform/actions/common/actions");
+      const commands: any =
+        await import("@codingame/monaco-vscode-api/vscode/src/vs/platform/commands/common/commands");
+      const contextkey: any =
+        await import("@codingame/monaco-vscode-api/vscode/src/vs/platform/contextkey/common/contextkey");
+      if (
+        actions?.MenuRegistry &&
+        actions?.MenuId?.EditorContext &&
+        commands?.CommandsRegistry &&
+        contextkey?.ContextKeyExpr?.true
+      ) {
+        return {
+          MenuRegistry: actions.MenuRegistry,
+          MenuId: actions.MenuId,
+          CommandsRegistry: commands.CommandsRegistry,
+          ContextKeyExpr: contextkey.ContextKeyExpr,
+        };
+      }
+    } catch {
+      // not reachable; caller falls back to flat actions
+    }
+    return null;
+  }
+
+  /** Native nested submenu in right click menu to choose language server */
+  private buildLanguageServerSubmenu(
+    api: { MenuRegistry: any; MenuId: any; CommandsRegistry: any; ContextKeyExpr: any },
+    servers: LanguageServerDef[],
+  ) {
+    const { MenuRegistry, MenuId, CommandsRegistry, ContextKeyExpr } = api;
+    if (!this.lsSubmenuId) this.lsSubmenuId = new MenuId(`yasqeLanguageServers_${this.menuInstanceId}`);
+    const submenu = this.lsSubmenuId;
+    // Parent entry under the editor context menu; its title is the category label.
+    this.lsMenuDisposables.push(
+      MenuRegistry.appendMenuItem(MenuId.EditorContext, {
+        submenu,
+        title: "Language server",
+        group: "1_language_server",
+        order: 1,
+      }),
+    );
+    servers.forEach((s, i) => {
+      const active = i === this.activeLanguageServerIndex;
+      const id = `yasqe.languageServer.${this.menuInstanceId}.${i}`;
+      this.lsMenuDisposables.push(
+        CommandsRegistry.registerCommand(id, () => {
+          this.setLanguageServer(i).catch(() => {});
+        }),
+      );
+      this.lsMenuDisposables.push(
+        MenuRegistry.appendMenuItem(submenu, {
+          command: {
+            id,
+            title: s.description ? `${s.label}  ·  ${s.description}` : s.label,
+            // A constant-true condition makes the active server render with a native checkmark.
+            toggled: active ? ContextKeyExpr.true() : undefined,
+          },
+          group: "navigation",
+          order: i,
+        }),
+      );
+    });
+  }
+
+  /** Fallback flat list of editor actions (active marked with "· "), when the submenu API is absent. */
+  private buildFlatLanguageServerActions(servers: LanguageServerDef[]) {
+    servers.forEach((s, i) => {
+      const active = i === this.activeLanguageServerIndex;
+      const label = `${active ? "✓ " : ""}${s.label}${s.description ? "  ·  " + s.description : ""}`;
+      const action = this.editor?.addAction({
+        id: `yasqe-language-server-${i}`,
+        label,
+        contextMenuGroupId: "1_language_server",
+        contextMenuOrder: i,
+        run: () => {
+          this.setLanguageServer(i).catch(() => {});
+        },
+      });
+      if (action) this.lsMenuDisposables.push(action);
+    });
   }
 
   /**
@@ -286,12 +491,23 @@ export class Yasqe extends EventEmitter {
     this.rootEl.className = "yasqe";
     parent.appendChild(this.rootEl);
 
-    this.config = merge({}, Yasqe.defaults, conf);
+    // `languageServers` carry Worker instances / factory + callback functions that lodash.merge
+    // would deep-clone (mangling their prototypes / identity). Assign them by reference instead.
+    const rawConf = conf as any;
+    const languageServers = rawConf.languageServers;
+    const mergeableConf = { ...rawConf };
+    delete mergeableConf.languageServers;
+    this.config = merge({}, Yasqe.defaults, mergeableConf);
+    if (languageServers) this.config.languageServers = languageServers as LanguageServerDef[];
 
     // Initialize the editor and then setup everything else. Exposed as `ready` so consumers can
     // await initialization; swallow here to avoid an unhandled rejection when they don't.
     this.ready = this.initEditor(this.rootEl);
     this.ready.catch(() => {});
+
+    // Activate the first configured language server. Queued now (the activation itself waits for the
+    // editor to be ready) so a later restored-preference switch is guaranteed to run after this one.
+    if (this.config.languageServers?.length) void this.setLanguageServer(0);
   }
 
   private handleBeforeUnload = () => {
@@ -852,16 +1068,41 @@ export interface Config {
    */
   themes: { light?: Record<string, any>; dark?: Record<string, any> };
   /**
-   * The language server to connect, provided by the consumer (yasqe is language-server agnostic).
-   * Either a ready `Worker`, or a factory returning one (optionally async, e.g. after WASM init).
-   * When omitted, the editor runs with TextMate syntax highlighting only (no LSP features).
+   * The language servers the consumer makes available (yasqe is language-server agnostic). The
+   * first is activated on load; when two or more are configured a switcher appears in the editor's
+   * right-click context menu. Servers are started lazily (the worker is resolved only when a server
+   * is first activated). When empty, the editor runs with Monarch syntax highlighting only.
    */
-  languageServerWorker: Worker | (() => Worker | Promise<Worker>) | undefined;
+  languageServers: LanguageServerDef[];
+}
+
+/**
+ * A language server the consumer makes available to Yasqe (Monaco edition). Yasqe stays
+ * language-server agnostic: the consumer supplies the `Worker` and any server-specific setup.
+ */
+export interface LanguageServerDef {
+  /** Short name shown in the switcher (e.g. "Qlue-LS"). */
+  label: string;
+  /** Optional longer description, shown dimmed next to the label. */
+  description?: string;
+  /** A ready LSP `Worker`, or a factory returning one (optionally async, e.g. after WASM init). */
+  worker: Worker | (() => Worker | Promise<Worker>);
   /**
-   * Called once the language client is started, with the `LanguageClient`. Use it for any
-   * server-specific setup (e.g. registering a SPARQL endpoint for completions).
+   * Called when this server becomes active (on load or when switched to), with its `LanguageClient`.
+   * Use it for server-specific setup, e.g. pushing settings and registering the SPARQL backend.
    */
-  onLanguageClientReady: ((languageClient: MonacoLanguageClient, yasqe: Yasqe) => void) | undefined;
+  onReady?: (languageClient: MonacoLanguageClient, yasqe: Yasqe) => void;
+  /**
+   * Called when the active endpoint changes, but only for the currently active server, with its
+   * `LanguageClient` and the new endpoint. Use it for server-specific endpoint handling, e.g.
+   * re-registering the SPARQL backend. Driven by Yasgui's endpoint changes (and any caller of
+   * {@link Yasqe.notifyEndpointChange}).
+   */
+  onEndpointChange?: (languageClient: MonacoLanguageClient, endpoint: string, yasqe: Yasqe) => void;
+  /** Reserved for a future generic config UI (JSON-schema describing the server's settings). Not yet implemented. */
+  configSchema?: Record<string, any>;
+  /** Reserved for a future generic config UI (applies the generated JSON config to the server). Not yet implemented. */
+  configCallback?: (languageClient: MonacoLanguageClient, configJson: any) => void;
 }
 
 export interface PersistentConfig {

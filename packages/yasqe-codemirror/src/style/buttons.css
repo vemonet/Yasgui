@@ -80,6 +80,70 @@
   vertical-align: top;
   margin-left: 5px;
 }
+
+/* Language-server switcher */
+.yasqe .yasqe_buttons .yasqe_lsSelect {
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 2px 22px 2px 8px;
+  position: relative;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.yasqe .yasqe_buttons .yasqe_lsSelect::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  margin-top: -2px;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid currentColor;
+}
+.yasqe .yasqe_buttons .yasqe_lsMenu {
+  position: absolute;
+  top: 28px;
+  left: 0;
+  z-index: 10;
+  min-width: 220px;
+  max-width: 360px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  /* padding: 4px 0; */
+}
+.yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuItem {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  white-space: normal;
+}
+.yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuItem:hover {
+  background-color: #ebebeb;
+}
+.yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuItem.active {
+  background-color: #e6f0fb;
+}
+.yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuLabel {
+  display: block;
+  font-weight: 600;
+  color: #333;
+}
+.yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuDesc {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
 .yasqe .yasqe_buttons .yasqe_sharePopup {
   position: absolute;
   padding: 4px;
@@ -199,4 +263,20 @@
 [data-theme="dark"] .yasqe .yasqe_buttons .yasqe_sharePopup input {
   background-color: #1e1e1e;
   color: #ddd;
+}
+[data-theme="dark"] .yasqe .yasqe_buttons .yasqe_lsMenu {
+  background-color: #2a2a2a;
+  border-color: #444;
+}
+[data-theme="dark"] .yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuItem:hover {
+  background-color: #333;
+}
+[data-theme="dark"] .yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuItem.active {
+  background-color: #1f3a52;
+}
+[data-theme="dark"] .yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuLabel {
+  color: #ddd;
+}
+[data-theme="dark"] .yasqe .yasqe_buttons .yasqe_lsMenu .yasqe_lsMenuDesc {
+  color: #999;
 }

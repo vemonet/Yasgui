@@ -8,6 +8,8 @@ export interface PersistedJson {
   active: string | undefined;
   tabConfig: { [tabId: string]: Tab.PersistedJson };
   lastClosedTab: { index: number; tab: Tab.PersistedJson } | undefined;
+  /** Preferred language server label per endpoint URL, so the right one is restored per endpoint. */
+  languageServerByEndpoint: { [endpoint: string]: string };
 }
 function getDefaults(): PersistedJson {
   return {
@@ -16,6 +18,7 @@ function getDefaults(): PersistedJson {
     active: undefined,
     tabConfig: {},
     lastClosedTab: undefined,
+    languageServerByEndpoint: {},
   };
 }
 
@@ -55,6 +58,17 @@ export default class PersistentConfig {
   public getEndpointHistory() {
     return this.persistedJson.endpointHistory;
   }
+  /** The language server label the user last picked for this endpoint, if any. */
+  public getLanguageServerForEndpoint(endpoint: string): string | undefined {
+    return this.persistedJson.languageServerByEndpoint[endpoint];
+  }
+  /** Remember the language server label chosen for this endpoint and persist it. */
+  public setLanguageServerForEndpoint(endpoint: string, label: string) {
+    if (!endpoint || !label) return;
+    if (this.persistedJson.languageServerByEndpoint[endpoint] === label) return;
+    this.persistedJson.languageServerByEndpoint[endpoint] = label;
+    this.toStorage();
+  }
   public retrieveLastClosedTab() {
     const tabCopy = this.persistedJson.lastClosedTab;
     if (tabCopy === undefined) return tabCopy;
@@ -92,7 +106,7 @@ export default class PersistentConfig {
       this.storageId,
       this.persistedJson,
       this.yasgui.config.persistencyExpire,
-      this.handleLocalStorageQuotaFull
+      this.handleLocalStorageQuotaFull,
     );
   }
   private fromStorage(): PersistedJson {
@@ -102,6 +116,9 @@ export default class PersistentConfig {
      */
     if (!this.persistedJson.endpointHistory) {
       this.persistedJson.endpointHistory = [];
+    }
+    if (!this.persistedJson.languageServerByEndpoint) {
+      this.persistedJson.languageServerByEndpoint = {};
     }
     return this.persistedJson;
   }

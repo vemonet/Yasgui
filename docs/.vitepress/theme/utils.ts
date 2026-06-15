@@ -3,7 +3,7 @@ import QlueLsWorker from "./qluels.worker?worker";
 
 /**
  * Create a qlue-ls language-server worker and resolve once its WASM is initialized.
- * Pass the result to Yasqe/Yasgui via the `languageServerWorker` config option.
+ * Pass the result to Yasqe/Yasgui as a language server's `worker` in the `languageServers` config.
  */
 export function createQlueLsWorker(): Promise<Worker> {
   return new Promise((resolve) => {

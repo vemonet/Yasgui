@@ -31,19 +31,42 @@
       // yasgui/yasqe are LS-agnostic; to switch to another SPARQL language server only ./qluels changes.
       window.onpageshow = function () {
         const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
+
+        const endpointOf = () => window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
+        const onReady = (settings) => (client) => {
+          qlueLs.configureSettings(client, settings);
+          qlueLs.configureBackend(client, endpointOf());
+        };
+        const onEndpointChange = (client, endpoint) => qlueLs.configureBackend(client, endpoint);
+        const fullSettings = qlueLs.defaultSettings;
+        const alignedSettings = {
+          ...qlueLs.defaultSettings,
+          format: { ...qlueLs.defaultSettings.format, whereNewLine: true, alignPredicates: true },
+        };
+
         window.yasgui = new Yasgui(document.getElementById("yasgui"), {
           requestConfig: { endpoint: DEMO_ENDPOINT },
           yasqe: (parent, conf) =>
             new Yasqe(parent, {
               ...conf,
               theme,
-              languageServerWorker: createQlueLsWorker,
-              onLanguageClientReady: (languageClient) => {
-                qlueLs.configureSettings(languageClient);
-                qlueLs.configureBackend(languageClient, window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
-              },
+              languageServers: [
+                {
+                  label: "Qlue-ls",
+                  description: "SPARQL language server with endpoint-powered completions",
+                  worker: createQlueLsWorker,
+                  onReady: onReady(fullSettings),
+                  onEndpointChange,
+                },
+                {
+                  label: "Qlue-ls (aligned)",
+                  description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
+                  worker: createQlueLsWorker,
+                  onReady: onReady(alignedSettings),
+                  onEndpointChange,
+                },
+              ],
             }),
-          onEndpointChange: (yasgui, endpoint) => qlueLs.configureBackend(yasgui.yasqe?.getLanguageClient(), endpoint),
         });
       };
     </script>
