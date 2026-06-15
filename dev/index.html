@@ -33,7 +33,8 @@
         const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
 
         const endpointOf = () => window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
-        const onReady = (settings) => (client) => {
+        // Apply a server's settings and point it at the current endpoint when it becomes active.
+        const onReady = (client, settings) => {
           qlueLs.configureSettings(client, settings);
           qlueLs.configureBackend(client, endpointOf());
         };
@@ -55,14 +56,14 @@
                   label: "Qlue-ls",
                   description: "SPARQL language server with endpoint-powered completions",
                   worker: createQlueLsWorker,
-                  onReady: onReady(fullSettings),
+                  onReady: (client) => onReady(client, fullSettings),
                   onEndpointChange,
                 },
                 {
                   label: "Qlue-ls (aligned)",
                   description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
                   worker: createQlueLsWorker,
-                  onReady: onReady(alignedSettings),
+                  onReady: (client) => onReady(client, alignedSettings),
                   onEndpointChange,
                 },
               ],
