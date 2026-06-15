@@ -55,8 +55,6 @@ function registerSparqlFoldingProvider(): void {
 export interface MonacoEditorResult {
   apiWrapper: MonacoVscodeApiWrapper;
   editorApp: EditorApp;
-  /** The LSP client wrapper, or undefined when no language server worker was provided. */
-  languageClient?: LanguageClientWrapper;
   getContent(): string;
   setContent(content: string): void;
   focus(): void;
@@ -70,8 +68,63 @@ export interface SparqlThemeOverrides {
 }
 
 /**
- * Creates a Monaco editor with SPARQL syntax highlighting.
- * @param lsWorker Optional, ready language-server Worker. When given, an LSP client is connected to it.
+ * Connect a `monaco-languageclient` LanguageClient to a ready language-server `Worker`. Yasqe calls
+ * this for the active language server (it may switch between several), so it is decoupled from the
+ * editor setup in {@link startMonacoEditor}. The returned wrapper is already started.
+ */
+export async function connectLanguageClient(lsWorker: Worker): Promise<LanguageClientWrapper> {
+  const languageClientConfig: LanguageClientConfig = {
+    languageId: LANGUAGE_ID,
+    clientOptions: {
+      documentSelector: [{ language: LANGUAGE_ID }],
+      workspaceFolder: {
+        index: 0,
+        name: "workspace",
+        uri: Uri.parse("file:/"),
+      },
+      progressOnInitialization: true,
+      diagnosticPullOptions: {
+        onChange: true,
+        onSave: false,
+      },
+      // The language server returns completion labels as { label, detail } where `detail` is the
+      // human-readable text. Monaco glues `detail` directly onto the label with no separator,
+      // so we prefix it with a space here.
+      middleware: {
+        provideCompletionItem: async (document, position, context, token, next) => {
+          const result = await next(document, position, context, token);
+          if (!result) return result;
+          const items = Array.isArray(result) ? result : result.items;
+          for (const item of items) {
+            const label = item.label;
+            if (label && typeof label === "object" && label.detail && !label.detail.startsWith(" ")) {
+              label.detail = " " + label.detail;
+            }
+          }
+          return result;
+        },
+      },
+    },
+    connection: {
+      options: {
+        $type: "WorkerDirect",
+        worker: lsWorker,
+      },
+    },
+    restartOptions: {
+      retries: 5,
+      timeout: 1000,
+      keepWorker: false,
+    },
+  };
+  const lcWrapper = new LanguageClientWrapper(languageClientConfig);
+  await lcWrapper.start();
+  return lcWrapper;
+}
+
+/**
+ * Creates a Monaco editor with SPARQL syntax highlighting. Language-server agnostic: the editor is
+ * built here, and Yasqe connects the active language client separately via {@link connectLanguageClient}.
  * @param editorOptions Optional Monaco editor options, deep-merged OVER the built-in defaults.
  * @param themeOverrides Optional partial light/dark theme objects, deep-merged OVER the built-in themes.
  */
@@ -79,7 +132,6 @@ export async function startMonacoEditor(
   container: HTMLElement,
   initialValue: string,
   theme: "light" | "dark" = "dark",
-  lsWorker?: Worker,
   editorOptions?: Record<string, any>,
   themeOverrides?: SparqlThemeOverrides,
 ): Promise<MonacoEditorResult> {
@@ -122,57 +174,6 @@ export async function startMonacoEditor(
   // Create and start the monaco-vscode api wrapper
   const apiWrapper = new MonacoVscodeApiWrapper(vscodeApiConfig);
   await apiWrapper.start();
-
-  // Connect a language client to the injected worker, if any
-  let lcWrapper: LanguageClientWrapper | undefined;
-  if (lsWorker) {
-    const languageClientConfig: LanguageClientConfig = {
-      languageId: LANGUAGE_ID,
-      clientOptions: {
-        documentSelector: [{ language: LANGUAGE_ID }],
-        workspaceFolder: {
-          index: 0,
-          name: "workspace",
-          uri: Uri.parse("file:/"),
-        },
-        progressOnInitialization: true,
-        diagnosticPullOptions: {
-          onChange: true,
-          onSave: false,
-        },
-        // The language server returns completion labels as { label, detail } where `detail` is the
-        // human-readable text. Monaco glues `detail` directly onto the label with no separator,
-        // so we prefix it with a space here.
-        middleware: {
-          provideCompletionItem: async (document, position, context, token, next) => {
-            const result = await next(document, position, context, token);
-            if (!result) return result;
-            const items = Array.isArray(result) ? result : result.items;
-            for (const item of items) {
-              const label = item.label;
-              if (label && typeof label === "object" && label.detail && !label.detail.startsWith(" ")) {
-                label.detail = " " + label.detail;
-              }
-            }
-            return result;
-          },
-        },
-      },
-      connection: {
-        options: {
-          $type: "WorkerDirect",
-          worker: lsWorker,
-        },
-      },
-      restartOptions: {
-        retries: 5,
-        timeout: 1000,
-        keepWorker: false,
-      },
-    };
-    lcWrapper = new LanguageClientWrapper(languageClientConfig);
-    await lcWrapper.start();
-  }
 
   // Built-in default Monaco editor options. Consumers can override/extend any of these via the
   // `editorOptions` argument (deep-merged on top)
@@ -243,7 +244,6 @@ export async function startMonacoEditor(
   return {
     apiWrapper,
     editorApp,
-    languageClient: lcWrapper,
     getContent(): string {
       return editorApp.getEditor()?.getValue() ?? "";
     },

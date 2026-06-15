@@ -9,6 +9,21 @@ const isProd = process.env.NODE_ENV === "production";
 // When BUILD_PACKAGE is set we build a single package otherwise vite serves the demo pages
 const libPackage = process.env.BUILD_PACKAGE as "yasgui" | "yasqe" | "yasqe-codemirror" | "yasr" | "utils" | undefined;
 
+// Internal monaco-vscode-api modules used by yasqe to render the language server right-click submenu
+// (MenuRegistry/MenuId/CommandsRegistry/ContextKeyExpr). They are reachable via the package's
+// `./vscode/*` export, but Rolldown only resolves that reliably in lib-build mode; aliasing the bare
+// specifiers to the concrete files makes BOTH the demo and lib builds resolve them, and (resolving to
+// the same physical files monaco-languageclient imports) keeps a single shared menu registry.
+const monacoInternalBase = "node_modules/@codingame/monaco-vscode-api/vscode/src/vs/platform";
+const monacoInternalAlias = [
+  ["actions/common/actions", "actions/common/actions"],
+  ["commands/common/commands", "commands/common/commands"],
+  ["contextkey/common/contextkey", "contextkey/common/contextkey"],
+].map(([sub]) => ({
+  find: new RegExp(`^@codingame/monaco-vscode-api/vscode/src/vs/platform/${sub}$`),
+  replacement: resolve(__dirname, `${monacoInternalBase}/${sub}.js`),
+}));
+
 const alias = [
   { find: /^@zazuko\/yasgui$/, replacement: resolve(__dirname, "packages/yasgui/src/index.ts") },
   // Order matters: match the more specific yasqe-codemirror before the bare yasqe alias.
@@ -16,6 +31,7 @@ const alias = [
   { find: /^@zazuko\/yasqe$/, replacement: resolve(__dirname, "packages/yasqe/src/index.ts") },
   { find: /^@zazuko\/yasr$/, replacement: resolve(__dirname, "packages/yasr/src/index.ts") },
   { find: /^@zazuko\/yasgui-utils$/, replacement: resolve(__dirname, "packages/utils/src/index.ts") },
+  ...monacoInternalAlias,
 ];
 
 // The editor runs monaco-languageclient in `classic` mode so these `extended` service overrides are not used at runtime
@@ -59,7 +75,7 @@ export default defineConfig({
     rolldownOptions: usesMonaco ? { plugins: [importMetaUrlPlugin] } : undefined,
   },
   worker: {
-    // Monaco and qlue-ls language-server workers are ES modules and load wasm
+    // Monaco and qlue-ls language server workers are ES modules and load wasm
     format: "es",
     plugins: () => [wasm()],
     // Emit each worker as 1 self-contained file.

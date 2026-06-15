@@ -52,27 +52,41 @@ onMounted(async () => {
   Yasgui.Yasr.registerPlugin("Graph", GraphPlugin as any);
   Yasgui.Yasr.registerPlugin("Geo", GeoPlugin as any);
 
-  // Yasgui and Yasqe are language-server agnostic: they receive a ready LSP worker and expose the
-  // resulting language client. The qlue-ls plumbing comes from the `qlueLs` helpers (re-exported
-  // from @zazuko/yasgui); ../utils only builds the consumer-side WASM worker.
+  const onReady = (settings: any) => (client: any) => {
+    qlueLs.configureSettings(client, settings);
+    qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
+  };
+  const onEndpointChange = (client: any, endpoint: string) => qlueLs.configureBackend(client, endpoint);
+  const alignedSettings = {
+    ...qlueLs.defaultSettings,
+    format: { ...qlueLs.defaultSettings.format, whereNewLine: true, alignPredicates: true },
+  };
   yasgui = new Yasgui(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
-    // The editor factory builds a Monaco Yasqe, wiring in the theme + consumer-provided LSP worker.
+    // The editor factory builds a Monaco Yasqe, wiring in the theme + the available LSP workers.
     yasqe: (parent: HTMLElement, conf: any) =>
       new Yasqe(parent, {
         ...conf,
         theme: isDark.value ? "dark" : "light",
-        languageServerWorker: createQlueLsWorker,
-        onLanguageClientReady: (languageClient: any) => {
-          qlueLs.configureSettings(languageClient);
-          qlueLs.configureBackend(languageClient, yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
-        },
+        languageServers: [
+          {
+            label: "Qlue-ls",
+            description: "SPARQL language server with endpoint-powered completions",
+            worker: createQlueLsWorker,
+            onReady: onReady(qlueLs.defaultSettings),
+            onEndpointChange,
+          },
+          {
+            label: "Qlue-ls (aligned)",
+            description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
+            worker: createQlueLsWorker,
+            onReady: onReady(alignedSettings),
+            onEndpointChange,
+          },
+        ],
       }),
     yasr: { prefixes: qlueLs.fallbackPrefixMap },
-    onEndpointChange: (yg: any, endpoint: string) =>
-      qlueLs.configureBackend(yg.yasqe?.getLanguageClient(), endpoint),
   });
-  (window as any).__yg = yasgui;
   loading.value = false;
 });
 

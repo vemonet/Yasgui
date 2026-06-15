@@ -217,6 +217,28 @@ export interface IYasqe {
   /** Switch the editor theme. Optional: not every editor exposes runtime theme switching. */
   setTheme?(theme: "light" | "dark"): void | Promise<void>;
   destroy?(): void;
+
+  /**
+   * Multiple language servers (optional). When two or more are configured the editor shows a
+   * switcher; Yasgui programs against these to remember the choice per endpoint. Editors emit a
+   * `languageServerChange` event with `(instance, { label, description }, index)` when the active
+   * server changes (whether by the user or programmatically).
+   */
+  getLanguageServers?(): LanguageServerInfo[];
+  /** Index of the active language server, or -1 when none is configured/active. */
+  getActiveLanguageServer?(): number;
+  /** Activate a language server by label or index. Resolves once it is started and active. */
+  setLanguageServer?(labelOrIndex: string | number): void | Promise<void>;
+  /** The active language client (editor-specific type), or undefined when no server is active. */
+  getLanguageClient?(): any;
+  /** Fire the active language server's `onEndpointChange` hook (if any) with the new endpoint. */
+  notifyEndpointChange?(endpoint: string): void;
+}
+
+/** Editor-agnostic descriptor of a language server, as surfaced by `IYasqe.getLanguageServers`. */
+export interface LanguageServerInfo {
+  label: string;
+  description?: string;
 }
 
 /**

@@ -14,6 +14,7 @@ export type {
   Prefixes,
   IYasqe,
   YasqeFactory,
+  LanguageServerInfo,
   SparqlFoldingRange,
 } from "./yasqe";
 export {
@@ -24,7 +25,10 @@ export {
   getQueryMode,
   getSparqlBlockFoldingRanges,
 } from "./yasqe";
-export * from "./languageServers/qlueLs";
+// export * from "./languageServers/qlueLs";
+// Also expose the qlue-ls helpers as a namespace so editors can re-export `qlueLs` (e.g. the
+// `import { qlueLs } from "@zazuko/yasqe"` convenience) without duplicating the logic per editor.
+export * as qlueLs from "./languageServers/qlueLs";
 export * from "./errorNotification";
 export * from "./sparql";
 

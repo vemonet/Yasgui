@@ -57,9 +57,8 @@ SELECT * WHERE {
     resizeable: true,
     editorHeight: "300px",
     queryingDisabled: undefined,
-    // Language server is consumer-provided; no LSP by default (TextMate highlighting still works)
-    languageServerWorker: undefined,
-    onLanguageClientReady: undefined,
+    // Language servers are consumer-provided; none by default (Monarch highlighting still works)
+    languageServers: [],
   };
   const requestConfig: PlainRequestConfig = {
     queryArgument: undefined, //undefined means: get query argument based on query mode

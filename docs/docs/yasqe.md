@@ -12,19 +12,30 @@ const endpoint = "https://sparql.dblp.org/sparql";
 const yasqe = new Yasqe(document.getElementById("yasqe")!, {
   value: "SELECT * WHERE { ?s ?p ?o } LIMIT 10",
   requestConfig: { endpoint },
-  languageServerWorker: createQlueLsWorker,
-  onLanguageClientReady: (languageClient) => {
-    qlueLs.configureSettings(languageClient);
-    qlueLs.configureBackend(languageClient, endpoint);
-  },
+  languageServers: [
+    {
+      label: "Qlue-ls",
+      worker: createQlueLsWorker,
+      onReady: (client) => {
+        qlueLs.configureSettings(client);
+        qlueLs.configureBackend(client, endpoint);
+      },
+      // Per-server, fires only while this server is active; trigger it with notifyEndpointChange().
+      onEndpointChange: (client, endpoint) => qlueLs.configureBackend(client, endpoint),
+    },
+  ],
 });
 
 yasqe.on("query", (yasqe, req) => console.log("running", req));
 yasqe.on("queryResponse", (yasqe, response, duration) => console.log(response, duration));
 ```
 
-Without `languageServerWorker`, Yasqe still works as a syntax-highlighted editor, you just don't get
-completion, diagnostics or formatting.
+With an empty `languageServers`, Yasqe still works as a syntax-highlighted editor, you just don't get
+completion, diagnostics or formatting. List more than one server to let users switch between them at
+runtime (right-click the editor); the active server is exposed via `yasqe.getLanguageClient()` and
+the choice can be changed programmatically with `yasqe.setLanguageServer(labelOrIndex)`. Each entry's
+`onReady` / `onEndpointChange` hooks fire only while that server is active; standalone consumers
+trigger the latter with `yasqe.notifyEndpointChange(endpoint)` (Yasgui calls it for you).
 
 ::: warning Events are instance-first
 Yasqe events are emitted **instance-first**, handlers receive `(yasqeInstance, ...payload)`. For
@@ -43,5 +54,4 @@ example `queryResponse` is `(yasqe, response, duration)`.
 | `resizeable` | whether the editor can be resized |
 | `showQueryButton` | show the run button |
 | `persistenceId` | localStorage namespace |
-| `languageServerWorker` | the LSP worker; omit for highlighting-only |
-| `onLanguageClientReady` | `(languageClient) => void`, fired once the LSP client is connected |
+| `languageServers` | array of language servers (`{ label, description?, worker, onReady?, onEndpointChange? }`); empty for highlighting-only. The first is activated on load; 2+ adds a switcher. The `onReady`/`onEndpointChange` hooks fire only for the active server |

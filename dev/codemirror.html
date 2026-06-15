@@ -27,30 +27,44 @@
       // Here we use the CodeMirror 6 editor with the qlue-ls language server
       import Yasgui from "@zazuko/yasgui";
       import Yasqe from "@zazuko/yasqe-codemirror";
-      import { createQlueLsClient, setQlueLsBackend } from "./qluelsCmClient";
+      import { createQlueLsClient, qlueLs } from "./qluelsCmClient";
       import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
 
-      (async () => {
-        let lsp;
-        try {
-          const client = await createQlueLsClient({ completion: { timeoutMs: 1000, resultSizeLimit: 50 } });
-          lsp = { client };
-        } catch (e) {
-          console.warn("Could not start qlue-ls; running editors without a language server", e);
-        }
+      const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
 
-        const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
+      let clientPromise;
+      const getClient = () => (clientPromise ??= createQlueLsClient());
+      const endpointOf = () => window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
+      const onReady = (settings) => (client) => {
+        qlueLs.configureSettings(client, settings);
+        qlueLs.configureBackend(client, endpointOf());
+      };
+      const onEndpointChange = (client, endpoint) => qlueLs.configureBackend(client, endpoint);
 
-        window.yasgui = new Yasgui(document.getElementById("yasgui"), {
-          requestConfig: { endpoint: DEMO_ENDPOINT },
-          // The editor factory: build a CodeMirror Yasqe, wiring in our theme + LSP client.
-          yasqe: (parent, conf) => new Yasqe(parent, { ...conf, theme, lsp }),
-          // Keep qlue-ls pointed at the active tab's endpoint.
-          onEndpointChange: (_yasgui, endpoint) => {
-            if (lsp?.client) setQlueLsBackend(lsp.client, endpoint);
-          },
-        });
-      })();
+      window.yasgui = new Yasgui(document.getElementById("yasgui"), {
+        requestConfig: { endpoint: DEMO_ENDPOINT },
+        yasqe: (parent, conf) =>
+          new Yasqe(parent, {
+            ...conf,
+            theme,
+            languageServers: [
+              {
+                label: "Qlue-ls",
+                description: "SPARQL language server with endpoint-powered completions",
+                client: getClient,
+                onReady: onReady({ completion: { timeoutMs: 1000, resultSizeLimit: 50 } }),
+                onEndpointChange,
+              },
+              {
+                label: "Qlue-ls (aligned)",
+                description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
+                client: getClient,
+                onReady: onReady({ format: { whereNewLine: true, alignPredicates: true } }),
+                onEndpointChange,
+              },
+            ],
+          }),
+      });
     </script>
   </body>
 </html>

@@ -10,6 +10,7 @@
  *
  * @module qlueLs
  */
+import type { DeepPartial } from "../types";
 
 /** SPARQL engines qlue-ls can tailor its behaviour to. */
 export type SparqlEngine = "QLever" | "GraphDB" | "Virtuoso" | "MillenniumDB" | "Blazegraph" | "Jena";
@@ -409,4 +410,64 @@ export async function createBackendConf(endpoint: string, options: BackendOption
     engine: options.engine,
     default: options.default ?? false,
   };
+}
+
+/** Merge partial overrides over {@link defaultSettings}, section by section. */
+export function mergeSettings(overrides: DeepPartial<Settings> = {}): Settings {
+  return {
+    format: { ...defaultSettings.format, ...overrides.format },
+    completion: { ...defaultSettings.completion, ...overrides.completion },
+    prefixes: { ...defaultSettings.prefixes, ...overrides.prefixes },
+  };
+}
+
+/**
+ * A connected language client able to send JSON-RPC notifications. This is intentionally
+ * editor-agnostic: it matches both a monaco-languageclient `MonacoLanguageClient` (`sendNotification`)
+ * and a `@codemirror/lsp-client` `LSPClient` (`notification`), so the same qlue-ls helpers drive
+ * either editor without per-editor duplication.
+ */
+export interface QlueLsClient {
+  sendNotification?: (method: string, params: unknown) => unknown;
+  notification?: (method: string, params: unknown) => unknown;
+}
+
+/** Send a JSON-RPC notification over whichever client API is available. */
+function notify(client: QlueLsClient, method: string, params: unknown): void {
+  if (typeof client.sendNotification === "function") void client.sendNotification(method, params);
+  else if (typeof client.notification === "function") client.notification(method, params);
+  else throw new Error("Unsupported qlue-ls client: no sendNotification/notification method");
+}
+
+/** Push qlue-ls server settings via `qlueLs/changeSettings`. Partial overrides merge over the defaults. */
+export function configureSettings(client: QlueLsClient, settings: DeepPartial<Settings> = {}): void {
+  notify(client, "qlueLs/changeSettings", mergeSettings(settings));
+}
+
+// Avoid re-registering the same backend repeatedly when configureBackend is called on every change.
+// Keyed per-client so switching between several qlue-ls instances (each its own client) still
+// configures each one's backend, instead of a single module-global endpoint short-circuiting them
+const lastBackendByClient = new WeakMap<QlueLsClient, string>();
+
+/**
+ * Register a SPARQL endpoint with the qlue-ls client and make it the default backend (so completions
+ * resolve against it). Editor-agnostic — works with both the Monaco and CodeMirror language clients.
+ * Safe to call repeatedly (e.g. from a server's `onReady` or an endpoint-change handler): the same
+ * endpoint is only registered once per client.
+ */
+export async function configureBackend(
+  client: QlueLsClient | undefined,
+  endpoint: string,
+  options: BackendOptions = {},
+): Promise<void> {
+  if (!client || !endpoint || lastBackendByClient.get(client) === endpoint) return;
+  lastBackendByClient.set(client, endpoint);
+  try {
+    const backend = await createBackendConf(endpoint, options);
+    notify(client, "qlueLs/addBackend", backend);
+    notify(client, "qlueLs/updateDefaultBackend", { backendName: backend.name });
+  } catch (error) {
+    lastBackendByClient.delete(client); // allow retry
+    console.error("Failed to configure qlue-ls backend for", endpoint, error);
+  }
 }

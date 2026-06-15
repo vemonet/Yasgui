@@ -71,11 +71,17 @@ export {};
 
 ## Hooking it up
 
-Pass the worker factory as `languageServerWorker`, then use the `qlueLs` helpers to push settings and
-register the active endpoint as the default backend (so completions resolve against it).
+Configure one or more servers through the `languageServers` array. Each entry has a `label`, the
+`worker` (instance or factory) and two optional **per-server** hooks — only the *active* server's
+hooks fire:
 
-- With **Yasgui**, register backends from `onEndpointChange` (fires on load, tab switch and endpoint
-  edits, once for the whole app):
+- `onReady(client, yasqe)` — runs when that server becomes active (on load or when switched to).
+  Use it to push settings and register the active endpoint as the default backend.
+- `onEndpointChange(client, endpoint, yasqe)` — runs when the endpoint changes while that server is
+  active. Use it to re-register the backend for the new endpoint.
+
+The first entry is activated on load; with two or more configured, a switcher appears (right-click
+the editor in Monaco, a dropdown in CodeMirror) and the user's choice is remembered per endpoint.
 
   ```ts [main.ts]
   import Yasgui from "@zazuko/yasgui";
@@ -83,36 +89,63 @@ register the active endpoint as the default backend (so completions resolve agai
   import { createQlueLsWorker } from "./qlue-ls";
 
   new Yasgui(el, {
-    // Yasgui is editor-independent: pass an editor factory and wire the worker into the editor.
+    // Yasgui is editor-independent: pass an editor factory and list the servers in the editor.
     yasqe: (parent, conf) =>
       new Yasqe(parent, {
         ...conf,
-        languageServerWorker: createQlueLsWorker,
-        onLanguageClientReady: (languageClient) => qlueLs.configureSettings(languageClient),
+        languageServers: [
+          {
+            label: "Qlue-ls",
+            description: "SPARQL language server with endpoint-powered completions",
+            worker: createQlueLsWorker,
+            onReady: (client) => {
+              qlueLs.configureSettings(client);
+              qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint());
+            },
+            onEndpointChange: (client, endpoint) => qlueLs.configureBackend(client, endpoint),
+          },
+        ],
       }),
-    onEndpointChange: (yasgui, endpoint) =>
-      qlueLs.configureBackend(yasgui.yasqe?.getLanguageClient(), endpoint),
   });
   ```
 
-- With **Yasqe**, do both from `onLanguageClientReady`:
+Standalone **Yasqe** is the same — the per-server `onReady` (and `onEndpointChange`, which you can
+trigger yourself via `yasqe.notifyEndpointChange(endpoint)`) carry the setup:
 
   ```ts [main.ts]
   import Yasqe, { qlueLs } from "@zazuko/yasqe";
   import { createQlueLsWorker } from "./qlue-ls";
 
   new Yasqe(el, {
-    languageServerWorker: createQlueLsWorker,
-    onLanguageClientReady: (lc) => {
-      qlueLs.configureSettings(lc);
-      qlueLs.configureBackend(lc, "https://sparql.dblp.org/sparql");
-    },
+    languageServers: [
+      {
+        label: "Qlue-ls",
+        worker: createQlueLsWorker,
+        onReady: (lc) => {
+          qlueLs.configureSettings(lc);
+          qlueLs.configureBackend(lc, "https://sparql.dblp.org/sparql");
+        },
+      },
+    ],
   });
   ```
 
-`qlueLs.configureBackend` is safe to call repeatedly (it skips re-registering the same endpoint).
-`yasqe.getLanguageClient()` returns the underlying `monaco-languageclient`, so you can also send any
-other LSP request or custom notification yourself.
+::: tip Per-server vs Yasgui-level
+The per-server `onEndpointChange` only fires for the active server, so each server handles endpoints
+its own way. Yasgui still has a top-level `onEndpointChange(yasgui, endpoint)` for app-wide,
+server-independent work (analytics, UI). Both fire.
+:::
+
+`qlueLs.configureBackend` is safe to call repeatedly (it skips re-registering the same endpoint on
+the same client). `yasqe.getLanguageClient()` returns the active `monaco-languageclient`, so you can
+also send any other LSP request or custom notification yourself.
+
+::: tip Offering several servers
+List more than one entry to let users switch at runtime (e.g. qlue-ls for QLever endpoints, another
+server for large Virtuoso ones). Each entry's `worker` is resolved lazily the first time it is
+activated, so unused servers are never started. The reserved `configSchema` / `configCallback`
+fields are placeholders for a future generic config UI and are not yet implemented.
+:::
 
 ## The `qlueLs` helpers
 
@@ -156,39 +189,48 @@ falls back to `fallbackPrefixMap` (a broad set of common vocab prefixes) when no
 ## CodeMirror editor (`@zazuko/yasqe-codemirror`)
 
 The Monaco editor (`@zazuko/yasqe`) is the default, but Yasgui is editor-independent: you can build
-the editor factory around the CodeMirror 6 editor instead. `@zazuko/yasqe-codemirror` takes a ready
-LSP **client** (rather than a worker) via `lsp: { client }`. You own the qlue-ls wiring (transport,
-pull diagnostics, semantic-token highlighting) and pass the resulting `@codemirror/lsp-client`
-`LSPClient` in:
+the editor factory around the CodeMirror 6 editor instead. Each `languageServers` entry takes a
+ready LSP **client** (rather than a worker) as `client` (instance or factory). You own the qlue-ls
+wiring (transport, pull diagnostics, semantic-token highlighting) and pass the resulting
+`@codemirror/lsp-client` `LSPClient` in:
 
 ```ts
 import Yasgui from "@zazuko/yasgui";
 import Yasqe from "@zazuko/yasqe-codemirror";
 import { createQlueLsClient, setQlueLsBackend } from "./qlueLsClient";
 
-const client = await createQlueLsClient();
-const lsp = { client };
-
 new Yasgui(el, {
   requestConfig: { endpoint },
-  yasqe: (parent, conf) => new Yasqe(parent, { ...conf, lsp }),
-  onEndpointChange: (_yasgui, endpoint) => setQlueLsBackend(client, endpoint),
+  yasqe: (parent, conf) =>
+    new Yasqe(parent, {
+      ...conf,
+      languageServers: [
+        {
+          label: "Qlue-ls",
+          client: () => createQlueLsClient(), // resolved lazily on first activation
+          onReady: (client) => setQlueLsBackend(client, yasgui?.getTab()?.getEndpoint()),
+          onEndpointChange: (client, endpoint) => setQlueLsBackend(client, endpoint),
+        },
+      ],
+    }),
 });
 ```
 
-The completion-query templates (`defaultCompletionQueries`) used by the client live in
-`@zazuko/yasgui-utils`. See `dev/codemirror.html` and `dev/qlueLsClient.ts` in the repo for the full
-qlue-ls wiring (the `qlueLs` helpers above are Monaco-specific and not used here).
+With two or more entries the editor shows a labelled switcher dropdown in its toolbar (left of the
+format/share/run buttons). The completion-query templates (`defaultCompletionQueries`) used by the
+client live in `@zazuko/yasgui-utils`. See `dev/codemirror.html` and `dev/qlueLsClient.ts` in the
+repo for the full qlue-ls wiring (the `qlueLs` helpers above are Monaco-specific and not used here).
 
 ## Using a different language server
 
-Yasqe and Yasgui only need a ready LSP `Worker`. The `qlueLs` helpers are a convenience for qlue-ls;
-they are not required. To use, for example,
+Yasqe and Yasgui only need a ready LSP `Worker` (Monaco) or `LSPClient` (CodeMirror). The `qlueLs`
+helpers are a convenience for qlue-ls; they are not required. To use, for example,
 [swls](https://github.com/SemanticWebLanguageServer/swls) instead:
 
 1. Replace `qlue-ls.worker.ts` / `qlue-ls.ts` with that server's worker and connection.
-2. Pass its worker factory as `languageServerWorker`.
-3. In `onEndpointChange` / `onLanguageClientReady`, send whatever that server needs to target an
-   endpoint (its own custom requests) via `getLanguageClient()`.
+2. Add it as another `languageServers` entry (its own `worker`/`client`), alongside or instead of
+   qlue-ls.
+3. In that entry's `onReady` / `onEndpointChange`, send whatever that server needs to target an
+   endpoint (its own custom requests) on the `client` you receive.
 
 No changes to the `@zazuko/*` packages are required.
