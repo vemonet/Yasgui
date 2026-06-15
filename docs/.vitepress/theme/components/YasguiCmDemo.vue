@@ -58,7 +58,8 @@ onMounted(async () => {
   let clientPromise: Promise<any> | undefined;
   const getClient = () => (clientPromise ??= createQlueLsClient());
   const endpointOf = () => yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
-  const onReady = (settings: any) => (client: any) => {
+  // Apply a server's settings and point it at the current endpoint when it becomes active.
+  const onReady = (client: any, settings: any) => {
     qlueLs.configureSettings(client, settings);
     qlueLs.configureBackend(client, endpointOf());
   };
@@ -76,14 +77,14 @@ onMounted(async () => {
             label: "Qlue-ls",
             description: "SPARQL language server with endpoint-powered completions",
             client: getClient,
-            onReady: onReady({ completion: { timeoutMs: 2000, resultSizeLimit: 50 } }),
+            onReady: (client: any) => onReady(client, { completion: { timeoutMs: 2000, resultSizeLimit: 50 } }),
             onEndpointChange,
           },
           {
             label: "Qlue-ls (aligned)",
             description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
             client: getClient,
-            onReady: onReady({ format: { whereNewLine: true, alignPredicates: true } }),
+            onReady: (client: any) => onReady(client, { format: { whereNewLine: true, alignPredicates: true } }),
             onEndpointChange,
           },
         ],

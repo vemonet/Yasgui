@@ -28,8 +28,13 @@
         const theme = setupThemeToggle((t) => window.yasqe?.setTheme(t));
         window.yasqe = new Yasqe(document.getElementById("yasqe"), {
           theme,
-          languageServerWorker: createQlueLsWorker,
-          onLanguageClientReady: (languageClient) => qlueLs.configureBackend(languageClient, DEMO_ENDPOINT),
+          languageServers: [
+            {
+              label: "Qlue-ls",
+              worker: createQlueLsWorker,
+              onReady: (client) => qlueLs.configureBackend(client, DEMO_ENDPOINT),
+            },
+          ],
         });
         window.yasqe.on("queryResponse", function () {
           console.log("response event", arguments);
