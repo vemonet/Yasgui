@@ -33,7 +33,8 @@ onMounted(async () => {
   await import("@zazuko/yasgui/style.css");
   await import("@zazuko/yasqe-codemirror/style.css");
   // The qlue-ls language server (WASM) and the @codemirror/lsp-client wiring live in the embedder.
-  const { createQlueLsClient, qlueLs } = await import("../qluelsCmClient");
+  const { createQlueLsClient } = await import("../qluelsCmClient");
+  const { qlueLs } = await import("@zazuko/yasgui-utils");
   const { DEMO_ENDPOINT } = await import("../utils");
 
   syncTheme(isDark.value);
