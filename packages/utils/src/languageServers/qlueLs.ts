@@ -434,8 +434,13 @@ export interface QlueLsClient {
 
 /** Send a JSON-RPC notification over whichever client API is available. */
 function notify(client: QlueLsClient, method: string, params: unknown): void {
-  if (typeof client.sendNotification === "function") void client.sendNotification(method, params);
-  else if (typeof client.notification === "function") client.notification(method, params);
+  if (typeof client.sendNotification === "function") {
+    // Due to having 2 qlue-ls clients (Monaco and cm)
+    // monaco-languageclient's sendNotification returns a promise that REJECTS with "Client is not
+    // running" when the client has been disposed. configureBackend awaits a network prefix fetch, so a
+    // language-server switch can tear the client down mid-flight; swallow that benign rejection
+    void Promise.resolve(client.sendNotification(method, params)).catch(() => {});
+  } else if (typeof client.notification === "function") client.notification(method, params);
   else throw new Error("Unsupported qlue-ls client: no sendNotification/notification method");
 }
 
