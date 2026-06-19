@@ -27,23 +27,18 @@
       // Monaco-based @zazuko/yasqe with the qlue-ls language server (provided by the embedder).
       import Yasgui from "@zazuko/yasgui";
       import Yasqe, { qlueLs } from "@zazuko/yasqe";
-      import { setupThemeToggle, createQlueLsWorker, DEMO_ENDPOINT } from "./utils";
+      import { setupThemeToggle, createQlueLsWorker, createSwlsWorker, createTraqulaWorker, DEMO_ENDPOINT } from "./utils";
       // yasgui/yasqe are LS-agnostic; to switch to another SPARQL language server only ./qluels changes.
       window.onpageshow = function () {
         const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
 
         const endpointOf = () => window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
-        // Apply a server's settings and point it at the current endpoint when it becomes active.
-        const onReady = (client, settings) => {
-          qlueLs.configureSettings(client, settings);
+        // Apply qlue-ls settings and point it at the current endpoint when it becomes active.
+        const onReady = (client) => {
+          qlueLs.configureSettings(client, qlueLs.defaultSettings);
           qlueLs.configureBackend(client, endpointOf());
         };
         const onEndpointChange = (client, endpoint) => qlueLs.configureBackend(client, endpoint);
-        const fullSettings = qlueLs.defaultSettings;
-        const alignedSettings = {
-          ...qlueLs.defaultSettings,
-          format: { ...qlueLs.defaultSettings.format, whereNewLine: true, alignPredicates: true },
-        };
 
         window.yasgui = new Yasgui(document.getElementById("yasgui"), {
           requestConfig: { endpoint: DEMO_ENDPOINT },
@@ -56,15 +51,18 @@
                   label: "Qlue-ls",
                   description: "SPARQL language server with endpoint-powered completions",
                   worker: createQlueLsWorker,
-                  onReady: (client) => onReady(client, fullSettings),
+                  onReady,
                   onEndpointChange,
                 },
                 {
-                  label: "Qlue-ls (aligned)",
-                  description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
-                  worker: createQlueLsWorker,
-                  onReady: (client) => onReady(client, alignedSettings),
-                  onEndpointChange,
+                  label: "swls",
+                  description: "Semantic web language server",
+                  worker: createSwlsWorker,
+                },
+                {
+                  label: "Traqula",
+                  description: "JS SPARQL 1.2 parser (diagnostics only)",
+                  worker: createTraqulaWorker,
                 },
               ],
             }),

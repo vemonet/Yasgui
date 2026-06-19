@@ -336,8 +336,31 @@ export class Yasqe extends EventEmitter {
     this.activeLanguageServerIndex = index;
     const client = this.getLanguageClient();
     if (client && def.onReady) def.onReady(client, this);
+    await this.refreshSemanticTokens();
     this.updateLanguageServerMenu();
     this.emit("languageServerChange", { label: def.label, description: def.description }, index);
+  }
+
+  /**
+   * Force Monaco to discard the previous language server's semantic tokens and re-pull from the now
+   * active client. Disposing a language client does not clear the tokens it already painted, so
+   * after a switch the old server's colors linger (and a server without semantic tokens never
+   * clears them). Bouncing the model language to `plaintext` and back resets the model's
+   * tokenization, which re-opens the document on the new client and re-requests its tokens (or
+   * leaves the Monarch fallback when the new server provides none).
+   */
+  private async refreshSemanticTokens(): Promise<void> {
+    const model = this.editor?.getModel();
+    if (!model) return;
+    const languageId = model.getLanguageId();
+    if (languageId === "plaintext") return;
+    try {
+      const monaco = await import("monaco-editor");
+      monaco.editor.setModelLanguage(model, "plaintext");
+      monaco.editor.setModelLanguage(model, languageId);
+    } catch (error) {
+      console.warn("Failed to refresh semantic tokens after language-server switch:", error);
+    }
   }
 
   /**
