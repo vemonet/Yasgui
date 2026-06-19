@@ -95,6 +95,10 @@ export class Yasqe extends EventEmitter {
   private lsMenuDisposables: { dispose(): void }[] = [];
   /** Serializes language server switches so concurrent calls (init + a restored preference) don't race. */
   private lsSwitchQueue: Promise<void> = Promise.resolve();
+  /** Index of the most recently requested language server. A queued activation whose index no longer
+   * matches this has been superseded (e.g. the constructor's default 0 followed by a restored
+   * preference); it bails before any worker/client setup so we never start a server just to dispose it. */
+  private requestedLanguageServerIndex = -1;
   /** Monaco's internal menu API, used to render the nested "Language servers" right-click submenu.
    * `undefined` = not loaded yet, `null` = unavailable (then we fall back to flat context-menu actions). Loaded once, lazily.
    */
@@ -291,21 +295,24 @@ export class Yasqe extends EventEmitter {
    * Switches are serialized so concurrent calls (e.g. init + a restored preference) run in order.
    */
   public setLanguageServer(target: string | number): Promise<void> {
+    const servers = this.config.languageServers ?? [];
+    const index = typeof target === "number" ? target : servers.findIndex((s) => s.label === target);
+    if (index < 0 || index >= servers.length) {
+      console.warn("Unknown language server:", target);
+      return Promise.resolve();
+    }
+    this.requestedLanguageServerIndex = index;
     // Swallow a prior switch's failure so it doesn't block this one (the chain is reused).
-    this.lsSwitchQueue = this.lsSwitchQueue.catch(() => {}).then(() => this.activateLanguageServer(target));
+    this.lsSwitchQueue = this.lsSwitchQueue.catch(() => {}).then(() => this.activateLanguageServer(index));
     return this.lsSwitchQueue;
   }
 
-  private async activateLanguageServer(target: string | number): Promise<void> {
+  private async activateLanguageServer(index: number): Promise<void> {
     // Wait for the editor before touching language clients / context-menu actions.
     await this.ready.catch(() => {});
     const servers = this.config.languageServers ?? [];
     if (!servers.length) return;
-    const index = typeof target === "number" ? target : servers.findIndex((s) => s.label === target);
-    if (index < 0 || index >= servers.length) {
-      console.warn("Unknown language server:", target);
-      return;
-    }
+    if (index !== this.requestedLanguageServerIndex) return;
     if (index === this.activeLanguageServerIndex && this.languageClientWrapper) return;
     const def = servers[index];
     // Tear down the current client (restartOptions.keepWorker is false, so its worker is terminated)

@@ -184,6 +184,10 @@ export class Yasqe extends EventEmitter implements IYasqe {
   private lsClients = new Map<number, LSPClient>();
   /** Serializes language-server switches so concurrent calls (init + a restored preference) don't race. */
   private lsSwitchQueue: Promise<void> = Promise.resolve();
+  /** Index of the most recently requested language server. A queued activation whose index no longer
+   * matches this has been superseded (e.g. the constructor's default 0 followed by a restored
+   * preference); it bails before any client setup so we never start a server just to dispose it. */
+  private requestedLanguageServerIndex = -1;
   /** The language-server switcher button (only drawn when 2+ servers are configured). */
   private lsSelectEl?: HTMLButtonElement;
   /** Document-level click handler that closes the open switcher menu (removed on destroy). */
@@ -440,19 +444,22 @@ export class Yasqe extends EventEmitter implements IYasqe {
    * emits `languageServerChange`. The query/document is preserved.
    */
   public setLanguageServer(target: string | number): Promise<void> {
-    // Swallow a prior switch's failure so it doesn't block this one (the chain is reused).
-    this.lsSwitchQueue = this.lsSwitchQueue.catch(() => {}).then(() => this.activateLanguageServer(target));
-    return this.lsSwitchQueue;
-  }
-
-  private async activateLanguageServer(target: string | number): Promise<void> {
     const servers = this.config.languageServers ?? [];
-    if (!servers.length) return;
     const index = typeof target === "number" ? target : servers.findIndex((s) => s.label === target);
     if (index < 0 || index >= servers.length) {
       console.warn("Unknown language server:", target);
-      return;
+      return Promise.resolve();
     }
+    this.requestedLanguageServerIndex = index;
+    // Swallow a prior switch's failure so it doesn't block this one (the chain is reused).
+    this.lsSwitchQueue = this.lsSwitchQueue.catch(() => {}).then(() => this.activateLanguageServer(index));
+    return this.lsSwitchQueue;
+  }
+
+  private async activateLanguageServer(index: number): Promise<void> {
+    const servers = this.config.languageServers ?? [];
+    if (!servers.length) return;
+    if (index !== this.requestedLanguageServerIndex) return;
     if (index === this.activeLanguageServerIndex && this.activeClient) return;
     const def = servers[index];
     // Resolve (and cache) the target client. Cached clients make switching back instant.
