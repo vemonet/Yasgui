@@ -33,7 +33,7 @@ onMounted(async () => {
   await import("@zazuko/yasgui/style.css");
   await import("@zazuko/yasqe/style.css");
   // Only the WASM worker + demo endpoint are consumer-side; the qlue-ls plumbing lives in `qlueLs`.
-  const { createQlueLsWorker, DEMO_ENDPOINT } = await import("../utils");
+  const { createQlueLsWorker, createSwlsWorker, createTraqulaWorker, DEMO_ENDPOINT } = await import("../utils");
 
   syncTheme(isDark.value);
 
@@ -52,16 +52,12 @@ onMounted(async () => {
   Yasgui.Yasr.registerPlugin("Graph", GraphPlugin as any);
   Yasgui.Yasr.registerPlugin("Geo", GeoPlugin as any);
 
-  // Apply a server's settings and point it at the current endpoint when it becomes active.
-  const onReady = (client: any, settings: any) => {
-    qlueLs.configureSettings(client, settings);
+  // Apply qlue-ls settings and point it at the current endpoint when it becomes active.
+  const onReady = (client: any) => {
+    qlueLs.configureSettings(client, qlueLs.defaultSettings);
     qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
   };
   const onEndpointChange = (client: any, endpoint: string) => qlueLs.configureBackend(client, endpoint);
-  const alignedSettings = {
-    ...qlueLs.defaultSettings,
-    format: { ...qlueLs.defaultSettings.format, whereNewLine: true, alignPredicates: true },
-  };
   yasgui = new Yasgui(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
     // The editor factory builds a Monaco Yasqe, wiring in the theme + the available LSP workers.
@@ -74,15 +70,18 @@ onMounted(async () => {
             label: "Qlue-ls",
             description: "SPARQL language server with endpoint-powered completions",
             worker: createQlueLsWorker,
-            onReady: (client: any) => onReady(client, qlueLs.defaultSettings),
+            onReady,
             onEndpointChange,
           },
           {
-            label: "Qlue-ls (aligned)",
-            description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
-            worker: createQlueLsWorker,
-            onReady: (client: any) => onReady(client, alignedSettings),
-            onEndpointChange,
+            label: "swls",
+            description: "Semantic web language server",
+            worker: createSwlsWorker,
+          },
+          {
+            label: "Traqula",
+            description: "JS SPARQL 1.2 parser (diagnostics only)",
+            worker: createTraqulaWorker,
           },
         ],
       }),

@@ -80,6 +80,9 @@ export default defineConfig({
   vite: {
     // The demo imports the @zazuko/* packages' pre-built
     // Run `npm run build:lib` before building/serving the docs so those bundles exist
+    // esnext is required because the qlue-ls / swls wasm glue emits top-level await; VitePress's
+    // default es2020 target rejects it (and the worker bundle inherits this target).
+    build: { target: "esnext" },
     css: {
       preprocessorOptions: {
         scss: { api: "modern-compiler" },
@@ -110,8 +113,9 @@ export default defineConfig({
     },
     optimizeDeps: {
       esbuildOptions: { plugins: [importMetaUrlPlugin as any] },
-      // The pre-built editor bundles ship their own internal chunks/assets.
-      exclude: ["@zazuko/yasgui", "@zazuko/yasqe", "@zazuko/yasqe-codemirror", "@zazuko/yasr", "qlue-ls"],
+      // The pre-built editor bundles ship their own internal chunks/assets; swls-wasm imports its
+      // .wasm directly (handled by vite-plugin-wasm, not esbuild dep pre-bundling).
+      exclude: ["@zazuko/yasgui", "@zazuko/yasqe", "@zazuko/yasqe-codemirror", "@zazuko/yasr", "qlue-ls", "swls-wasm"],
     },
     ssr: {
       // The demo is client-only, so the editor deps must not enter the server bundle
