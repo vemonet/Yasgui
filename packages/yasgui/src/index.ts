@@ -206,6 +206,8 @@ export class Yasgui extends EventEmitter {
       consumeShareLink: null, // handled by the parent yasgui instance, not yasqe
       createShareableLink: () => this.getActiveTab()?.getShareableLink() || "",
       requestConfig: () => (this.getActiveTab()?.getProcessedRequestConfig() ?? {}) as any,
+      // Yasgui owns language-server settings persistence (one set per server, shared across tabs).
+      getLanguageServerSettings: (label: string) => this.persistentConfig.getLanguageServerSettings(label),
     };
     this.yasqe = this.config.yasqe(this.yasqeWrapperEl, yasqeConf);
     this.setupGlobalYasqeListeners();
@@ -271,6 +273,10 @@ export class Yasgui extends EventEmitter {
       if (this.applyingStoredLs) return;
       const endpoint = this.getActiveTab()?.getEndpoint();
       if (endpoint && def?.label) this.persistentConfig.setLanguageServerForEndpoint(endpoint, def.label);
+    });
+    // Remember the settings the user applies in a language server's settings panel (one set per server)
+    yasqe.on("languageServerSettingsChange", (_yasqe: any, label: string, values: Record<string, unknown>) => {
+      if (label) this.persistentConfig.setLanguageServerSettings(label, values);
     });
   }
 

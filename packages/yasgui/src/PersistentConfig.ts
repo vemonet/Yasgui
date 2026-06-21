@@ -10,6 +10,8 @@ export interface PersistedJson {
   lastClosedTab: { index: number; tab: Tab.PersistedJson } | undefined;
   /** Preferred language server label per endpoint URL, so the right one is restored per endpoint. */
   languageServerByEndpoint: { [endpoint: string]: string };
+  /** Applied settings panel values per language server label (one set per server, shared across tabs/endpoints). */
+  languageServerSettings: { [label: string]: Record<string, unknown> };
 }
 function getDefaults(): PersistedJson {
   return {
@@ -19,6 +21,7 @@ function getDefaults(): PersistedJson {
     tabConfig: {},
     lastClosedTab: undefined,
     languageServerByEndpoint: {},
+    languageServerSettings: {},
   };
 }
 
@@ -67,6 +70,16 @@ export default class PersistentConfig {
     if (!endpoint || !label) return;
     if (this.persistedJson.languageServerByEndpoint[endpoint] === label) return;
     this.persistedJson.languageServerByEndpoint[endpoint] = label;
+    this.toStorage();
+  }
+  /** The settings panel values last applied for a language server (by label), if any. */
+  public getLanguageServerSettings(label: string): Record<string, unknown> | undefined {
+    return this.persistedJson.languageServerSettings[label];
+  }
+  /** Remember the settings panel values applied for a language server (by label) and persist them. */
+  public setLanguageServerSettings(label: string, values: Record<string, unknown>) {
+    if (!label) return;
+    this.persistedJson.languageServerSettings[label] = values;
     this.toStorage();
   }
   public retrieveLastClosedTab() {
@@ -119,6 +132,9 @@ export default class PersistentConfig {
     }
     if (!this.persistedJson.languageServerByEndpoint) {
       this.persistedJson.languageServerByEndpoint = {};
+    }
+    if (!this.persistedJson.languageServerSettings) {
+      this.persistedJson.languageServerSettings = {};
     }
     return this.persistedJson;
   }

@@ -222,7 +222,7 @@ export interface IYasqe {
    * Multiple language servers (optional). When two or more are configured the editor shows a
    * switcher; Yasgui programs against these to remember the choice per endpoint. Editors emit a
    * `languageServerChange` event with `(instance, { label, description }, index)` when the active
-   * server changes (whether by the user or programmatically).
+   * server changes (whether by the user or programmatically)
    */
   getLanguageServers?(): LanguageServerInfo[];
   /** Index of the active language server, or -1 when none is configured/active. */

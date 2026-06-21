@@ -552,16 +552,26 @@ export class Yasqe extends EventEmitter {
     });
   }
 
-  /** Persisted settings panel values for a language server (by label), or undefined if none stored. */
+  /**
+   * Persisted settings panel values for a language server (by label), or undefined if none stored.
+   * A consumer-supplied store (`config.getLanguageServerSettings`, used by Yasgui) takes precedence
+   * over yasqe's own persistentConfig (used in standalone mode).
+   */
   private getLanguageServerSettings(label: string): Record<string, unknown> | undefined {
-    return this.persistentConfig?.languageServerSettings?.[label];
+    return this.config.getLanguageServerSettings?.(label) ?? this.persistentConfig?.languageServerSettings?.[label];
   }
 
-  /** Store the settings panel values for a language server (by label) and persist to local storage. */
+  /**
+   * Store the settings panel values for a language server (by label). Persists to yasqe's own local
+   * storage when enabled (standalone), and emits `languageServerSettingsChange` so a consumer (e.g.
+   * Yasgui) can own persistence, mirroring the `languageServerChange` bridge.
+   */
   private setLanguageServerSettings(label: string, values: Record<string, unknown>): void {
-    if (!this.persistentConfig) return;
-    (this.persistentConfig.languageServerSettings ??= {})[label] = values;
-    this.saveQuery();
+    if (this.persistentConfig) {
+      (this.persistentConfig.languageServerSettings ??= {})[label] = values;
+      this.saveQuery();
+    }
+    this.emit("languageServerSettingsChange", label, values);
   }
 
   /** Re-apply any persisted settings to a freshly connected client, so they survive reloads/switches. */
@@ -1181,6 +1191,14 @@ export interface Config {
    * is first activated). When empty, the editor runs with Monarch syntax highlighting only.
    */
   languageServers: LanguageServerDef[];
+  /**
+   * Optional consumer-owned store for language server settings panel values, keyed by server label.
+   * When provided (e.g. by Yasgui, which persists them globally per server), it is the source of
+   * truth for pre-filling the settings panel and re-applying settings when a server (re)starts.
+   * Pairs with the `languageServerSettingsChange` event emitted when the user applies settings. When
+   * omitted, yasqe falls back to its own local-storage persistence.
+   */
+  getLanguageServerSettings?: (label: string) => Record<string, unknown> | undefined;
 }
 
 /**
