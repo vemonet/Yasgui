@@ -43,6 +43,9 @@ import type { editor } from "monaco-editor";
 import { MonacoLanguageClient } from "monaco-languageclient";
 export type { SparqlThemeOverrides } from "./editor/editorConfig";
 export { qlueLs } from "@zazuko/yasgui-utils";
+import { openSettingsPanel } from "./editor/settingsPanel";
+import type { LanguageServerSettingsSchema } from "./editor/settingsPanel";
+export type { LanguageServerSettingsSchema, SettingFieldSchema } from "./editor/settingsPanel";
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
@@ -105,6 +108,11 @@ export class Yasqe extends EventEmitter {
   private lsMenuApi: { MenuRegistry: any; MenuId: any; CommandsRegistry: any; ContextKeyExpr: any } | null | undefined;
   private lsMenuApiLoading = false;
   private lsSubmenuId?: any;
+  /** Last-applied settings per language server index (flat dotted keys), so reopening the
+   * settings panel shows what was applied rather than snapping back to the schema defaults. */
+  private lsSettingsValues = new Map<number, Record<string, unknown>>();
+  /** Dispose handle for an open settings panel, so a second open (or a server switch) closes the first. */
+  private lsSettingsPanelDispose?: () => void;
   private static menuInstanceCounter = 0;
   private readonly menuInstanceId = Yasqe.menuInstanceCounter++;
 
@@ -315,6 +323,9 @@ export class Yasqe extends EventEmitter {
     if (index !== this.requestedLanguageServerIndex) return;
     if (index === this.activeLanguageServerIndex && this.languageClientWrapper) return;
     const def = servers[index];
+    // A settings panel belongs to the outgoing server; close it before switching.
+    this.lsSettingsPanelDispose?.();
+    this.lsSettingsPanelDispose = undefined;
     // Tear down the current client (restartOptions.keepWorker is false, so its worker is terminated)
     if (this.languageClientWrapper) {
       try {
@@ -473,6 +484,19 @@ export class Yasqe extends EventEmitter {
         }),
       );
     });
+    // "Configure <active server>..." — only when the active server exposes a settings schema.
+    const activeServer = servers[this.activeLanguageServerIndex];
+    if (activeServer?.configSchema && activeServer.configCallback) {
+      const configId = `yasqe.languageServer.${this.menuInstanceId}.configure`;
+      this.lsMenuDisposables.push(CommandsRegistry.registerCommand(configId, () => this.openLanguageServerSettings()));
+      this.lsMenuDisposables.push(
+        MenuRegistry.appendMenuItem(submenu, {
+          command: { id: configId, title: `Configure ${activeServer.label}…` },
+          group: "zz_configure",
+          order: 0,
+        }),
+      );
+    }
   }
 
   /** Fallback flat list of editor actions (active marked with "· "), when the submenu API is absent. */
@@ -490,6 +514,43 @@ export class Yasqe extends EventEmitter {
         },
       });
       if (action) this.lsMenuDisposables.push(action);
+    });
+    const activeServer = servers[this.activeLanguageServerIndex];
+    if (activeServer?.configSchema && activeServer.configCallback) {
+      const action = this.editor?.addAction({
+        id: `yasqe-language-server-configure`,
+        label: `Configure ${activeServer.label}…`,
+        contextMenuGroupId: "1_language_server",
+        contextMenuOrder: servers.length,
+        run: () => this.openLanguageServerSettings(),
+      });
+      if (action) this.lsMenuDisposables.push(action);
+    }
+  }
+
+  /**
+   * Open the schema-driven settings panel for the active language server. No-op when no server is
+   * active or it exposes no `configSchema`/`configCallback`. On Apply, the collected values are
+   * de-flattened (dotted keys become nested objects) and handed to the server's `configCallback`.
+   */
+  public openLanguageServerSettings(): void {
+    this.lsSettingsPanelDispose?.();
+    this.lsSettingsPanelDispose = undefined;
+    const index = this.activeLanguageServerIndex;
+    const def = this.config.languageServers?.[index];
+    const client = this.getLanguageClient();
+    if (!def?.configSchema || !def.configCallback || !client) return;
+    const schema = def.configSchema as LanguageServerSettingsSchema;
+    const current = this.lsSettingsValues.get(index) ?? defaultsFromSchema(schema);
+    this.lsSettingsPanelDispose = openSettingsPanel({
+      root: this.rootEl,
+      schema,
+      serverLabel: def.label,
+      current,
+      onApply: (values) => {
+        this.lsSettingsValues.set(index, values);
+        def.configCallback!(client, unflatten(values));
+      },
     });
   }
 
@@ -1128,15 +1189,49 @@ export interface LanguageServerDef {
    * {@link Yasqe.notifyEndpointChange}).
    */
   onEndpointChange?: (languageClient: MonacoLanguageClient, endpoint: string, yasqe: Yasqe) => void;
-  /** Reserved for a future generic config UI (JSON-schema describing the server's settings). Not yet implemented. */
-  configSchema?: Record<string, any>;
-  /** Reserved for a future generic config UI (applies the generated JSON config to the server). Not yet implemented. */
-  configCallback?: (languageClient: MonacoLanguageClient, configJson: any) => void;
+  /**
+   * Describes the server's tunable settings (a small JSON-schema subset). When present (together
+   * with {@link configCallback}), a "Configure …" entry (named after the server's `label`) appears
+   * in the right-click language server menu and opens a modal rendered from this schema. See
+   * {@link LanguageServerSettingsSchema}.
+   */
+  configSchema?: LanguageServerSettingsSchema;
+  /**
+   * Applies the settings collected from the {@link configSchema} panel to the running server. The
+   * `config` is a nested object: dotted schema keys (e.g. `format.tabSize`) become nested fields
+   * (`{ format: { tabSize: 2 } }`). For qlue-ls this is typically
+   * `(client, settings) => qlueLs.configureSettings(client, settings)`.
+   */
+  configCallback?: (languageClient: MonacoLanguageClient, config: any) => void;
 }
 
 export interface PersistentConfig {
   query: string;
   editorHeight: string;
+}
+
+/** Collect the schema's default values as a flat `{ [dottedKey]: value }` map. */
+function defaultsFromSchema(schema: LanguageServerSettingsSchema): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, field] of Object.entries(schema.properties)) {
+    if (field.default !== undefined) out[key] = field.default;
+  }
+  return out;
+}
+
+/** Turn a flat `{ "format.tabSize": 2 }` map into a nested `{ format: { tabSize: 2 } }` object. */
+function unflatten(flat: Record<string, unknown>): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const [key, value] of Object.entries(flat)) {
+    const parts = key.split(".");
+    let node = out;
+    for (let i = 0; i < parts.length - 1; i++) {
+      node[parts[i]] = node[parts[i]] ?? {};
+      node = node[parts[i]];
+    }
+    node[parts[parts.length - 1]] = value;
+  }
+  return out;
 }
 
 export default Yasqe;

@@ -59,7 +59,7 @@ export interface FormatSettings {
   filterSameLine: boolean;
   lineLength: number;
   contractTriples: boolean;
-  keepEmptyLines: boolean;
+  autoLineBreak: boolean;
 }
 
 /** qlue-ls completion settings (the `completion` section of `qlueLs/changeSettings`). */
@@ -98,10 +98,10 @@ export const defaultSettings: Settings = {
     filterSameLine: true,
     lineLength: 120,
     contractTriples: true,
-    keepEmptyLines: false,
+    autoLineBreak: false,
   },
   completion: {
-    timeoutMs: 2000,
+    timeoutMs: 3000,
     resultSizeLimit: 50,
     subjectCompletionTriggerLength: 3,
     objectCompletionSuffix: true,
@@ -470,3 +470,142 @@ export async function configureBackend(
     console.error("Failed to configure qlue-ls backend for", endpoint, error);
   }
 }
+
+/**
+ * A small JSON-schema subset describing qlue-ls's most useful settings, ready to pass to a Yasqe
+ * language server's `configSchema`. Keys are dotted paths into {@link Settings} (e.g. `format.tabSize`);
+ * Yasqe de-flattens them into a nested object before handing it to the `configCallback`, so a callback
+ * of `(client, settings) => qlueLs.configureSettings(client, settings)` applies them directly.
+ * Defaults are sourced from {@link defaultSettings} so the panel and the server agree.
+ */
+export const settingsSchema = {
+  title: "Qlue-ls settings",
+  properties: {
+    "prefixes.addMissing": {
+      type: "boolean",
+      title: "Auto-add missing prefixes",
+      group: "Prefixes",
+      default: defaultSettings.prefixes.addMissing,
+    },
+    "prefixes.removeUnused": {
+      type: "boolean",
+      title: "Remove unused prefixes",
+      group: "Prefixes",
+      default: defaultSettings.prefixes.removeUnused,
+    },
+    "format.capitalizeKeywords": {
+      type: "boolean",
+      title: "Capitalize keywords",
+      group: "Formatting",
+      default: defaultSettings.format.capitalizeKeywords,
+    },
+    "format.alignPredicates": {
+      type: "boolean",
+      title: "Align predicates",
+      group: "Formatting",
+      default: defaultSettings.format.alignPredicates,
+    },
+    "format.alignPrefixes": {
+      type: "boolean",
+      title: "Align prefixes",
+      group: "Formatting",
+      default: defaultSettings.format.alignPrefixes,
+    },
+    "format.separatePrologue": {
+      type: "boolean",
+      title: "Separate prologue",
+      group: "Formatting",
+      default: defaultSettings.format.separatePrologue,
+    },
+    "format.insertSpaces": {
+      type: "boolean",
+      title: "Indent with spaces",
+      group: "Formatting",
+      default: defaultSettings.format.insertSpaces,
+    },
+    "format.tabSize": {
+      type: "number",
+      title: "Indent size",
+      group: "Formatting",
+      minimum: 1,
+      maximum: 8,
+      default: defaultSettings.format.tabSize,
+    },
+    "format.whereNewLine": {
+      type: "boolean",
+      title: "WHERE on new line",
+      group: "Formatting",
+      default: defaultSettings.format.whereNewLine,
+    },
+    "format.filterSameLine": {
+      type: "boolean",
+      title: "FILTER on same line",
+      group: "Formatting",
+      default: defaultSettings.format.filterSameLine,
+    },
+    "format.lineLength": {
+      type: "number",
+      title: "Max line length",
+      group: "Formatting",
+      minimum: 40,
+      maximum: 400,
+      default: defaultSettings.format.lineLength,
+    },
+    "format.contractTriples": {
+      type: "boolean",
+      title: "Contract triples",
+      group: "Formatting",
+      default: defaultSettings.format.contractTriples,
+    },
+    "format.autoLineBreak": {
+      type: "boolean",
+      title: "Auto line break",
+      group: "Formatting",
+      default: defaultSettings.format.autoLineBreak,
+    },
+    "completion.timeoutMs": {
+      type: "number",
+      title: "Completion timeout (ms)",
+      group: "Completion",
+      minimum: 100,
+      maximum: 30000,
+      default: defaultSettings.completion.timeoutMs,
+    },
+    "completion.resultSizeLimit": {
+      type: "number",
+      title: "Max completion results",
+      group: "Completion",
+      minimum: 1,
+      maximum: 1000,
+      default: defaultSettings.completion.resultSizeLimit,
+    },
+    "completion.subjectCompletionTriggerLength": {
+      type: "number",
+      title: "Subject completion trigger length",
+      group: "Completion",
+      minimum: 0,
+      maximum: 20,
+      default: defaultSettings.completion.subjectCompletionTriggerLength,
+    },
+    "completion.objectCompletionSuffix": {
+      type: "boolean",
+      title: "Object completion suffix",
+      group: "Completion",
+      default: defaultSettings.completion.objectCompletionSuffix,
+    },
+    "completion.variableCompletionLimit": {
+      type: "number",
+      title: "Variable completion limit",
+      group: "Completion",
+      minimum: 0,
+      maximum: 100,
+      default: defaultSettings.completion.variableCompletionLimit,
+    },
+    "completion.sameSubjectSemicolon": {
+      type: "boolean",
+      title: "Same subject semicolon",
+      group: "Completion",
+      default: defaultSettings.completion.sameSubjectSemicolon,
+    },
+  },
+} as const;
