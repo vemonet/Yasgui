@@ -22,36 +22,26 @@ class LspMessageSplitter {
    */
   push(chunk: Uint8Array): string[] {
     this.buffer = concat(this.buffer, chunk);
-
     const messages: string[] = [];
-
     while (true) {
       const headerEnd = indexOfDoubleCRLF(this.buffer);
       if (headerEnd === -1) break;
-
       const headerBytes = this.buffer.subarray(0, headerEnd);
       const headerText = this.asciiDecoder.decode(headerBytes);
-
       const match = /Content-Length:\s*(\d+)/i.exec(headerText);
       if (!match) {
         throw new Error("Invalid LSP header: missing Content-Length");
       }
-
       const contentLength = Number(match[1]);
       const messageStart = headerEnd + 4;
       const messageEnd = messageStart + contentLength;
-
       if (this.buffer.length < messageEnd) break;
-
       const messageBytes = this.buffer.subarray(messageStart, messageEnd);
       const messageText = this.utf8Decoder.decode(messageBytes);
-
       messages.push(messageText);
-
       // Consume processed bytes
       this.buffer = this.buffer.subarray(messageEnd);
     }
-
     return messages;
   }
 }

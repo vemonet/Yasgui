@@ -95,15 +95,12 @@ function tokenToRange(token: any): LspRange {
 function runParser(text: string): LspDiagnostic[] {
   lexerErrors.length = 0;
   parserErrors.length = 0;
-
   try {
     parser.parse(text);
   } catch {
     // errors already captured by the providers above
   }
-
   const diagnostics: LspDiagnostic[] = [];
-
   for (const err of lexerErrors) {
     const line = Math.max(0, (err.line ?? 1) - 1);
     const character = Math.max(0, (err.column ?? 1) - 1);
@@ -116,7 +113,6 @@ function runParser(text: string): LspDiagnostic[] {
       message: err.message,
     });
   }
-
   for (const err of parserErrors) {
     diagnostics.push({
       range: tokenToRange(err.token),
@@ -124,14 +120,12 @@ function runParser(text: string): LspDiagnostic[] {
       message: err.message,
     });
   }
-
   return diagnostics;
 }
 
 onmessage = function handleIncomingMessage(event: MessageEvent) {
   const msg = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
   const { id, method, params } = msg;
-
   if (method === "initialize") {
     postMessage({
       jsonrpc: "2.0",

@@ -11,7 +11,7 @@ import { RangeSetBuilder, StateField, StateEffect } from "@codemirror/state";
 import { setDiagnostics, Diagnostic } from "@codemirror/lint";
 import init, { init_language_server, listen } from "qlue-ls";
 import { qlueLs } from "@zazuko/yasgui-utils";
-import type { DeepPartial } from "@zazuko/yasgui-utils";
+import type { DeepPartial, Settings } from "@zazuko/yasgui-utils";
 
 const SEVERITY: Record<number, Diagnostic["severity"]> = { 1: "error", 2: "warning", 3: "info", 4: "info" };
 
@@ -306,7 +306,7 @@ function wasmTransport(): Transport {
  * Initialise qlue-ls and return a connected LSPClient ready to pass to the CodeMirror Yasqe/Yasgui
  * as a language server's `client` in the `languageServers` config.
  */
-export async function createQlueLsClient(settings: DeepPartial<qlueLs.Settings> = {}): Promise<LSPClient> {
+export async function createQlueLsClient(settings: DeepPartial<Settings> = {}): Promise<LSPClient> {
   await init();
   const client = new LSPClient({
     extensions: [...languageServerExtensions(), pullDiagnostics(), semanticTokens()],

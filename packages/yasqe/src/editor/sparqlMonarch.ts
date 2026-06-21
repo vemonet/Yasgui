@@ -137,8 +137,8 @@ export const sparqlMonarchLanguage: monaco.languages.IMonarchLanguage = {
       [/[?$]\w+/, "variable"],
       // IRIs: <...>
       [/<[^<>"{}|^`\s]*>/, "operator"],
-      // Prefixed-name prefix part (incl. trailing colon): foaf: / rdf:
-      [/[A-Za-z_][\w.\-]*:/, "namespace"],
+      // Prefixed name / CURIE
+      [/[A-Za-z_][\w.\-]*:[A-Za-z0-9_-]*/, "namespace"],
       // Numbers
       [/\d+(\.\d+([eE][\-+]?\d+)?)?/, "number"],
       // Strings (double / single quoted, with escapes)

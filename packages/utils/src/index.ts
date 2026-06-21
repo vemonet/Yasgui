@@ -29,6 +29,21 @@ export {
 // namespace object's getters, dead-eliminates the module init, leaving `defaultSettings` undefined
 import * as qlueLsNs from "./languageServers/qlueLs";
 export const qlueLs = { ...qlueLsNs };
+// `qlueLs` above is a runtime value (the spread is required so Rolldown keeps the module init), so
+// it cannot be used in type position (`qlueLs.Settings`), re-export types separately from the module
+export type {
+  Settings,
+  FormatSettings,
+  CompletionSettings,
+  PrefixesSettings,
+  PrefixMap,
+  BackendConfiguration,
+  BackendOptions,
+  CompletionQueries,
+  CompletionTemplate,
+  SparqlEngine,
+  QlueLsClient,
+} from "./languageServers/qlueLs";
 export * from "./errorNotification";
 export * from "./sparql";
 
