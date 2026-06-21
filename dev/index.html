@@ -53,6 +53,8 @@
                   worker: createQlueLsWorker,
                   onReady,
                   onEndpointChange,
+                  configSchema: qlueLs.settingsSchema,
+                  configCallback: (client, settings) => qlueLs.configureSettings(client, settings),
                 },
                 {
                   label: "swls",

@@ -72,6 +72,8 @@ onMounted(async () => {
             worker: createQlueLsWorker,
             onReady,
             onEndpointChange,
+            configSchema: qlueLs.settingsSchema,
+            configCallback: (client: any, settings: any) => qlueLs.configureSettings(client, settings),
           },
           {
             label: "swls",
