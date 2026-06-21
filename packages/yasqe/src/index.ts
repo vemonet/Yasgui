@@ -108,9 +108,6 @@ export class Yasqe extends EventEmitter {
   private lsMenuApi: { MenuRegistry: any; MenuId: any; CommandsRegistry: any; ContextKeyExpr: any } | null | undefined;
   private lsMenuApiLoading = false;
   private lsSubmenuId?: any;
-  /** Last-applied settings per language server index (flat dotted keys), so reopening the
-   * settings panel shows what was applied rather than snapping back to the schema defaults. */
-  private lsSettingsValues = new Map<number, Record<string, unknown>>();
   /** Dispose handle for an open settings panel, so a second open (or a server switch) closes the first. */
   private lsSettingsPanelDispose?: () => void;
   private static menuInstanceCounter = 0;
@@ -347,6 +344,7 @@ export class Yasqe extends EventEmitter {
     this.activeLanguageServerIndex = index;
     const client = this.getLanguageClient();
     if (client && def.onReady) def.onReady(client, this);
+    if (client) this.applyPersistedLanguageServerSettings(def, client);
     this.updateLanguageServerMenu();
     this.emit("languageServerChange", { label: def.label, description: def.description }, index);
   }
@@ -541,17 +539,36 @@ export class Yasqe extends EventEmitter {
     const client = this.getLanguageClient();
     if (!def?.configSchema || !def.configCallback || !client) return;
     const schema = def.configSchema as LanguageServerSettingsSchema;
-    const current = this.lsSettingsValues.get(index) ?? defaultsFromSchema(schema);
+    const current = this.getLanguageServerSettings(def.label) ?? defaultsFromSchema(schema);
     this.lsSettingsPanelDispose = openSettingsPanel({
       root: this.rootEl,
       schema,
       serverLabel: def.label,
       current,
       onApply: (values) => {
-        this.lsSettingsValues.set(index, values);
+        this.setLanguageServerSettings(def.label, values);
         def.configCallback!(client, unflatten(values));
       },
     });
+  }
+
+  /** Persisted settings panel values for a language server (by label), or undefined if none stored. */
+  private getLanguageServerSettings(label: string): Record<string, unknown> | undefined {
+    return this.persistentConfig?.languageServerSettings?.[label];
+  }
+
+  /** Store the settings panel values for a language server (by label) and persist to local storage. */
+  private setLanguageServerSettings(label: string, values: Record<string, unknown>): void {
+    if (!this.persistentConfig) return;
+    (this.persistentConfig.languageServerSettings ??= {})[label] = values;
+    this.saveQuery();
+  }
+
+  /** Re-apply any persisted settings to a freshly connected client, so they survive reloads/switches. */
+  private applyPersistedLanguageServerSettings(def: LanguageServerDef, client: MonacoLanguageClient): void {
+    if (!def.configCallback) return;
+    const stored = this.getLanguageServerSettings(def.label);
+    if (stored && Object.keys(stored).length) def.configCallback(client, unflatten(stored));
   }
 
   /**
@@ -1208,6 +1225,9 @@ export interface LanguageServerDef {
 export interface PersistentConfig {
   query: string;
   editorHeight: string;
+  /** Last-applied settings panel values per language server label (flat dotted keys), so they
+   * survive reloads and are re-applied to the server when it restarts. */
+  languageServerSettings?: { [label: string]: Record<string, unknown> };
 }
 
 /** Collect the schema's default values as a flat `{ [dottedKey]: value }` map. */
