@@ -436,6 +436,7 @@ export interface QlueLsClient {
 function notify(client: QlueLsClient, method: string, params: unknown): void {
   if (typeof client.sendNotification === "function") void client.sendNotification(method, params);
   else if (typeof client.notification === "function") client.notification(method, params);
+  else throw new Error("Unsupported qlue-ls client: no sendNotification/notification method");
 }
 
 /** Push qlue-ls server settings via `qlueLs/changeSettings`. Partial overrides merge over the defaults. */
@@ -444,8 +445,7 @@ export function configureSettings(client: QlueLsClient, settings: DeepPartial<Se
 }
 
 // Avoid re-registering the same backend repeatedly when configureBackend is called on every change.
-// Keyed per-client so switching between several qlue-ls instances (each its own client) still
-// configures each one's backend, instead of a single module-global endpoint short-circuiting them
+// Keyed per-client so switching between several ls instances (each its own client) still works
 const lastBackendByClient = new WeakMap<QlueLsClient, string>();
 
 /**
