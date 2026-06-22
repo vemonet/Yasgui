@@ -26,10 +26,10 @@ function toggleTheme() {
 }
 
 onMounted(async () => {
-  const { default: Yasgui } = await import("@zazuko/yasgui");
-  const { default: Yasqe, qlueLs } = await import("@zazuko/yasqe");
-  await import("@zazuko/yasgui/style.css");
-  await import("@zazuko/yasqe/style.css");
+  const { default: SparqlStudio } = await import("@rdfjs/sparql-studio");
+  const { default: Yasqe, qlueLs } = await import("@rdfjs/sparql-editor-monaco");
+  await import("@rdfjs/sparql-studio/style.css");
+  await import("@rdfjs/sparql-editor-monaco/style.css");
   // Worker modules are imported dynamically here (client-only) so they never enter the SSR bundle.
   const { default: QlueLsWorker } = await import("../qluels.worker?worker");
   const { default: SwlsWorker } = await import("../swls.worker?worker");
@@ -45,20 +45,20 @@ onMounted(async () => {
     return;
   }
 
-  // Register extra Yasr result-view plugins before creating the Yasgui instance.
+  // Register extra Yasr result-view plugins before creating the SparqlStudio instance.
   const [{ default: GraphPlugin }, { default: GeoPlugin }] = await Promise.all([
     import("@matdata/yasgui-graph-plugin"),
     import("yasgui-geo-tg"),
   ]);
-  Yasgui.Yasr.registerPlugin("Graph", GraphPlugin as any);
-  Yasgui.Yasr.registerPlugin("Geo", GeoPlugin as any);
+  SparqlStudio.Yasr.registerPlugin("Graph", GraphPlugin as any);
+  SparqlStudio.Yasr.registerPlugin("Geo", GeoPlugin as any);
 
   const onReady = (client: any) => {
     qlueLs.configureSettings(client, qlueLs.defaultSettings);
     qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
   };
   const onEndpointChange = (client: any, endpoint: string) => qlueLs.configureBackend(client, endpoint);
-  yasgui = new Yasgui(container.value!, {
+  yasgui = new SparqlStudio(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
     // The editor factory builds a Monaco Yasqe, wiring in the theme + the available LSP workers.
     yasqe: (parent: HTMLElement, conf: any) =>

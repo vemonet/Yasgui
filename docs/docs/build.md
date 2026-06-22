@@ -1,12 +1,12 @@
 # Build from source
 
-The repository is an npm workspaces monorepo with four packages under `packages/`: `utils`, `yasqe`,
-`yasr` and `yasgui`.
+The repository is an npm workspaces monorepo with five packages under `packages/`: `sparql-utils`,
+`sparql-editor-monaco`, `sparql-editor-codemirror`, `sparql-results` and `sparql-studio`.
 
 ```sh
 npm i
 npm run dev          # dev server with the demo pages (dev/index.html, yasqe.html, yasr.html)
-npm run build        # build the demo + all four library packages
+npm run build        # build the demo + all library packages
 npm run build:lib    # only the libraries (packages/*/build)
 ```
 
@@ -27,7 +27,7 @@ The `dev/` folder is a working reference for integrating the packages:
 
 - `dev/qluels.ts` + `dev/qluels.worker.ts` show the qlue-ls worker; the backend/settings plumbing
   comes from the package's `qlueLs` helpers (see [Language server](./language-server)).
-- `dev/index.html` / `yasqe.html` / `yasr.html` show Yasgui / Yasqe / Yasr with the language server.
+- `dev/index.html` / `yasqe.html` / `yasr.html` show SparqlStudio / Yasqe / Yasr with the language server.
 
 ## The documentation site
 

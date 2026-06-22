@@ -2,16 +2,16 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/yasgui.png" />
+    <link rel="icon" href="/sparql-studio.svg" />
     <link rel="stylesheet" href="./style.css" />
-    <title>YASGUI · CodeMirror</title>
+    <title>SPARQL Studio · CodeMirror</title>
   </head>
   <body>
     <div class="navBar">
       <nav style="display: flex">
-        <img class="logo" src="/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo" />
+        <img class="logo" src="/sparql-studio.svg" style="max-height:50px;padding:5px;margin-left: 10px" alt="SPARQL Studio Logo" />
         <ul style="display: flex; list-style: none; align-self: center">
-          <li class="navItem"><a class="nav-link" href="/">Yasgui</a></li>
+          <li class="navItem"><a class="nav-link" href="/">SPARQL Studio</a></li>
           <li class="navItem active"><a class="nav-link" href="codemirror">CodeMirror</a></li>
           <li class="navItem"><a class="nav-link" href="yasqe">Yasqe</a></li>
           <li class="navItem"><a class="nav-link" href="yasr">Yasr</a></li>
@@ -23,9 +23,9 @@
     <div id="yasgui"></div>
 
     <script type="module">
-      import Yasgui from "@zazuko/yasgui";
-      import Yasqe from "@zazuko/yasqe-codemirror";
-      import { qlueLs } from "@zazuko/yasgui-utils";
+      import SparqlStudio from "@rdfjs/sparql-studio";
+      import Yasqe from "@rdfjs/sparql-editor-codemirror";
+      import { qlueLs } from "@rdfjs/sparql-utils";
       import QlueLsWorker from "./qluels.worker?worker";
       import SwlsWorker from "./swls.worker?worker";
       import TraqulaWorker from "./traqula.worker?worker";
@@ -40,7 +40,7 @@
       };
       const onEndpointChange = (conn, endpoint) => qlueLs.configureBackend(conn, endpoint);
 
-      window.yasgui = new Yasgui(document.getElementById("yasgui"), {
+      window.yasgui = new SparqlStudio(document.getElementById("yasgui"), {
         requestConfig: { endpoint: DEMO_ENDPOINT },
         yasqe: (parent, conf) =>
           new Yasqe(parent, {

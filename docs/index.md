@@ -1,6 +1,6 @@
 ---
 layout: page
-# title: Yasgui · SPARQL query editor
+# title: SparqlStudio · SPARQL query editor
 pageClass: yasgui-home
 sidebar: false
 aside: false
@@ -8,7 +8,7 @@ navbar: false
 ---
 
 <!-- <div class="yasgui-home-hero">
-  <h1>Yasgui SPARQL editor</h1>
+  <h1>SparqlStudio SPARQL editor</h1>
   <p>
     Write, run and explore SPARQL queries against any endpoint. Powered by the Monaco
     editor and the <a href="https://github.com/IoannisNezis/Qlue-ls" target="_blank" rel="noreferrer">qlue-ls</a>

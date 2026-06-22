@@ -1,12 +1,12 @@
 # Getting started
 
-This guide embeds the full Yasgui app with the recommended **qlue-ls** language server. If you only
+This guide embeds the full SparqlStudio app with the recommended **qlue-ls** language server. If you only
 need the editor or the result viewer, see [Yasqe](./yasqe) and [Yasr](./yasr).
 
 ## 1. Install
 
 ```bash
-npm install @zazuko/yasgui          # or @zazuko/yasqe / @zazuko/yasr individually
+npm install @rdfjs/sparql-studio          # or @rdfjs/sparql-editor-monaco / @rdfjs/sparql-results individually
 ```
 
 To use the qlue-ls language server (recommended), also add it and the Vite WASM plugin to **your
@@ -17,17 +17,17 @@ npm install qlue-ls
 npm install -D vite-plugin-wasm
 ```
 
-The `@zazuko/*` packages are **self-contained ESM bundles** (Monaco and the language client are
+The `@rdfjs/*` packages are **self-contained ESM bundles** (Monaco and the language client are
 bundled in), you do **not** need to install `monaco-editor`. They are **ESM only** (Monaco loads
 its workers via `import.meta.url`, which UMD can't do), so use a modern bundler (Vite recommended).
 
 Each package ships its own CSS that you must import once:
 
 ```js
-import "@zazuko/yasgui/style.css";
+import "@rdfjs/sparql-studio/style.css";
 // or for standalone use:
-// import "@zazuko/yasqe/style.css";
-// import "@zazuko/yasr/style.css";
+// import "@rdfjs/sparql-editor-monaco/style.css";
+// import "@rdfjs/sparql-results/style.css";
 ```
 
 ## 2. Bundler setup (Vite)
@@ -102,18 +102,18 @@ export {};
 
 :::
 
-## 4. Mount Yasgui
+## 4. Mount SparqlStudio
 
 ```ts
-import Yasgui from "@zazuko/yasgui";
-import Yasqe, { qlueLs } from "@zazuko/yasqe";
-import "@zazuko/yasgui/style.css";
+import SparqlStudio from "@rdfjs/sparql-studio";
+import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
+import "@rdfjs/sparql-studio/style.css";
 import { createQlueLsWorker } from "./qlue-ls";
 
-const yasgui = new Yasgui(document.getElementById("yasgui")!, {
+const yasgui = new SparqlStudio(document.getElementById("yasgui")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
 
-  // Editor factory: Yasgui is editor-independent, so you build the editor yourself.
+  // Editor factory: SparqlStudio is editor-independent, so you build the editor yourself.
   // Each server per-entry hooks fire only while it is active: onReady, onEndpointChange
   yasqe: (parent, conf) =>
     new Yasqe(parent, {
@@ -134,7 +134,7 @@ const yasgui = new Yasgui(document.getElementById("yasgui")!, {
 ```
 
 ::: tip CodeMirror instead of Monaco
-The factory is also where you choose the editor implementation. To use the CodeMirror 6 editor, import `@zazuko/yasqe-codemirror` instead and give each language server a `client` (an `LSPClient`) rather than a `worker` (see [Language server](./language-server)).
+The factory is also where you choose the editor implementation. To use the CodeMirror 6 editor, import `@rdfjs/sparql-editor-codemirror` instead and give each language server a `client` (an `LSPClient`) rather than a `worker` (see [Language server](./language-server)).
 :::
 
 ::: tip Offering several servers
@@ -143,6 +143,6 @@ Add more entries to `languageServers` to let users switch at runtime; with two o
 
 That is the same setup that powers the [live demo](/). From here:
 
-- [Yasgui (full app)](./yasgui) · the complete config reference.
+- [SparqlStudio (full app)](./yasgui) · the complete config reference.
 - [Language server](./language-server) · richer completion queries and using a different LSP.
 - [Theming](./theming) · light/dark wiring.

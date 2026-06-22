@@ -1,6 +1,6 @@
 # Theming
 
-Yasgui supports light and dark themes through two layers, both following standard mechanisms:
+SparqlStudio supports light and dark themes through two layers, both following standard mechanisms:
 
 1. **The Monaco editor**, set via `theme: "light" | "dark"` in config, or at runtime with
    `yasqe.setTheme("dark")`. The default follows the OS `prefers-color-scheme`.
@@ -30,5 +30,5 @@ setTheme(initial);
 
 ::: tip Integrating with a framework's dark mode
 If your app already has a dark-mode switch (Tailwind, VitePress, etc.), just call both lines from its
-change handler. The [live demo](/) wires Yasgui's theme to VitePress' own dark-mode toggle this way.
+change handler. The [live demo](/) wires SparqlStudio's theme to VitePress' own dark-mode toggle this way.
 :::

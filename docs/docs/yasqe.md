@@ -1,11 +1,11 @@
 # Yasqe (editor)
 
-`@zazuko/yasqe` is the SPARQL query editor on its own, the Monaco editor plus an optional language
+`@rdfjs/sparql-editor-monaco` is the SPARQL query editor on its own, the Monaco editor plus an optional language
 client. Use it when you want only the editor, without tabs or the result viewer.
 
 ```ts
-import Yasqe, { qlueLs } from "@zazuko/yasqe";
-import "@zazuko/yasqe/style.css";
+import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
+import "@rdfjs/sparql-editor-monaco/style.css";
 import { createQlueLsWorker } from "./qlue-ls";
 
 const endpoint = "https://sparql.dblp.org/sparql";
@@ -35,7 +35,7 @@ completion, diagnostics or formatting. List more than one server to let users sw
 runtime (right-click the editor); the active server is exposed via `yasqe.getLanguageClient()` and
 the choice can be changed programmatically with `yasqe.setLanguageServer(labelOrIndex)`. Each entry's
 `onReady` / `onEndpointChange` hooks fire only while that server is active; standalone consumers
-trigger the latter with `yasqe.notifyEndpointChange(endpoint)` (Yasgui calls it for you).
+trigger the latter with `yasqe.notifyEndpointChange(endpoint)` (SparqlStudio calls it for you).
 
 ::: warning Events are instance-first
 Yasqe events are emitted **instance-first**, handlers receive `(yasqeInstance, ...payload)`. For

@@ -6,7 +6,7 @@ import * as http from "http";
 import * as chai from "chai";
 import { it, describe, before, beforeEach, after, afterEach } from "mocha";
 const expect = chai.expect;
-import Yasqe from "@zazuko/yasqe";
+import Yasqe from "@rdfjs/sparql-editor-monaco";
 import { setup, destroy, closePage, getPage, wait } from "./utils";
 
 declare var window: Window & {

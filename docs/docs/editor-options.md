@@ -15,10 +15,10 @@ new Yasqe(el, {
 });
 ```
 
-Via Yasgui, forward them through the `yasqe` option:
+Via SPARQL Studio, forward them through the `yasqe` option:
 
 ```ts
-new Yasgui(el, {
+new SparqlStudio(el, {
   yasqe: { editorOptions: { fontSize: 16 } },
 });
 ```

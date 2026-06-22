@@ -4,12 +4,12 @@ import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 import typedocSidebar from "../api/typedoc-sidebar.json";
 
 const siteUrl = "https://sparql.studio";
-const ogImage = `${siteUrl}/yasgui.png`;
+const ogImage = `${siteUrl}/sparql-studio.svg`;
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Yasgui",
-  description: "Yet Another SPARQL GUI · a Monaco-based SPARQL query editor and result viewer",
+  title: "SPARQL Studio",
+  description: "SPARQL Studio · a SPARQL query editor and results viewer for the web (fork of Yasgui)",
   base: "/",
   lang: "en-US",
   cleanUrls: true,
@@ -18,46 +18,46 @@ export default defineConfig({
     hostname: "https://sparql.studio/",
   },
   head: [
-    ["link", { rel: "icon", type: "image/png", href: "/yasgui.png" }],
-    ["link", { rel: "alternate icon", href: "/yasgui.png" }],
-    ["meta", { name: "author", content: "Yasgui contributors" }],
+    ["link", { rel: "icon", type: "image/png", href: "/sparql-studio.svg" }],
+    ["link", { rel: "alternate icon", href: "/sparql-studio.svg" }],
+    ["meta", { name: "author", content: "SPARQL Studio contributors" }],
     [
       "meta",
       {
         name: "keywords",
         content:
-          "SPARQL, SPARQL editor, SPARQL query, RDF, linked data, semantic web, Yasgui, Yasqe, Yasr, query editor, SPARQL GUI, Monaco editor",
+          "SPARQL Studio, SPARQL, SPARQL editor, SPARQL query, RDF, linked data, semantic web, Yasgui, Yasqe, Yasr, query editor, SPARQL GUI, Monaco editor",
       },
     ],
     ["meta", { name: "theme-color", content: "#7d3fbd" }],
     // Open Graph
     ["meta", { property: "og:type", content: "website" }],
-    ["meta", { property: "og:site_name", content: "Yasgui" }],
-    ["meta", { property: "og:title", content: "Yasgui · SPARQL query editor and results viewer" }],
+    ["meta", { property: "og:site_name", content: "SPARQL Studio" }],
+    ["meta", { property: "og:title", content: "SPARQL Studio · SPARQL query editor and results viewer" }],
     [
       "meta",
       {
         property: "og:description",
-        content: "Yet Another SPARQL GUI · a modular SPARQL query editor and result viewer",
+        content: "SPARQL Studio · a modular SPARQL query editor and results viewer for the web (fork of Yasgui)",
       },
     ],
     ["meta", { property: "og:image", content: ogImage }],
     ["meta", { property: "og:url", content: `${siteUrl}/` }],
     // Twitter
     ["meta", { name: "twitter:card", content: "summary" }],
-    ["meta", { name: "twitter:title", content: "Yasgui · SPARQL query editor and results viewer" }],
+    ["meta", { name: "twitter:title", content: "SPARQL Studio · SPARQL query editor and results viewer" }],
     [
       "meta",
       {
         name: "twitter:description",
-        content: "Yet Another SPARQL GUI · a modular SPARQL query editor and result viewer",
+        content: "SPARQL Studio · a modular SPARQL query editor and results viewer for the web (fork of Yasgui)",
       },
     ],
     ["meta", { name: "twitter:image", content: ogImage }],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "/yasgui.png",
+    logo: "/sparql-studio.svg",
     nav: [
       { text: "Monaco Editor", link: "/" },
       { text: "CodeMirror Editor", link: "/codemirror" },
@@ -69,16 +69,16 @@ export default defineConfig({
         {
           text: "Introduction",
           items: [
-            { text: "What is Yasgui?", link: "/docs/introduction" },
+            { text: "What is SPARQL Studio?", link: "/docs/introduction" },
             { text: "Getting started", link: "/docs/getting-started" },
           ],
         },
         {
           text: "Packages",
           items: [
-            { text: "Yasgui (full app)", link: "/docs/yasgui" },
-            { text: "Yasqe (editor)", link: "/docs/yasqe" },
-            { text: "Yasr (results)", link: "/docs/yasr" },
+            { text: "SPARQL Studio (full app)", link: "/docs/yasgui" },
+            { text: "SPARQL editor (Monaco)", link: "/docs/yasqe" },
+            { text: "SPARQL results", link: "/docs/yasr" },
           ],
         },
         {
@@ -119,7 +119,7 @@ export default defineConfig({
     },
   },
   vite: {
-    // The demo imports the @zazuko/* packages' pre-built
+    // The demo imports the @rdfjs/* packages' pre-built
     // Run `npm run build:lib` before building/serving the docs so those bundles exist
     // esnext is required because the qlue-ls / swls wasm glue emits top-level await; VitePress's
     // default es2020 target rejects it (and the worker bundle inherits this target).
@@ -156,16 +156,16 @@ export default defineConfig({
       esbuildOptions: { plugins: [importMetaUrlPlugin as any] },
       // The pre-built editor bundles ship their own internal chunks/assets; swls-wasm imports its
       // .wasm directly (handled by vite-plugin-wasm, not esbuild dep pre-bundling).
-      exclude: ["@zazuko/yasgui", "@zazuko/yasqe", "@zazuko/yasqe-codemirror", "@zazuko/yasr", "qlue-ls", "swls-wasm"],
+      exclude: ["@rdfjs/sparql-studio", "@rdfjs/sparql-editor-monaco", "@rdfjs/sparql-editor-codemirror", "@rdfjs/sparql-results", "qlue-ls", "swls-wasm"],
     },
     ssr: {
       // The demo is client-only, so the editor deps must not enter the server bundle
       external: [
-        "@zazuko/yasgui",
-        "@zazuko/yasqe",
-        "@zazuko/yasqe-codemirror",
-        "@zazuko/yasr",
-        "@zazuko/yasgui-utils",
+        "@rdfjs/sparql-studio",
+        "@rdfjs/sparql-editor-monaco",
+        "@rdfjs/sparql-editor-codemirror",
+        "@rdfjs/sparql-results",
+        "@rdfjs/sparql-utils",
         "@matdata/yasgui-graph-plugin",
         "yasgui-geo-tg",
       ],

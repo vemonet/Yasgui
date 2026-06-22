@@ -1,18 +1,18 @@
-# Yasgui (full app)
+# SparqlStudio (full app)
 
-`@zazuko/yasgui` is the complete app: query tabs, an endpoint selector, and Yasqe + Yasr wired
+`@rdfjs/sparql-studio` is the complete app: query tabs, an endpoint selector, and Yasqe + Yasr wired
 together.
 
 ```ts
-import Yasgui from "@zazuko/yasgui";
-import Yasqe, { qlueLs } from "@zazuko/yasqe";
-import "@zazuko/yasgui/style.css";
+import SparqlStudio from "@rdfjs/sparql-studio";
+import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
+import "@rdfjs/sparql-studio/style.css";
 import { createQlueLsWorker } from "./qlue-ls";
 
-const yasgui = new Yasgui(document.getElementById("yasgui")!, {
+const yasgui = new SparqlStudio(document.getElementById("yasgui")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
   // Editor factory: build the editor and wire in its language server. `conf` is the
-  // per-tab config Yasgui prepares (value, requestConfig, …); spread it, then add your own.
+  // per-tab config SparqlStudio prepares (value, requestConfig, …); spread it, then add your own.
   yasqe: (parent, conf) =>
     new Yasqe(parent, {
       ...conf,
@@ -32,14 +32,14 @@ const yasgui = new Yasgui(document.getElementById("yasgui")!, {
 });
 ```
 
-Yasgui is **editor-independent**: instead of an editor config object, you pass a factory
+SparqlStudio is **editor-independent**: instead of an editor config object, you pass a factory
 `(parent, conf) => IYasqe` that builds the editor. This is where you choose the editor implementation
-(Monaco `@zazuko/yasqe` above, or CodeMirror `@zazuko/yasqe-codemirror`) and list its language
-servers and theme. `qlueLs` is only exported from `@zazuko/yasqe` (the Monaco editor), not from
-`@zazuko/yasgui`.
+(Monaco `@rdfjs/sparql-editor-monaco` above, or CodeMirror `@rdfjs/sparql-editor-codemirror`) and list its language
+servers and theme. `qlueLs` is only exported from `@rdfjs/sparql-editor-monaco` (the Monaco editor), not from
+`@rdfjs/sparql-studio`.
 
 `yasgui.yasqe.getLanguageClient()` returns the active language client so you can send any LSP request.
-When two or more `languageServers` are configured, a switcher lets users pick one and Yasgui
+When two or more `languageServers` are configured, a switcher lets users pick one and SparqlStudio
 remembers the choice **per endpoint**, so each endpoint reopens with its preferred server.
 
 ## Configuration
@@ -48,7 +48,7 @@ remembers the choice **per endpoint**, so each endpoint reopens with its preferr
 | --- | --- | --- |
 | `requestConfig` | `RequestConfig` | default endpoint & request settings (see [Request configuration](./request-config)) |
 | `onEndpointChange` | `(yasgui, endpoint) => void` | called when the active endpoint changes |
-| `yasqe` | `YasqeFactory` = `(parent, conf) => IYasqe` | editor factory: build the editor (Monaco `@zazuko/yasqe` or CodeMirror `@zazuko/yasqe-codemirror`) and wire in its LSP, theme, etc. |
+| `yasqe` | `YasqeFactory` = `(parent, conf) => IYasqe` | editor factory: build the editor (Monaco `@rdfjs/sparql-editor-monaco` or CodeMirror `@rdfjs/sparql-editor-codemirror`) and wire in its LSP, theme, etc. |
 | `yasr` | `Partial<Yasr config>` | result-viewer config |
 | `corsProxy` | `string` | optional CORS proxy URL |
 | `persistenceId` | `string \| fn \| null` | localStorage namespace; `null` disables persistence |
@@ -58,14 +58,14 @@ remembers the choice **per endpoint**, so each endpoint reopens with its preferr
 Public endpoints usually send the right CORS headers. For endpoints that don't, set a `corsProxy`:
 
 ```ts
-new Yasgui(el, { corsProxy: "https://corsproxy.example/?" });
+new SparqlStudio(el, { corsProxy: "https://corsproxy.example/?" });
 ```
 
 The proxy URL is prepended to the request URL.
 
 ## Persistence
 
-By default Yasgui persists tabs, queries and the last results to `localStorage` under a namespace
+By default SparqlStudio persists tabs, queries and the last results to `localStorage` under a namespace
 derived from the container element id. Pass `persistenceId: null` to disable persistence, or a
 string / function to control the namespace.
 
@@ -76,4 +76,4 @@ string / function to control the namespace.
 - [Monaco editor options](./editor-options) · customize the editor.
 
 The shared editor types (`IYasqe`, `YasqeFactory`, `RequestConfig`, `PlainRequestConfig`,
-`QueryType`) live in `@zazuko/yasgui-utils` and are implemented by both editor packages.
+`QueryType`) live in `@rdfjs/sparql-utils` and are implemented by both editor packages.
