@@ -1,12 +1,12 @@
 # Request configuration
 
 `requestConfig` controls how queries are sent to the endpoint. It is accepted by both
-[Yasqe](./yasqe) and [Yasgui](./yasgui) (where it sets the default for every tab).
+[Yasqe](./yasqe) and [SparqlStudio](./yasgui) (where it sets the default for every tab).
 
 Every field may be a value **or** a `(yasqe) => value` function, so you can compute it per request.
 
 ```ts
-new Yasgui(el, {
+new SparqlStudio(el, {
   requestConfig: {
     endpoint: "https://sparql.dblp.org/sparql",
     method: "POST",
@@ -30,6 +30,6 @@ new Yasgui(el, {
 | `adjustQueryBeforeRequest` | `false` | `(yasqe) => string` to rewrite the query before sending |
 
 ::: tip CORS
-If the endpoint does not return CORS headers, set a `corsProxy` on Yasgui rather than fighting the
-request config. See [Yasgui · CORS](./yasgui#cors).
+If the endpoint does not return CORS headers, set a `corsProxy` on SparqlStudio rather than fighting the
+request config. See [SparqlStudio · CORS](./yasgui#cors).
 :::

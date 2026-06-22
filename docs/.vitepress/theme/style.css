@@ -127,6 +127,6 @@
 /**
  * Invert the logo colors in dark mode (matches dev/ files)
  */
-.dark .VPNavBarTitle .logo {
+/* .dark .VPNavBarTitle .logo {
   filter: invert(1);
-}
+} */

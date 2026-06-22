@@ -7,7 +7,13 @@ import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 const isProd = process.env.NODE_ENV === "production";
 
 // When BUILD_PACKAGE is set we build a single package otherwise vite serves the demo pages
-const libPackage = process.env.BUILD_PACKAGE as "yasgui" | "yasqe" | "yasqe-codemirror" | "yasr" | "utils" | undefined;
+const libPackage = process.env.BUILD_PACKAGE as
+  | "sparql-studio"
+  | "sparql-editor-monaco"
+  | "sparql-editor-codemirror"
+  | "sparql-results"
+  | "sparql-utils"
+  | undefined;
 
 // Internal monaco-vscode-api modules used by yasqe to render the language server right-click submenu
 // (MenuRegistry/MenuId/CommandsRegistry/ContextKeyExpr). They are reachable via the package's
@@ -25,12 +31,17 @@ const monacoInternalAlias = [
 }));
 
 const alias = [
-  { find: /^@zazuko\/yasgui$/, replacement: resolve(__dirname, "packages/yasgui/src/index.ts") },
-  // Order matters: match the more specific yasqe-codemirror before the bare yasqe alias.
-  { find: /^@zazuko\/yasqe-codemirror$/, replacement: resolve(__dirname, "packages/yasqe-codemirror/src/index.ts") },
-  { find: /^@zazuko\/yasqe$/, replacement: resolve(__dirname, "packages/yasqe/src/index.ts") },
-  { find: /^@zazuko\/yasr$/, replacement: resolve(__dirname, "packages/yasr/src/index.ts") },
-  { find: /^@zazuko\/yasgui-utils$/, replacement: resolve(__dirname, "packages/utils/src/index.ts") },
+  { find: /^@rdfjs\/sparql-studio$/, replacement: resolve(__dirname, "packages/sparql-studio/src/index.ts") },
+  {
+    find: /^@rdfjs\/sparql-editor-codemirror$/,
+    replacement: resolve(__dirname, "packages/sparql-editor-codemirror/src/index.ts"),
+  },
+  {
+    find: /^@rdfjs\/sparql-editor-monaco$/,
+    replacement: resolve(__dirname, "packages/sparql-editor-monaco/src/index.ts"),
+  },
+  { find: /^@rdfjs\/sparql-results$/, replacement: resolve(__dirname, "packages/sparql-results/src/index.ts") },
+  { find: /^@rdfjs\/sparql-utils$/, replacement: resolve(__dirname, "packages/sparql-utils/src/index.ts") },
   ...monacoInternalAlias,
 ];
 
@@ -60,7 +71,7 @@ const monacoServiceStubPlugin = {
 // Monaco (the @codingame/monaco-vscode-* packages) is ESM-only and loads its workers/wasm via
 // `new URL(..., import.meta.url)`. yasqe pulls it in, so any package depending on yasqe needs the
 // wasm plugin, ES-format workers and the import.meta.url esbuild rewrite (dev) to resolve those assets.
-const usesMonaco = libPackage === "yasqe" || libPackage === undefined;
+const usesMonaco = libPackage === "sparql-editor-monaco" || libPackage === undefined;
 
 export default defineConfig({
   root: libPackage ? undefined : resolve(__dirname, "dev"),
@@ -91,7 +102,7 @@ export default defineConfig({
             entryRoot: resolve(__dirname, `packages/${libPackage}/src`),
             outDirs: [resolve(__dirname, `packages/${libPackage}/build/ts/src`)],
             include: [`packages/${libPackage}/src`],
-            aliasesExclude: [/^@zazuko\//],
+            aliasesExclude: [/^@rdfjs\//],
           }),
         ]
       : []),
@@ -122,7 +133,7 @@ export default defineConfig({
           // load a second instance, which breaks the vscode service registry and the editor silently fails to mount.
           // The CodeMirror editor is the opposite case: @codemirror/* (and @lezer/*) must be external so the
           // editor and the embedder LSP client share one instance.
-          external: libPackage === "yasqe-codemirror" ? [/^@codemirror\//, /^@lezer\//] : [],
+          external: libPackage === "sparql-editor-codemirror" ? [/^@codemirror\//, /^@lezer\//] : [],
           output: {
             // Emit 1 self-contained JS file (no code-split sibling chunks)
             codeSplitting: false,

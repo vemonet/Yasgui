@@ -1,7 +1,7 @@
 # Language server
 
 Smart features, autocompletion, diagnostics, hover, formatting and semantic highlighting, come from
-a **SPARQL language server (LSP)** running in a Web Worker. Yasqe and Yasgui are language-server
+a **SPARQL language server (LSP)** running in a Web Worker. Yasqe and SparqlStudio are language-server
 **agnostic**: you pass them a ready LSP `Worker` and they wire a `monaco-languageclient` to it.
 
 The recommended server is [**qlue-ls**](https://github.com/IoannisNezis/Qlue-ls), a fast WASM SPARQL
@@ -10,7 +10,7 @@ discovery, completion-query templates and types) under the `qlueLs` namespace, s
 write yourself is the WASM worker:
 
 ```ts
-import { qlueLs } from "@zazuko/yasqe"; // the Monaco editor; not re-exported from "@zazuko/yasgui"
+import { qlueLs } from "@rdfjs/sparql-editor-monaco"; // the Monaco editor; not re-exported from "@rdfjs/sparql-studio"
 ```
 
 ## The worker
@@ -84,12 +84,12 @@ The first entry is activated on load; with two or more configured, a switcher ap
 the editor in Monaco, a dropdown in CodeMirror) and the user's choice is remembered per endpoint.
 
   ```ts [main.ts]
-  import Yasgui from "@zazuko/yasgui";
-  import Yasqe, { qlueLs } from "@zazuko/yasqe";
+  import SparqlStudio from "@rdfjs/sparql-studio";
+  import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
   import { createQlueLsWorker } from "./qlue-ls";
 
-  new Yasgui(el, {
-    // Yasgui is editor-independent: pass an editor factory and list the servers in the editor.
+  new SparqlStudio(el, {
+    // SparqlStudio is editor-independent: pass an editor factory and list the servers in the editor.
     yasqe: (parent, conf) =>
       new Yasqe(parent, {
         ...conf,
@@ -113,7 +113,7 @@ Standalone **Yasqe** is the same — the per-server `onReady` (and `onEndpointCh
 trigger yourself via `yasqe.notifyEndpointChange(endpoint)`) carry the setup:
 
   ```ts [main.ts]
-  import Yasqe, { qlueLs } from "@zazuko/yasqe";
+  import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
   import { createQlueLsWorker } from "./qlue-ls";
 
   new Yasqe(el, {
@@ -130,9 +130,9 @@ trigger yourself via `yasqe.notifyEndpointChange(endpoint)`) carry the setup:
   });
   ```
 
-::: tip Per-server vs Yasgui-level
+::: tip Per-server vs SparqlStudio-level
 The per-server `onEndpointChange` only fires for the active server, so each server handles endpoints
-its own way. Yasgui still has a top-level `onEndpointChange(yasgui, endpoint)` for app-wide,
+its own way. SparqlStudio still has a top-level `onEndpointChange(yasgui, endpoint)` for app-wide,
 server-independent work (analytics, UI). Both fire.
 :::
 
@@ -186,20 +186,20 @@ The qlue-ls `BackendConfiguration` (what `createBackendConf` builds) is flat and
 falls back to `fallbackPrefixMap` (a broad set of common vocab prefixes) when none are returned.
 :::
 
-## CodeMirror editor (`@zazuko/yasqe-codemirror`)
+## CodeMirror editor (`@rdfjs/sparql-editor-codemirror`)
 
-The Monaco editor (`@zazuko/yasqe`) is the default, but Yasgui is editor-independent: you can build
+The Monaco editor (`@rdfjs/sparql-editor-monaco`) is the default, but SparqlStudio is editor-independent: you can build
 the editor factory around the CodeMirror 6 editor instead. Each `languageServers` entry takes a
 ready LSP **client** (rather than a worker) as `client` (instance or factory). You own the qlue-ls
 wiring (transport, pull diagnostics, semantic-token highlighting) and pass the resulting
 `@codemirror/lsp-client` `LSPClient` in:
 
 ```ts
-import Yasgui from "@zazuko/yasgui";
-import Yasqe from "@zazuko/yasqe-codemirror";
+import SparqlStudio from "@rdfjs/sparql-studio";
+import Yasqe from "@rdfjs/sparql-editor-codemirror";
 import { createQlueLsClient, setQlueLsBackend } from "./qlueLsClient";
 
-new Yasgui(el, {
+new SparqlStudio(el, {
   requestConfig: { endpoint },
   yasqe: (parent, conf) =>
     new Yasqe(parent, {
@@ -218,12 +218,12 @@ new Yasgui(el, {
 
 With two or more entries the editor shows a labelled switcher dropdown in its toolbar (left of the
 format/share/run buttons). The completion-query templates (`defaultCompletionQueries`) used by the
-client live in `@zazuko/yasgui-utils`. See `dev/codemirror.html` and `dev/qlueLsClient.ts` in the
+client live in `@rdfjs/sparql-utils`. See `dev/codemirror.html` and `dev/qlueLsClient.ts` in the
 repo for the full qlue-ls wiring (the `qlueLs` helpers above are Monaco-specific and not used here).
 
 ## Using a different language server
 
-Yasqe and Yasgui only need a ready LSP `Worker` (Monaco) or `LSPClient` (CodeMirror). The `qlueLs`
+Yasqe and SparqlStudio only need a ready LSP `Worker` (Monaco) or `LSPClient` (CodeMirror). The `qlueLs`
 helpers are a convenience for qlue-ls; they are not required. To use, for example,
 [swls](https://github.com/SemanticWebLanguageServer/swls) instead:
 
@@ -233,4 +233,4 @@ helpers are a convenience for qlue-ls; they are not required. To use, for exampl
 3. In that entry's `onReady` / `onEndpointChange`, send whatever that server needs to target an
    endpoint (its own custom requests) on the `client` you receive.
 
-No changes to the `@zazuko/*` packages are required.
+No changes to the `@rdfjs/*` packages are required.

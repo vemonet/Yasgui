@@ -2,16 +2,16 @@
   "$schema": "https://typedoc.org/schema.json",
   "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
   "tsconfig": "./tsconfig.json",
-  "name": "Yasgui API",
+  "name": "SPARQL Studio API",
   "entryPointStrategy": "resolve",
   "excludeReferences": true,
   "excludeExternals": true,
   "externalPattern": ["**/node_modules/**"],
   "entryPoints": [
-    "packages/yasgui/src/index.ts",
-    "packages/yasqe/src/index.ts",
-    "packages/yasr/src/index.ts",
-    "packages/utils/src/index.ts"
+    "packages/sparql-studio/src/index.ts",
+    "packages/sparql-editor-monaco/src/index.ts",
+    "packages/sparql-results/src/index.ts",
+    "packages/sparql-utils/src/index.ts"
   ],
   "out": "docs/api",
   "docsRoot": "docs",

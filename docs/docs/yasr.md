@@ -1,15 +1,15 @@
 # Yasr (results)
 
-`@zazuko/yasr` renders a SPARQL response, as a table, raw response, graph or map. Use it standalone
-when you have results from anywhere and want Yasgui's viewer without the editor.
+`@rdfjs/sparql-results` renders a SPARQL response, as a table, raw response, graph or map. Use it standalone
+when you have results from anywhere and want SparqlStudio's viewer without the editor.
 
 Wire it to a [Yasqe](./yasqe) instance (or feed it a response from any source):
 
 ```ts
-import Yasqe from "@zazuko/yasqe";
-import Yasr from "@zazuko/yasr";
-import "@zazuko/yasqe/style.css";
-import "@zazuko/yasr/style.css";
+import Yasqe from "@rdfjs/sparql-editor-monaco";
+import Yasr from "@rdfjs/sparql-results";
+import "@rdfjs/sparql-editor-monaco/style.css";
+import "@rdfjs/sparql-results/style.css";
 
 const yasqe = new Yasqe(document.getElementById("yasqe")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
@@ -43,8 +43,8 @@ etc.). The live demo registers two extra plugins before creating the app:
 import GraphPlugin from "@matdata/yasgui-graph-plugin";
 import GeoPlugin from "yasgui-geo-tg";
 
-Yasgui.Yasr.registerPlugin("Graph", GraphPlugin);
-Yasgui.Yasr.registerPlugin("Geo", GeoPlugin);
+SparqlStudio.Yasr.registerPlugin("Graph", GraphPlugin);
+SparqlStudio.Yasr.registerPlugin("Geo", GeoPlugin);
 ```
 
 Built-in and community plugins include:

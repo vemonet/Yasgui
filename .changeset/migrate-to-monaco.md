@@ -1,8 +1,8 @@
 ---
-"@zazuko/yasgui": major
-"@zazuko/yasgui-utils": major
-"@zazuko/yasqe": major
-"@zazuko/yasr": major
+"@rdfjs/sparql-studio": major
+"@rdfjs/sparql-utils": major
+"@rdfjs/sparql-editor-monaco": major
+"@rdfjs/sparql-results": major
 ---
 
 - Migrate from CodeMirror 5 to Monaco editor (VSCode) with a language server
@@ -16,7 +16,7 @@
   - main page is a bare Yasgui with qlue-ls language server
   - documentation to use yasgui is defined in markdown files available at `/docs`
 - Enable light/dark theme
-- Enable to import the main JS and CSS files from `@zazuko/yasgui` and `@zazuko/yasgui/style.css`
+- Enable to import the main JS and CSS files from `@rdfjs/sparql-studio` and `@rdfjs/sparql-studio/style.css`
 - Update CodeMirror used by the YASR component to display raw response JSON from v5 to v6
 - Update default SPARQL endpoint from dbpedia to https://sparql.dblp.org/sparql (faster for completion queries)
 - Improve partial config implementation

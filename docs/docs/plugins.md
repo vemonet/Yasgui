@@ -6,13 +6,13 @@ The **Table**, **Boolean**, **Response** and **Error** plugins are built in. **G
 
 ## Configuring plugins
 
-Plugins are configured through the `yasr` slot of the Yasgui config. Three options control which plugins are available and how they are ordered:
+Plugins are configured through the `yasr` slot of the SparqlStudio config. Three options control which plugins are available and how they are ordered:
 
 ```ts
-import Yasgui from '@zazuko/yasgui';
-import '@zazuko/yasgui/style.css';
+import SparqlStudio from '@rdfjs/sparql-studio';
+import '@rdfjs/sparql-studio/style.css';
 
-const yasgui = new Yasgui(document.getElementById('yasgui'), {
+const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
   yasr: {
     // Tab order in the result area (plugins not listed are appended alphabetically)
     pluginOrder: ['table', 'response'],
@@ -38,7 +38,7 @@ const yasgui = new Yasgui(document.getElementById('yasgui'), {
 
 Notes:
 
-- The key in `plugins` is the name passed to `Yasgui.Yasr.registerPlugin(name, …)` (`table`, `response`, `boolean`, plus any community plugins you register).
+- The key in `plugins` is the name passed to `SparqlStudio.Yasr.registerPlugin(name, …)` (`table`, `response`, `boolean`, plus any community plugins you register).
 - `dynamicConfig` seeds the plugin's per-tab settings. Values the user later changes through the plugin UI are persisted to `localStorage` and take precedence on the next load.
 - Defaults: `pluginOrder` is `['table', 'response']` and `defaultPlugin` is `'table'`.
 
@@ -62,7 +62,7 @@ Config (`yasr.plugins.table.dynamicConfig`):
 | `isEllipsed` | `boolean` | `true` | Truncate long cell values with an ellipsis (expand on click). |
 
 ```ts
-const yasgui = new Yasgui(document.getElementById('yasgui'), {
+const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
   yasr: {
     plugins: {
       table: { dynamicConfig: { pageSize: 100, compact: true } },
@@ -94,7 +94,7 @@ Config (`yasr.plugins.response.dynamicConfig`):
 | `maxLines` | `number` | `30` | Maximum number of lines rendered before the output is truncated (the full payload is still available via copy/download). |
 
 ```ts
-const yasgui = new Yasgui(document.getElementById('yasgui'), {
+const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
   yasr: {
     plugins: {
       response: { dynamicConfig: { maxLines: 100 } },
@@ -113,15 +113,15 @@ Displays geographic results on an interactive [Leaflet](https://leafletjs.com/) 
 
 Integrate it:
 
-Register the plugin (under the name `geo`) **before** constructing Yasgui, then add it to `pluginOrder`:
+Register the plugin (under the name `geo`) **before** constructing SparqlStudio, then add it to `pluginOrder`:
 
 ```ts
-import Yasgui from '@zazuko/yasgui';
+import SparqlStudio from '@rdfjs/sparql-studio';
 import GeoPlugin from 'yasgui-geo-tg';
 
-Yasgui.Yasr.registerPlugin('geo', GeoPlugin);
+SparqlStudio.Yasr.registerPlugin('geo', GeoPlugin);
 
-const yasgui = new Yasgui(document.getElementById('yasgui'), {
+const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
   yasr: {
     pluginOrder: ['table', 'response', 'geo'],
     defaultPlugin: 'geo',
@@ -166,12 +166,12 @@ Renders `CONSTRUCT` / `DESCRIBE` results as an interactive node-edge graph with 
 Integrate it:
 
 ```ts
-import Yasgui from '@zazuko/yasgui';
+import SparqlStudio from '@rdfjs/sparql-studio';
 import GraphPlugin from '@matdata/yasgui-graph-plugin';
 
-Yasgui.Yasr.registerPlugin('graph', GraphPlugin);
+SparqlStudio.Yasr.registerPlugin('graph', GraphPlugin);
 
-const yasgui = new Yasgui(document.getElementById('yasgui'), {
+const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
   yasr: {
     pluginOrder: ['table', 'response', 'graph'],
   },
@@ -193,7 +193,7 @@ class MyGraphPlugin extends GraphPlugin {
   }
 }
 
-Yasgui.Yasr.registerPlugin('graph', MyGraphPlugin);
+SparqlStudio.Yasr.registerPlugin('graph', MyGraphPlugin);
 ```
 
 Example query:

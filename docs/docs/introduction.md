@@ -1,19 +1,25 @@
-# What is Yasgui?
+# What is SPARQL Studio?
 
-**Yasgui (Yet Another SPARQL GUI)** is a web-based interface for writing, running and exploring SPARQL queries against any endpoint. It is built from packages you can use together or independently:
+**SPARQL Studio** is a web-based interface for writing, running and exploring SPARQL queries against any endpoint.
+
+::: tip Compatible with Yasgui Yasr plugins
+It is a fork of [Yasgui](https://github.com/zazuko/Yasgui) and is compatible with all existing Yasr result-view plugins.
+:::
+
+It is built from packages you can use together or independently:
 
 | Package | npm | What it is |
 | --- | --- | --- |
-| **Yasqe** | `@zazuko/yasqe` | The SPARQL query **editor** (Monaco-based, with optional LSP) |
-| **Yasqe (CodeMirror)** | `@zazuko/yasqe-codemirror` | Alternative SPARQL **editor** built on CodeMirror 6 (takes an LSP client) |
-| **Yasr** | `@zazuko/yasr` | The SPARQL **result** viewer (table, response, geo, …) |
-| **Yasgui** | `@zazuko/yasgui` | The full **app**: tabs, endpoint selector, editor + Yasr wired together |
+| **Editor · Monaco** | `@rdfjs/sparql-editor-monaco` | The SPARQL query **editor** (Monaco-based, with optional LSP) |
+| **Editor · CodeMirror** | `@rdfjs/sparql-editor-codemirror` | Alternative SPARQL **editor** built on CodeMirror 6 (takes an LSP client) |
+| **Results** | `@rdfjs/sparql-results` | The SPARQL **result** viewer (table, response, geo, …) |
+| **Studio** | `@rdfjs/sparql-studio` | The full **app**: tabs, endpoint selector, editor + Yasr wired together |
 
 Try it now on the [live demo](/). Then head to [Getting started](./getting-started) to embed it in your own app.
 
 ## Powered by language servers
 
-Yasgui's smart features, semantic highlighting, diagnostics, code actions, hover, formatting and autocompletion, all come from a **SPARQL language server (LSP)**. Yasgui and Yasqe are language-server agnostic: you provide a ready language server and they wire a language client to it.
+SPARQL Studio's smart features, semantic highlighting, diagnostics, code actions, hover, formatting and autocompletion, all come from a **SPARQL language server (LSP)**. SPARQL Studio editors are language-server agnostic: you provide a ready language server and they wire a language client to it.
 
 All server-specific configuration lives in your app, which keeps the libraries small and lets you swap servers later.
 
@@ -21,14 +27,14 @@ The recommended server is [qlue-ls](https://github.com/IoannisNezis/Qlue-ls), a 
 
 ## Two editors to choose from
 
-Yasgui is editor-independent, you pick the editor implementation when embedding it:
+SPARQL Studio is editor-independent, you pick the editor implementation when embedding it:
 
 | Editor | Package | When to use |
 | --- | --- | --- |
-| **Monaco** | `@zazuko/yasqe` | The editor that powers VS Code, more features. |
-| **CodeMirror 6** | `@zazuko/yasqe-codemirror` | More lightweight. |
+| **Monaco** | `@rdfjs/sparql-editor-monaco` | The editor that powers VS Code, more features. |
+| **CodeMirror 6** | `@rdfjs/sparql-editor-codemirror` | More lightweight. |
 
-Both implement the same shared editor interface, so they are interchangeable behind Yasgui's editor factory.
+Both implement the same shared editor interface, so they are interchangeable behind SPARQL Studio's editor factory.
 
 ## Key features
 
@@ -43,6 +49,6 @@ Both implement the same shared editor interface, so they are interchangeable beh
 
 ## Next steps
 
-- [Getting started](./getting-started) · install and embed Yasgui in your app.
-- [Yasgui (full app)](./yasgui) · configure the complete interface.
+- [Getting started](./getting-started) · install and embed SPARQL Studio in your app.
+- [SPARQL Studio (full app)](./yasgui) · configure the complete interface.
 - [Language server](./language-server) · set up qlue-ls or plug in your own.

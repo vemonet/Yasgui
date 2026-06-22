@@ -28,15 +28,15 @@
 }
 
 /* VitePress global CSS resets can inflate the endpoint input */
-.yasgui .autocomplete {
+.sparql-studio .autocomplete {
   font-size: 13px;
   line-height: normal;
   height: auto;
 }
 
 /* YASR and results: natural block height, no overflow clipping */
-.yasgui-demo .yasgui .yasr,
-.yasgui-demo .yasgui .yasr_results {
+.yasgui-demo .sparql-studio .yasr,
+.yasgui-demo .sparql-studio .yasr_results {
   height: auto;
   overflow: visible;
 }
@@ -51,13 +51,13 @@
   min-height: 300px;
 }
 
-/* VitePress dark mode uses class="dark" on <html>, while Yasgui's own dark theme keys off [data-theme="dark"] */
-.dark .yasgui .clearEndpointBtn {
+/* VitePress dark mode uses class="dark" on <html>, while SparqlStudio's own dark theme keys off [data-theme="dark"] */
+.dark .sparql-studio .clearEndpointBtn {
   background-color: var(--yg-d-border);
   border-color: var(--yg-d-border);
   color: var(--yg-d-text);
 }
-.dark .yasgui .clearEndpointBtn:hover {
+.dark .sparql-studio .clearEndpointBtn:hover {
   background-color: var(--yg-d-hover);
   color: #fff;
 }

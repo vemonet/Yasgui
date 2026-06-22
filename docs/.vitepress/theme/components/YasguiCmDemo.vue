@@ -26,13 +26,13 @@ function toggleTheme() {
 }
 
 onMounted(async () => {
-  // Yasgui is editor-independent: it builds whatever editor the `yasqe` factory returns. Here we use
-  // the CodeMirror 6 editor (@zazuko/yasqe-codemirror) instead of the Monaco one (@zazuko/yasqe).
-  const { default: Yasgui } = await import("@zazuko/yasgui");
-  const { default: Yasqe } = await import("@zazuko/yasqe-codemirror");
-  await import("@zazuko/yasgui/style.css");
-  await import("@zazuko/yasqe-codemirror/style.css");
-  const { qlueLs } = await import("@zazuko/yasgui-utils");
+  // SparqlStudio is editor-independent: it builds whatever editor the `yasqe` factory returns. Here we use
+  // the CodeMirror 6 editor (@rdfjs/sparql-editor-codemirror) instead of the Monaco one (@rdfjs/sparql-editor-monaco).
+  const { default: SparqlStudio } = await import("@rdfjs/sparql-studio");
+  const { default: Yasqe } = await import("@rdfjs/sparql-editor-codemirror");
+  await import("@rdfjs/sparql-studio/style.css");
+  await import("@rdfjs/sparql-editor-codemirror/style.css");
+  const { qlueLs } = await import("@rdfjs/sparql-utils");
   const { default: QlueLsWorker } = await import("../qluels.worker?worker");
   const { default: SwlsWorker } = await import("../swls.worker?worker");
   const { default: TraqulaWorker } = await import("../traqula.worker?worker");
@@ -47,13 +47,13 @@ onMounted(async () => {
     return;
   }
 
-  // Register extra Yasr result-view plugins before creating the Yasgui instance.
+  // Register extra Yasr result-view plugins before creating the SparqlStudio instance.
   const [{ default: GraphPlugin }, { default: GeoPlugin }] = await Promise.all([
     import("@matdata/yasgui-graph-plugin"),
     import("yasgui-geo-tg"),
   ]);
-  Yasgui.Yasr.registerPlugin("Graph", GraphPlugin as any);
-  Yasgui.Yasr.registerPlugin("Geo", GeoPlugin as any);
+  SparqlStudio.Yasr.registerPlugin("Graph", GraphPlugin as any);
+  SparqlStudio.Yasr.registerPlugin("Geo", GeoPlugin as any);
 
   const endpointOf = () => yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
   const onReady = (conn: any) => {
@@ -62,7 +62,7 @@ onMounted(async () => {
   };
   const onEndpointChange = (conn: any, endpoint: string) => qlueLs.configureBackend(conn, endpoint);
 
-  yasgui = new Yasgui(container.value!, {
+  yasgui = new SparqlStudio(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
     // The editor factory: build a CodeMirror Yasqe, wiring in the theme + the available LS workers.
     yasqe: (parent: HTMLElement, conf: any) =>

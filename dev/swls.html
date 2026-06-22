@@ -2,16 +2,16 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/yasgui.png" />
+    <link rel="icon" href="/sparql-studio.svg" />
     <link rel="stylesheet" href="./style.css" />
-    <title>Yasgui with SWLS</title>
+    <title>SPARQL Studio with SWLS</title>
   </head>
   <body>
     <div class="navBar">
       <nav style="display: flex">
-        <img class="logo" src="/yasgui.png" style="max-height:50px;padding:5px;margin-left: 10px" alt="Yasgui Logo" />
+        <img class="logo" src="/sparql-studio.svg" style="max-height:50px;padding:5px;margin-left: 10px" alt="SPARQL Studio Logo" />
         <ul style="display: flex; list-style: none; align-self: center">
-          <li class="navItem active"><a class="nav-link" href="/">Yasgui</a></li>
+          <li class="navItem active"><a class="nav-link" href="/">SPARQL Studio</a></li>
           <li class="navItem"><a class="nav-link" href="yasqe">Yasqe</a></li>
           <li class="navItem"><a class="nav-link" href="yasr">Yasr</a></li>
         </ul>
@@ -22,13 +22,13 @@
     <div id="yasgui"></div>
 
     <script type="module">
-      import Yasgui from "@zazuko/yasgui";
-      import Yasqe, { qlueLs } from "@zazuko/yasqe";
+      import SparqlStudio from "@rdfjs/sparql-studio";
+      import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
       import QlueLsWorker from "./qluels.worker?worker";
       import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
       window.onpageshow = function () {
         const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
-        window.yasgui = new Yasgui(document.getElementById("yasgui"), {
+        window.yasgui = new SparqlStudio(document.getElementById("yasgui"), {
           requestConfig: { endpoint: DEMO_ENDPOINT },
           yasqe: (parent, conf) =>
             new Yasqe(parent, {
