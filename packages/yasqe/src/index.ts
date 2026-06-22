@@ -43,9 +43,34 @@ import type { editor } from "monaco-editor";
 import { MonacoLanguageClient } from "monaco-languageclient";
 export type { SparqlThemeOverrides } from "./editor/editorConfig";
 export { qlueLs } from "@zazuko/yasgui-utils";
-import { openSettingsPanel } from "./editor/settingsPanel";
-import type { LanguageServerSettingsSchema } from "./editor/settingsPanel";
-export type { LanguageServerSettingsSchema, SettingFieldSchema } from "./editor/settingsPanel";
+import { openSettingsPanel, unflatten, defaultsFromSchema } from "@zazuko/yasgui-utils";
+import type {
+  LanguageServerDef as SharedLanguageServerDef,
+  LanguageServerSettingsSchema,
+  LspConnection,
+} from "@zazuko/yasgui-utils";
+export type { LanguageServerSettingsSchema, SettingFieldSchema, LspConnection } from "@zazuko/yasgui-utils";
+
+/** A language server made available to the Monaco-based Yasqe. The editor-agnostic descriptor with
+ * its `yasqe` hook argument bound to this editor's {@link Yasqe}. Defined once in
+ * `@zazuko/yasgui-utils` so the SAME object also works with `@zazuko/yasqe-codemirror`. */
+export type LanguageServerDef = SharedLanguageServerDef<Yasqe>;
+
+/** Adapt a Monaco `MonacoLanguageClient` to the editor-agnostic {@link LspConnection} handed to
+ * language-server hooks. Cached per client so identity-based de-dup (e.g. qlue-ls's backend cache,
+ * keyed on the connection object) keeps working across repeated hook calls. */
+const lspConnections = new WeakMap<MonacoLanguageClient, LspConnection>();
+function toLspConnection(client: MonacoLanguageClient): LspConnection {
+  let conn = lspConnections.get(client);
+  if (!conn) {
+    conn = {
+      sendNotification: (method, params) => void client.sendNotification(method, params as any),
+      sendRequest: (method, params) => client.sendRequest(method, params as any) as Promise<any>,
+    };
+    lspConnections.set(client, conn);
+  }
+  return conn;
+}
 
 export interface Yasqe {
   on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
@@ -290,7 +315,7 @@ export class Yasqe extends EventEmitter {
   public notifyEndpointChange(endpoint: string): void {
     const def = this.config.languageServers?.[this.activeLanguageServerIndex];
     const client = this.getLanguageClient();
-    if (def?.onEndpointChange && client && endpoint) def.onEndpointChange(client, endpoint, this);
+    if (def?.onEndpointChange && client && endpoint) def.onEndpointChange(toLspConnection(client), endpoint, this);
   }
 
   /**
@@ -343,7 +368,7 @@ export class Yasqe extends EventEmitter {
     this.languageClientWrapper = await connectLanguageClient(worker);
     this.activeLanguageServerIndex = index;
     const client = this.getLanguageClient();
-    if (client && def.onReady) def.onReady(client, this);
+    if (client && def.onReady) def.onReady(toLspConnection(client), this);
     if (client) this.applyPersistedLanguageServerSettings(def, client);
     this.updateLanguageServerMenu();
     this.emit("languageServerChange", { label: def.label, description: def.description }, index);
@@ -547,7 +572,7 @@ export class Yasqe extends EventEmitter {
       current,
       onApply: (values) => {
         this.setLanguageServerSettings(def.label, values);
-        def.configCallback!(client, unflatten(values));
+        def.configCallback!(toLspConnection(client), unflatten(values));
       },
     });
   }
@@ -578,7 +603,7 @@ export class Yasqe extends EventEmitter {
   private applyPersistedLanguageServerSettings(def: LanguageServerDef, client: MonacoLanguageClient): void {
     if (!def.configCallback) return;
     const stored = this.getLanguageServerSettings(def.label);
-    if (stored && Object.keys(stored).length) def.configCallback(client, unflatten(stored));
+    if (stored && Object.keys(stored).length) def.configCallback(toLspConnection(client), unflatten(stored));
   }
 
   /**
@@ -1201,75 +1226,12 @@ export interface Config {
   getLanguageServerSettings?: (label: string) => Record<string, unknown> | undefined;
 }
 
-/**
- * A language server the consumer makes available to Yasqe (Monaco edition). Yasqe stays
- * language-server agnostic: the consumer supplies the `Worker` and any server-specific setup.
- */
-export interface LanguageServerDef {
-  /** Short name shown in the switcher (e.g. "Qlue-LS"). */
-  label: string;
-  /** Optional longer description, shown dimmed next to the label. */
-  description?: string;
-  /** A ready LSP `Worker`, or a factory returning one (optionally async, e.g. after WASM init). */
-  worker: Worker | (() => Worker | Promise<Worker>);
-  /**
-   * Called when this server becomes active (on load or when switched to), with its `LanguageClient`.
-   * Use it for server-specific setup, e.g. pushing settings and registering the SPARQL backend.
-   */
-  onReady?: (languageClient: MonacoLanguageClient, yasqe: Yasqe) => void;
-  /**
-   * Called when the active endpoint changes, but only for the currently active server, with its
-   * `LanguageClient` and the new endpoint. Use it for server-specific endpoint handling, e.g.
-   * re-registering the SPARQL backend. Driven by Yasgui's endpoint changes (and any caller of
-   * {@link Yasqe.notifyEndpointChange}).
-   */
-  onEndpointChange?: (languageClient: MonacoLanguageClient, endpoint: string, yasqe: Yasqe) => void;
-  /**
-   * Describes the server's tunable settings (a small JSON-schema subset). When present (together
-   * with {@link configCallback}), a "Configure …" entry (named after the server's `label`) appears
-   * in the right-click language server menu and opens a modal rendered from this schema. See
-   * {@link LanguageServerSettingsSchema}.
-   */
-  configSchema?: LanguageServerSettingsSchema;
-  /**
-   * Applies the settings collected from the {@link configSchema} panel to the running server. The
-   * `config` is a nested object: dotted schema keys (e.g. `format.tabSize`) become nested fields
-   * (`{ format: { tabSize: 2 } }`). For qlue-ls this is typically
-   * `(client, settings) => qlueLs.configureSettings(client, settings)`.
-   */
-  configCallback?: (languageClient: MonacoLanguageClient, config: any) => void;
-}
-
 export interface PersistentConfig {
   query: string;
   editorHeight: string;
   /** Last-applied settings panel values per language server label (flat dotted keys), so they
    * survive reloads and are re-applied to the server when it restarts. */
   languageServerSettings?: { [label: string]: Record<string, unknown> };
-}
-
-/** Collect the schema's default values as a flat `{ [dottedKey]: value }` map. */
-function defaultsFromSchema(schema: LanguageServerSettingsSchema): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [key, field] of Object.entries(schema.properties)) {
-    if (field.default !== undefined) out[key] = field.default;
-  }
-  return out;
-}
-
-/** Turn a flat `{ "format.tabSize": 2 }` map into a nested `{ format: { tabSize: 2 } }` object. */
-function unflatten(flat: Record<string, unknown>): Record<string, any> {
-  const out: Record<string, any> = {};
-  for (const [key, value] of Object.entries(flat)) {
-    const parts = key.split(".");
-    let node = out;
-    for (let i = 0; i < parts.length - 1; i++) {
-      node[parts[i]] = node[parts[i]] ?? {};
-      node = node[parts[i]];
-    }
-    node[parts[parts.length - 1]] = value;
-  }
-  return out;
 }
 
 export default Yasqe;

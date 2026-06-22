@@ -72,7 +72,28 @@ export interface SparqlThemeOverrides {
  * this for the active language server (it may switch between several), so it is decoupled from the
  * editor setup in {@link startMonacoEditor}. The returned wrapper is already started.
  */
+/**
+ * Resolve once a freshly created LSP worker signals it is ready, so the client never sends
+ * `initialize`/`didOpen` before the worker has installed its message handler. WASM-backed workers
+ * (qlue-ls, swls, ...) set their handler only AFTER an async `import()` / WASM init; a client
+ * connecting too early races that setup and corrupts message ordering. By convention these workers
+ * post `{ type: "ready" }` (or the bare string `"ready"`) once set up. `addEventListener` (not
+ * `onmessage=`) so it never clobbers the handler the client attaches later.
+ */
+function awaitWorkerReady(worker: Worker): Promise<void> {
+  return new Promise((resolve) => {
+    const onReady = (event: MessageEvent) => {
+      if (event.data?.type === "ready" || event.data === "ready") {
+        worker.removeEventListener("message", onReady);
+        resolve();
+      }
+    };
+    worker.addEventListener("message", onReady);
+  });
+}
+
 export async function connectLanguageClient(lsWorker: Worker): Promise<LanguageClientWrapper> {
+  await awaitWorkerReady(lsWorker);
   const languageClientConfig: LanguageClientConfig = {
     languageId: LANGUAGE_ID,
     clientOptions: {

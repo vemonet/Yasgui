@@ -2,6 +2,8 @@
  * qlue-ls SPARQL language server running as a Web Worker (WASM).
  *
  * This is consumer-side config: yasqe is language-server agnostic and just receives this worker.
+ * The SAME worker drives both the Monaco editor (`@zazuko/yasqe`) and the CodeMirror editor
+ * (`@zazuko/yasqe-codemirror`).
  */
 // @ts-ignore qlue-ls is loaded as a wasm module via vite-plugin-wasm
 import init, { init_language_server, listen } from "qlue-ls?init";

@@ -26,19 +26,32 @@ export {
   getSparqlBlockFoldingRanges,
 } from "./yasqe";
 export * as qlueLs from "./languageServers/qlueLs";
+// export type {
+//   Settings,
+//   FormatSettings,
+//   CompletionSettings,
+//   PrefixesSettings,
+//   PrefixMap,
+//   BackendConfiguration,
+//   BackendOptions,
+//   CompletionQueries,
+//   CompletionTemplate,
+//   SparqlEngine,
+//   QlueLsClient,
+// } from "./languageServers/qlueLs";
+// Editor-agnostic language-server contract shared by both Yasqe editors (Monaco + CodeMirror).
 export type {
-  Settings,
-  FormatSettings,
-  CompletionSettings,
-  PrefixesSettings,
-  PrefixMap,
-  BackendConfiguration,
-  BackendOptions,
-  CompletionQueries,
-  CompletionTemplate,
-  SparqlEngine,
-  QlueLsClient,
-} from "./languageServers/qlueLs";
+  LspConnection,
+  LanguageServerDef,
+  LanguageServerSettingsSchema,
+  SettingFieldSchema,
+} from "./languageServers/types";
+export {
+  openSettingsPanel,
+  unflatten,
+  defaultsFromSchema,
+  type SettingsPanelOptions,
+} from "./languageServers/settingsPanel";
 export * from "./errorNotification";
 export * from "./sparql";
 

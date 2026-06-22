@@ -26,14 +26,15 @@ function toggleTheme() {
 }
 
 onMounted(async () => {
-  // Yasgui is editor-independent: it builds whatever editor the `yasqe` factory returns. Here we use
-  // the Monaco editor (@zazuko/yasqe); see /codemirror for the CodeMirror 6 alternative.
   const { default: Yasgui } = await import("@zazuko/yasgui");
   const { default: Yasqe, qlueLs } = await import("@zazuko/yasqe");
   await import("@zazuko/yasgui/style.css");
   await import("@zazuko/yasqe/style.css");
-  // Only the WASM worker + demo endpoint are consumer-side; the qlue-ls plumbing lives in `qlueLs`.
-  const { createQlueLsWorker, createSwlsWorker, createTraqulaWorker, DEMO_ENDPOINT } = await import("../utils");
+  // Worker modules are imported dynamically here (client-only) so they never enter the SSR bundle.
+  const { default: QlueLsWorker } = await import("../qluels.worker?worker");
+  const { default: SwlsWorker } = await import("../swls.worker?worker");
+  const { default: TraqulaWorker } = await import("../traqula.worker?worker");
+  const { DEMO_ENDPOINT } = await import("../utils");
 
   syncTheme(isDark.value);
 
@@ -52,7 +53,6 @@ onMounted(async () => {
   Yasgui.Yasr.registerPlugin("Graph", GraphPlugin as any);
   Yasgui.Yasr.registerPlugin("Geo", GeoPlugin as any);
 
-  // Apply qlue-ls settings and point it at the current endpoint when it becomes active.
   const onReady = (client: any) => {
     qlueLs.configureSettings(client, qlueLs.defaultSettings);
     qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
@@ -69,7 +69,7 @@ onMounted(async () => {
           {
             label: "Qlue-ls",
             description: "SPARQL language server with endpoint-powered completions",
-            worker: createQlueLsWorker,
+            worker: () => new QlueLsWorker({ name: "qlue-ls" }),
             onReady,
             onEndpointChange,
             configSchema: qlueLs.settingsSchema,
@@ -78,12 +78,12 @@ onMounted(async () => {
           {
             label: "swls",
             description: "Semantic web language server",
-            worker: createSwlsWorker,
+            worker: () => new SwlsWorker({ name: "swls" }),
           },
           {
             label: "Traqula",
             description: "JS SPARQL 1.2 parser (diagnostics only)",
-            worker: createTraqulaWorker,
+            worker: () => new TraqulaWorker({ name: "traqula-ls" }),
           },
         ],
       }),

@@ -40,6 +40,21 @@
 .yasqe .cm-st-namespace {
   color: #ff5600;
 }
+/* Additional standard LSP semantic-token types (e.g. emitted by swls), mapped onto the same palette
+   so any language server's tokens get colored rather than rendering grey. */
+.yasqe .cm-st-property {
+  color: #cb4b16; /* like function */
+}
+.yasqe .cm-st-enum {
+  color: #62036f; /* like keyword */
+}
+.yasqe .cm-st-enumMember,
+.yasqe .cm-st-boolean {
+  color: #2aa198; /* like number / constant */
+}
+.yasqe .cm-st-langTag {
+  color: #ff5600; /* like namespace */
+}
 
 /* Dark theme overrides. The CodeMirror editor chrome (background, gutter, selection) is themed via
    the `darkTheme` extension in index.ts; these rules cover the surrounding container and the
@@ -72,5 +87,18 @@
   color: #32beb3;
 }
 [data-theme="dark"] .yasqe .cm-st-namespace {
+  color: #d6a200;
+}
+[data-theme="dark"] .yasqe .cm-st-property {
+  color: #32beb3;
+}
+[data-theme="dark"] .yasqe .cm-st-enum {
+  color: #7f85e7;
+}
+[data-theme="dark"] .yasqe .cm-st-enumMember,
+[data-theme="dark"] .yasqe .cm-st-boolean {
+  color: #f0591a;
+}
+[data-theme="dark"] .yasqe .cm-st-langTag {
   color: #d6a200;
 }
