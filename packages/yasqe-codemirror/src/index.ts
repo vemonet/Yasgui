@@ -83,6 +83,8 @@ import type {
 export type { QueryType, RequestConfig, PlainRequestConfig, Prefixes } from "@zazuko/yasgui-utils";
 export type { LanguageServerSettingsSchema, SettingFieldSchema, LspConnection } from "@zazuko/yasgui-utils";
 import { connectLanguageClient } from "./lsp/connect";
+import { clearSemanticTokens } from "./lsp/glue";
+import { sparqlFallbackHighlight } from "./lsp/sparqlHighlight";
 
 /** A language server made available to the CodeMirror-based Yasqe. The editor-agnostic descriptor
  * with its `yasqe` hook argument bound to this editor's {@link Yasqe}. Defined once in
@@ -204,6 +206,8 @@ export class Yasqe extends EventEmitter implements IYasqe {
   private themeCompartment = new Compartment();
   // Holds the active language server's CM6 extension (lint gutter + LSP plugin); reconfigured on switch.
   private lspCompartment = new Compartment();
+  // Static SPARQL highlighting, enabled only while the active server emits no semantic tokens.
+  private fallbackHighlightCompartment = new Compartment();
   private static uriCounter = 0;
   private documentUri?: string;
   /** Index of the active language server in `config.languageServers`, or -1 when none is active. */
@@ -375,6 +379,8 @@ export class Yasqe extends EventEmitter implements IYasqe {
     // The active language server (lint gutter + LSP plugin) lives in a compartment so it can be
     // swapped at runtime via setLanguageServer. Starts empty; the first server is activated below.
     base.push(this.lspCompartment.of([]));
+    // Static SPARQL highlighting on by default; switched off once a semantic-token server activates.
+    base.push(this.fallbackHighlightCompartment.of(sparqlFallbackHighlight));
     if (c.lineWrapping) base.push(EditorView.lineWrapping);
     base.push(
       EditorView.updateListener.of((u: ViewUpdate) => {
@@ -524,6 +530,12 @@ export class Yasqe extends EventEmitter implements IYasqe {
         effects: this.lspCompartment.reconfigure([lintGutter(), client.plugin(uri, def.languageId ?? "sparql")]),
       });
     }
+    const hasSemanticTokens = !!client.serverCapabilities?.semanticTokensProvider;
+    this.cm.dispatch({
+      effects: hasSemanticTokens
+        ? this.fallbackHighlightCompartment.reconfigure([])
+        : [this.fallbackHighlightCompartment.reconfigure(sparqlFallbackHighlight), clearSemanticTokens],
+    });
     if (def.onReady) def.onReady(toLspConnection(client), this);
     this.applyPersistedLanguageServerSettings(def, client);
     this.updateLanguageServerDropdown();
