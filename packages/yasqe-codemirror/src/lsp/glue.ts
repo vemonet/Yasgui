@@ -122,6 +122,11 @@ const semanticTokensField = StateField.define<DecorationSet>({
   provide: (f) => EditorView.decorations.from(f),
 });
 
+/** Effect that drops all semantic-token decorations. The field is shared across clients, so the
+ * editor dispatches this when switching to a server that emits no semantic tokens, to clear any the
+ * previous server left behind. */
+export const clearSemanticTokens = setSemanticTokens.of(Decoration.none);
+
 // Decode the LSP delta-encoded token array (groups of 5:
 // [deltaLine, deltaStartChar, length, tokenType, tokenModifiers]).
 function decodeSemanticTokens(data: number[], view: EditorView, tokenTypes: string[]): DecorationSet {
