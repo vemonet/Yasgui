@@ -3,16 +3,57 @@ import wasm from "vite-plugin-wasm";
 import importMetaUrlPlugin from "@codingame/esbuild-import-meta-url-plugin";
 import typedocSidebar from "../api/typedoc-sidebar.json";
 
+const siteUrl = "https://sparql.studio";
+const ogImage = `${siteUrl}/yasgui.png`;
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Yasgui",
   description: "Yet Another SPARQL GUI · a Monaco-based SPARQL query editor and result viewer",
-  base: "/Yasgui/",
+  base: "/",
+  lang: "en-US",
   cleanUrls: true,
   lastUpdated: true,
+  sitemap: {
+    hostname: "https://sparql.studio/",
+  },
   head: [
-    ["link", { rel: "icon", type: "image/png", href: "/Yasgui/yasgui.png" }],
-    ["link", { rel: "alternate icon", href: "/Yasgui/yasgui.png" }],
+    ["link", { rel: "icon", type: "image/png", href: "/yasgui.png" }],
+    ["link", { rel: "alternate icon", href: "/yasgui.png" }],
+    ["meta", { name: "author", content: "Yasgui contributors" }],
+    [
+      "meta",
+      {
+        name: "keywords",
+        content:
+          "SPARQL, SPARQL editor, SPARQL query, RDF, linked data, semantic web, Yasgui, Yasqe, Yasr, query editor, SPARQL GUI, Monaco editor",
+      },
+    ],
+    ["meta", { name: "theme-color", content: "#7d3fbd" }],
+    // Open Graph
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:site_name", content: "Yasgui" }],
+    ["meta", { property: "og:title", content: "Yasgui · SPARQL query editor and results viewer" }],
+    [
+      "meta",
+      {
+        property: "og:description",
+        content: "Yet Another SPARQL GUI · a modular SPARQL query editor and result viewer",
+      },
+    ],
+    ["meta", { property: "og:image", content: ogImage }],
+    ["meta", { property: "og:url", content: `${siteUrl}/` }],
+    // Twitter
+    ["meta", { name: "twitter:card", content: "summary" }],
+    ["meta", { name: "twitter:title", content: "Yasgui · SPARQL query editor and results viewer" }],
+    [
+      "meta",
+      {
+        name: "twitter:description",
+        content: "Yet Another SPARQL GUI · a modular SPARQL query editor and result viewer",
+      },
+    ],
+    ["meta", { name: "twitter:image", content: ogImage }],
   ],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -73,7 +114,7 @@ export default defineConfig({
       text: "Edit this page on GitHub",
     },
     footer: {
-      message: '<a href="/Yasgui/docs/introduction">Documentation</a> · <a href="https://github.com/rdfjs/Yasgui">Source code</a>',
+      message: '<a href="/docs/introduction">Documentation</a> · <a href="https://github.com/rdfjs/Yasgui">Source code</a>',
       copyright: "MIT License",
     },
   },
