@@ -23,24 +23,22 @@
     <div id="yasgui"></div>
 
     <script type="module">
-      // Yasgui is editor-independent: the consumer imports an editor and passes a factory.
-      // Here we use the CodeMirror 6 editor with the qlue-ls language server
       import Yasgui from "@zazuko/yasgui";
       import Yasqe from "@zazuko/yasqe-codemirror";
-      import { createQlueLsClient, qlueLs } from "./qluelsCmClient";
+      import { qlueLs } from "@zazuko/yasgui-utils";
+      import QlueLsWorker from "./qluels.worker?worker";
+      import SwlsWorker from "./swls.worker?worker";
+      import TraqulaWorker from "./traqula.worker?worker";
       import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
 
       const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
 
-      let clientPromise;
-      const getClient = () => (clientPromise ??= createQlueLsClient());
       const endpointOf = () => window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
-      // Apply a server's settings and point it at the current endpoint when it becomes active.
-      const onReady = (client, settings) => {
-        qlueLs.configureSettings(client, settings);
-        qlueLs.configureBackend(client, endpointOf());
+      const onReady = (conn) => {
+        qlueLs.configureSettings(conn, qlueLs.defaultSettings);
+        qlueLs.configureBackend(conn, endpointOf());
       };
-      const onEndpointChange = (client, endpoint) => qlueLs.configureBackend(client, endpoint);
+      const onEndpointChange = (conn, endpoint) => qlueLs.configureBackend(conn, endpoint);
 
       window.yasgui = new Yasgui(document.getElementById("yasgui"), {
         requestConfig: { endpoint: DEMO_ENDPOINT },
@@ -52,16 +50,21 @@
               {
                 label: "Qlue-ls",
                 description: "SPARQL language server with endpoint-powered completions",
-                client: getClient,
-                onReady: (client) => onReady(client, { completion: { timeoutMs: 1000, resultSizeLimit: 50 } }),
+                worker: () => new QlueLsWorker({ name: "qlue-ls" }),
+                onReady,
                 onEndpointChange,
+                configSchema: qlueLs.settingsSchema,
+                configCallback: (conn, settings) => qlueLs.configureSettings(conn, settings),
               },
               {
-                label: "Qlue-ls (aligned)",
-                description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
-                client: getClient,
-                onReady: (client) => onReady(client, { format: { whereNewLine: true, alignPredicates: true } }),
-                onEndpointChange,
+                label: "swls",
+                description: "Semantic web language server",
+                worker: () => new SwlsWorker({ name: "swls" }),
+              },
+              {
+                label: "Traqula",
+                description: "JS SPARQL 1.2 parser (diagnostics only)",
+                worker: () => new TraqulaWorker({ name: "traqula-ls" }),
               },
             ],
           }),

@@ -1,42 +1,17 @@
 /**
- * Generic, schema-driven settings panel for a language server (classic DOM, no Monaco UI).
+ * Generic, schema-driven settings panel for a language server (classic DOM, no editor dependency).
  *
- * A language server can describe its tunable settings with a {@link LanguageServerSettingsSchema}
- * (a small JSON-schema subset) via `LanguageServerDef.configSchema`. Yasqe renders this modal from
- * that schema and, on Apply, hands the collected values back to `LanguageServerDef.configCallback`,
- * which pushes them to the running server. Yasqe itself stays language-server agnostic: it never
- * knows what the settings mean, only how to render and collect them.
+ * Shared by both Yasqe editors: a server describes its tunable settings with a
+ * {@link LanguageServerSettingsSchema} (via `LanguageServerDef.configSchema`), the editor renders
+ * this modal from that schema and, on Apply, hands the collected values back to the server's
+ * `configCallback`. The renderer self-injects its CSS once (same pattern as the LSP error
+ * notification), so neither editor needs to ship the styles.
+ * @module LanguageServers
  */
-
-/** A single configurable field. The property key may be dotted (e.g. `format.tabSize`). */
-export interface SettingFieldSchema {
-  /** Widget/value type: checkbox, number input, or text/select. */
-  type: "boolean" | "number" | "string";
-  /** Human label shown next to the field (defaults to the property key). */
-  title?: string;
-  /** Optional helper text shown under the field. */
-  description?: string;
-  /** Default value, used when no value has been applied yet and by the Reset button. */
-  default?: boolean | number | string;
-  /** When set, a `string` field renders as a `<select>` of these options. */
-  enum?: (string | number)[];
-  /** Bounds for `number` fields. */
-  minimum?: number;
-  maximum?: number;
-  /** Optional section heading the field is grouped under (e.g. "Formatting"). */
-  group?: string;
-}
-
-/** Describes the settings a language server exposes; drives the {@link openSettingsPanel} modal. */
-export interface LanguageServerSettingsSchema {
-  /** Panel heading (defaults to `<server> settings`). */
-  title?: string;
-  /** The configurable fields, keyed by (optionally dotted) setting path. */
-  properties: Record<string, SettingFieldSchema>;
-}
+import type { LanguageServerSettingsSchema, SettingFieldSchema } from "./types";
 
 export interface SettingsPanelOptions {
-  /** Element to overlay the modal in (the yasqe root; must be `position: relative`). */
+  /** Element to overlay the modal in (the yasqe root). */
   root: HTMLElement;
   schema: LanguageServerSettingsSchema;
   /** Server label, used for the default panel title. */
@@ -47,6 +22,30 @@ export interface SettingsPanelOptions {
   onApply: (values: Record<string, unknown>) => void;
 }
 
+/** Collect a schema's default values as a flat `{ [dottedKey]: value }` map. */
+export function defaultsFromSchema(schema: LanguageServerSettingsSchema): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, field] of Object.entries(schema.properties)) {
+    if (field.default !== undefined) out[key] = field.default;
+  }
+  return out;
+}
+
+/** Turn a flat `{ "format.tabSize": 2 }` map into a nested `{ format: { tabSize: 2 } }` object. */
+export function unflatten(flat: Record<string, unknown>): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const [key, value] of Object.entries(flat)) {
+    const parts = key.split(".");
+    let node = out;
+    for (let i = 0; i < parts.length - 1; i++) {
+      node[parts[i]] = node[parts[i]] ?? {};
+      node = node[parts[i]];
+    }
+    node[parts[parts.length - 1]] = value;
+  }
+  return out;
+}
+
 function fieldDefault(field: SettingFieldSchema): boolean | number | string {
   if (field.default !== undefined) return field.default;
   if (field.type === "boolean") return false;
@@ -55,11 +54,63 @@ function fieldDefault(field: SettingFieldSchema): boolean | number | string {
   return "";
 }
 
+const STYLE_ID = "yasqe-settings-styles";
+const STYLES = `
+.yasqe-settings-backdrop {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px 12px; background: rgba(0, 0, 0, 0.35); overflow: auto;
+}
+.yasqe-settings-dialog {
+  width: 420px; max-width: 100%; max-height: 100%;
+  display: flex; flex-direction: column;
+  background: var(--yasqe-popup-bg, #fff); color: var(--yasqe-text, #000);
+  border: 1px solid var(--yasqe-popup-border, #e3e3e3); border-radius: 6px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); font-size: 13px;
+}
+.yasqe-settings-header { padding: 12px 16px; border-bottom: 1px solid var(--yasqe-popup-border, #e3e3e3); }
+.yasqe-settings-title { margin: 0; font-size: 15px; font-weight: 600; }
+.yasqe-settings-body { padding: 8px 16px; overflow: auto; }
+.yasqe-settings-section { padding: 6px 0; }
+.yasqe-settings-legend {
+  margin: 8px 0 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--yasqe-notification-text, #999);
+}
+.yasqe-settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.yasqe-settings-row-bool { justify-content: flex-start; cursor: pointer; }
+.yasqe-settings-row-bool input { margin: 0; }
+.yasqe-settings-label { flex: 1; }
+.yasqe-settings-row input[type="number"], .yasqe-settings-row input[type="text"], .yasqe-settings-row select {
+  width: 110px; padding: 3px 6px;
+  background: var(--yasqe-btn-bg, #fff); color: var(--yasqe-text, #000);
+  border: 1px solid var(--yasqe-btn-border, #ccc); border-radius: 3px;
+}
+.yasqe-settings-help { margin: 0 0 4px; font-size: 11px; color: var(--yasqe-notification-text, #999); }
+.yasqe-settings-footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 12px 16px; border-top: 1px solid var(--yasqe-popup-border, #e3e3e3);
+}
+.yasqe-settings-btn { padding: 5px 14px; border-radius: 3px; border: 1px solid var(--yasqe-btn-border, #ccc); cursor: pointer; font-size: 13px; }
+.yasqe-settings-btn-secondary { background: var(--yasqe-btn-bg, #fff); color: var(--yasqe-btn-text, #333); }
+.yasqe-settings-btn-secondary:hover { background: var(--yasqe-btn-hover-bg, #ebebeb); border-color: var(--yasqe-btn-hover-border, #adadad); }
+.yasqe-settings-btn-primary { background: var(--yasqe-accent, #337ab7); color: var(--yasqe-accent-text, #fff); border-color: var(--yasqe-accent, #337ab7); margin-left: 4px; }
+.yasqe-settings-btn-primary:hover { filter: brightness(1.08); }
+`;
+
+function injectStyles(): void {
+  if (typeof document === "undefined" || document.getElementById(STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = STYLE_ID;
+  style.textContent = STYLES;
+  document.head.appendChild(style);
+}
+
 /**
- * Open the settings modal. Returns a dispose function that removes it. The modal is modal-ish: a
- * backdrop covers the editor, Esc and a backdrop click cancel, Apply commits via `onApply`.
+ * Open the settings modal. Returns a dispose function that removes it. A backdrop covers the
+ * viewport, Esc and a backdrop click cancel, Apply commits via `onApply`.
  */
 export function openSettingsPanel(opts: SettingsPanelOptions): () => void {
+  injectStyles();
   const { root, schema, serverLabel, current, onApply } = opts;
 
   const backdrop = document.createElement("div");

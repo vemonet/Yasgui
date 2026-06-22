@@ -24,6 +24,12 @@ export const sparqlThemeDark = {
     comment: "#68828a", // base01 - solarized
     operator: "#32beb3", // cyan - matches keyword.symbol (*, ...)
     namespace: "#d6a200", // gold - matches variable.prefix.sparql
+    // Additional standard LSP token types (e.g. emitted by swls), mapped onto the same palette.
+    property: "#32beb3", // like function
+    enum: "#7f85e7", // like keyword
+    enumMember: "#f0591a", // like number
+    boolean: "#f0591a", // like number / constant
+    langTag: "#d6a200", // like namespace
     // namespace: { foreground: "#d6a200", fontStyle: "italic bold" },
   },
   // Used by TextMate grammars (fallback if no semantic colors provided by language server)
@@ -117,6 +123,12 @@ export const sparqlThemeLight = {
     comment: "#708090",
     operator: "#000000",
     namespace: "#FF5600",
+    // Additional standard LSP token types (e.g. emitted by swls), mapped onto the same palette.
+    property: "#cb4b16", // like function
+    enum: "#62036F", // like keyword
+    enumMember: "#2aa198", // like number
+    boolean: "#2aa198", // like number / constant
+    langTag: "#FF5600", // like namespace
   },
   tokenColors: [
     {

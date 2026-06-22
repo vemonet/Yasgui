@@ -1,47 +1,4 @@
 /// <reference types="vite/client" />
-import QlueLsWorker from "./qluels.worker?worker";
-import SwlsWorker from "./swls.worker?worker";
-import TraqulaWorker from "./traqula.worker?worker";
-
-/**
- * Create a qlue-ls language-server worker and resolve once its WASM is initialized.
- * Pass the result to Yasqe/Yasgui via the `languageServerWorker` config option.
- */
-export function createQlueLsWorker(): Promise<Worker> {
-  return new Promise((resolve) => {
-    const worker = new QlueLsWorker({ name: "qlue-ls" });
-    worker.onmessage = (event) => {
-      if (event.data?.type === "ready") resolve(worker);
-    };
-  });
-}
-
-/**
- * Create an swls language-server worker and resolve once its WASM is loaded and it signals
- * readiness. Waiting avoids racing the language client's initialize/didOpen burst against the
- * WASM import (which broke message ordering and left semantic-token highlighting unapplied).
- */
-export function createSwlsWorker(): Promise<Worker> {
-  return new Promise((resolve) => {
-    const worker = new SwlsWorker({ name: "swls" });
-    worker.onmessage = (event) => {
-      if (event.data?.type === "ready") resolve(worker);
-    };
-  });
-}
-
-/**
- * Create a Traqula language-server worker (pure-JS SPARQL 1.2 parser) and resolve once it signals
- * readiness with a "ready" message.
- */
-export function createTraqulaWorker(): Promise<Worker> {
-  return new Promise((resolve) => {
-    const worker = new TraqulaWorker({ name: "traqula-ls" });
-    worker.onmessage = (event) => {
-      if (event.data === "ready") resolve(worker);
-    };
-  });
-}
 
 /** Default SPARQL endpoint used across the demo pages. */
 export const DEMO_ENDPOINT = "https://sparql.dblp.org/sparql";

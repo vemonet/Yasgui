@@ -27,13 +27,14 @@
       // Monaco-based @zazuko/yasqe with the qlue-ls language server (provided by the embedder).
       import Yasgui from "@zazuko/yasgui";
       import Yasqe, { qlueLs } from "@zazuko/yasqe";
-      import { setupThemeToggle, createQlueLsWorker, createSwlsWorker, createTraqulaWorker, DEMO_ENDPOINT } from "./utils";
+      import QlueLsWorker from "./qluels.worker?worker";
+      import SwlsWorker from "./swls.worker?worker";
+      import TraqulaWorker from "./traqula.worker?worker";
+      import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
       // yasgui/yasqe are LS-agnostic; to switch to another SPARQL language server only ./qluels changes.
       window.onpageshow = function () {
         const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
-
         const endpointOf = () => window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
-        // Apply qlue-ls settings and point it at the current endpoint when it becomes active.
         const onReady = (client) => {
           qlueLs.configureSettings(client, qlueLs.defaultSettings);
           qlueLs.configureBackend(client, endpointOf());
@@ -50,7 +51,7 @@
                 {
                   label: "Qlue-ls",
                   description: "SPARQL language server with endpoint-powered completions",
-                  worker: createQlueLsWorker,
+                  worker: () => new QlueLsWorker({ name: "qlue-ls" }),
                   onReady,
                   onEndpointChange,
                   configSchema: qlueLs.settingsSchema,
@@ -59,12 +60,12 @@
                 {
                   label: "swls",
                   description: "Semantic web language server",
-                  worker: createSwlsWorker,
+                  worker: () => new SwlsWorker({ name: "swls" }),
                 },
                 {
                   label: "Traqula",
                   description: "JS SPARQL 1.2 parser (diagnostics only)",
-                  worker: createTraqulaWorker,
+                  worker: () => new TraqulaWorker({ name: "traqula-ls" }),
                 },
               ],
             }),

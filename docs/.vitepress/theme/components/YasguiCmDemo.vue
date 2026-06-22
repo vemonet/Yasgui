@@ -32,9 +32,10 @@ onMounted(async () => {
   const { default: Yasqe } = await import("@zazuko/yasqe-codemirror");
   await import("@zazuko/yasgui/style.css");
   await import("@zazuko/yasqe-codemirror/style.css");
-  // The qlue-ls language server (WASM) and the @codemirror/lsp-client wiring live in the embedder.
-  const { createQlueLsClient } = await import("../qluelsCmClient");
   const { qlueLs } = await import("@zazuko/yasgui-utils");
+  const { default: QlueLsWorker } = await import("../qluels.worker?worker");
+  const { default: SwlsWorker } = await import("../swls.worker?worker");
+  const { default: TraqulaWorker } = await import("../traqula.worker?worker");
   const { DEMO_ENDPOINT } = await import("../utils");
 
   syncTheme(isDark.value);
@@ -54,21 +55,16 @@ onMounted(async () => {
   Yasgui.Yasr.registerPlugin("Graph", GraphPlugin as any);
   Yasgui.Yasr.registerPlugin("Geo", GeoPlugin as any);
 
-  // qlue-ls compiles to a single-instance WASM module that runs in the main thread here, so both
-  // entries share ONE client and differ only by the settings their `onReady` pushes
-  let clientPromise: Promise<any> | undefined;
-  const getClient = () => (clientPromise ??= createQlueLsClient());
   const endpointOf = () => yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
-  // Apply a server's settings and point it at the current endpoint when it becomes active.
-  const onReady = (client: any, settings: any) => {
-    qlueLs.configureSettings(client, settings);
-    qlueLs.configureBackend(client, endpointOf());
+  const onReady = (conn: any) => {
+    qlueLs.configureSettings(conn, qlueLs.defaultSettings);
+    qlueLs.configureBackend(conn, endpointOf());
   };
-  const onEndpointChange = (client: any, endpoint: string) => qlueLs.configureBackend(client, endpoint);
+  const onEndpointChange = (conn: any, endpoint: string) => qlueLs.configureBackend(conn, endpoint);
 
   yasgui = new Yasgui(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
-    // The editor factory: build a CodeMirror Yasqe, wiring in the theme + the available LSP clients.
+    // The editor factory: build a CodeMirror Yasqe, wiring in the theme + the available LS workers.
     yasqe: (parent: HTMLElement, conf: any) =>
       new Yasqe(parent, {
         ...conf,
@@ -77,16 +73,21 @@ onMounted(async () => {
           {
             label: "Qlue-ls",
             description: "SPARQL language server with endpoint-powered completions",
-            client: getClient,
-            onReady: (client: any) => onReady(client, { completion: { timeoutMs: 2000, resultSizeLimit: 50 } }),
+            worker: () => new QlueLsWorker({ name: "qlue-ls" }),
+            onReady,
             onEndpointChange,
+            configSchema: qlueLs.settingsSchema,
+            configCallback: (conn: any, settings: any) => qlueLs.configureSettings(conn, settings),
           },
           {
-            label: "Qlue-ls (aligned)",
-            description: "Same engine, alternative formatting (WHERE on its own line, aligned predicates)",
-            client: getClient,
-            onReady: (client: any) => onReady(client, { format: { whereNewLine: true, alignPredicates: true } }),
-            onEndpointChange,
+            label: "swls",
+            description: "Semantic web language server",
+            worker: () => new SwlsWorker({ name: "swls" }),
+          },
+          {
+            label: "Traqula",
+            description: "JS SPARQL 1.2 parser (diagnostics only)",
+            worker: () => new TraqulaWorker({ name: "traqula-ls" }),
           },
         ],
       }),
