@@ -113,7 +113,7 @@ export class SparqlStudio extends EventEmitter {
   // The tab that initiated the in-flight query, so async query events route back to it even if the
   // user switches tabs in the meantime
   private queryingTab: Tab | undefined;
-  // True while we programmatically restore a per-endpoint language-server preference,
+  // True while we programmatically restore a per-endpoint language server preference,
   // so the resulting languageServerChange event isn't persisted back (redundant write)
   private applyingStoredLs = false;
   public static Tab = Tab;
@@ -206,7 +206,7 @@ export class SparqlStudio extends EventEmitter {
       consumeShareLink: null, // handled by the parent yasgui instance, not yasqe
       createShareableLink: () => this.getActiveTab()?.getShareableLink() || "",
       requestConfig: () => (this.getActiveTab()?.getProcessedRequestConfig() ?? {}) as any,
-      // SparqlStudio owns language-server settings persistence (one set per server, shared across tabs).
+      // SparqlStudio owns language server settings persistence (one set per server, shared across tabs).
       getLanguageServerSettings: (label: string) => this.persistentConfig.getLanguageServerSettings(label),
     };
     this.editor = this.config.editor(this.yasqeWrapperEl, yasqeConf);
@@ -224,7 +224,7 @@ export class SparqlStudio extends EventEmitter {
   }
 
   /**
-   * Apply the stored per-endpoint language-server preference to the shared editor, if any.
+   * Apply the stored per-endpoint language server preference to the shared editor, if any.
    * Returns true when it triggered a switch to a *different* server.
    */
   private applyStoredLanguageServer(endpoint: string): boolean {
@@ -268,7 +268,7 @@ export class SparqlStudio extends EventEmitter {
       (this.queryingTab || this.getActiveTab())?.handleQueryResponse(yasqe, response, duration);
       this.queryingTab = undefined;
     });
-    // Remember the user's language-server choice per endpoint
+    // Remember the user's language server choice per endpoint
     yasqe.on("languageServerChange", (_yasqe: any, def: { label: string }) => {
       if (this.applyingStoredLs) return;
       const endpoint = this.getActiveTab()?.getEndpoint();

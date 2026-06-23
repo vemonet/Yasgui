@@ -1,8 +1,8 @@
 /**
- * Shared language-server error notification (editor-agnostic).
+ * Shared language server error notification (editor-agnostic).
  *
  * Both the Monaco (`@rdfjs/sparql-editor-monaco`) and CodeMirror (`@rdfjs/sparql-editor-codemirror`) editors surface
- * language-server (qlue-ls) JSON-RPC error responses through this single component.
+ * language server (qlue-ls) JSON-RPC error responses through this single component.
  * Each editor only owns the transport-level tap that detects an error and calls {@link LspErrorNotification.show}.
  *
  * @module errorNotification
@@ -96,7 +96,7 @@ function ensureStyles() {
   document.head.appendChild(style);
 }
 
-/** A language-server error split into a short label and an optional longer description. */
+/** A language server error split into a short label and an optional longer description. */
 export interface ParsedLspError {
   label: string;
   description?: string;
@@ -122,7 +122,7 @@ function truncateOnWord(s: string, max: number): string {
 }
 
 /**
- * Split a language-server error message into a label + description.
+ * Split a language server error message into a label + description.
  *
  * qlue-ls typically formats errors as a short label followed by a quoted (JSON-encoded) detail, e.g.
  * `Completion query request failed` + `"Query failed! ... \nJsValue(...)"`. When that shape is found

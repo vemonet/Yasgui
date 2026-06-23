@@ -29,6 +29,5 @@ setTheme(initial);
 ```
 
 ::: info Integrating with a framework dark mode
-If your app already has a dark-mode switch (Tailwind, VitePress, etc.), just call both lines from its
-change handler. The [live demo](/) wires SparqlStudio's theme to VitePress' own dark-mode toggle this way.
+If your app already has a dark-mode switch (Tailwind, VitePress, etc.), just call both lines from its change handler. The [live demo](/) wires SparqlStudio's theme to VitePress' own dark-mode toggle this way.
 :::

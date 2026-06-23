@@ -51,7 +51,9 @@ If you don't use a language server at all, none of this is needed, the editor st
 
 ## 3. Set up the language server
 
-The language server runs in a **Web Worker**. The qlue-ls backend/settings plumbing ships with the package (the `qlueLs` helpers), so the only file you write is the worker itself, which is also the only file you change to switch to a different SPARQL language server later. You pass that worker straight to the editor: it waits for the worker to signal it is ready, then connects the LSP client for you, so no readiness wrapper is needed. See the [Language server](./language-server) page for details; here is the minimal setup:
+The language server runs in a **Web Worker**. The qlue-ls backend/settings plumbing ships with the package (the `qlueLs` helpers), so the only file you write is the worker itself, which is also the only file you change to switch to a different SPARQL language server later. You pass that worker straight to the editor: it waits for the worker to signal it is ready, then connects the LSP client for you, so no readiness wrapper is needed.
+
+See the [Language server](./language-server) page for details, here is the minimal setup:
 
 ```ts [qlue-ls.worker.ts]
 // @ts-ignore qlue-ls is loaded as a WASM module via vite-plugin-wasm
@@ -84,6 +86,8 @@ export {};
 
 ## 4. Mount SparqlStudio
 
+`SparqlStudio` is editor-independent, so you build the editor yourself. Pass the worker instance, the editor waits for its "ready" signal and connects the client. Per-entry hooks `(onReady, onEndpointChange)` fire only while that server is active.
+
 ```ts
 import SparqlStudio from "@rdfjs/sparql-studio";
 import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
@@ -92,11 +96,6 @@ import QlueLsWorker from "./qlue-ls.worker?worker";
 
 const yasgui = new SparqlStudio(document.getElementById("yasgui")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
-
-  // Editor factory: SparqlStudio is editor-independent, so you build the editor yourself.
-  // Pass the worker straight in (a Worker instance, or a () => Worker factory for lazy start);
-  // the editor waits for its "ready" signal and connects the client. Per-entry hooks
-  // (onReady, onEndpointChange) fire only while that server is active.
   editor: (parent, conf) =>
     new SparqlEditor(parent, {
       ...conf,
@@ -122,3 +121,26 @@ Add more entries to `languageServers` to let users switch at runtime; with two o
 ::: info CodeMirror instead of Monaco
 The factory is also where you choose the editor implementation. To use the CodeMirror 6 editor, import `SparqlEditor` from `@rdfjs/sparql-editor-codemirror` instead. The `languageServers` config is identical, both editors take the same `worker` (Monaco connects a language client to it, CodeMirror builds an `LSPClient` from it internally). See [Language server](./language-server).
 :::
+
+## Framework integration
+
+`SparqlStudio` is a plain DOM library, so it drops into any framework: mount it into a ref/element on mount and call `destroy()` on unmount. React example:
+
+```tsx
+import { useEffect, useRef } from "react";
+import SparqlStudio from "@rdfjs/sparql-studio";
+import SparqlEditor from "@rdfjs/sparql-editor-monaco";
+import "@rdfjs/sparql-studio/style.css";
+
+export function Sparql() {
+  const el = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const yasgui = new SparqlStudio(el.current!, {
+      requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
+      editor: (parent, conf) => new SparqlEditor(parent, { ...conf /* + languageServers */ }),
+    });
+    return () => yasgui.destroy();
+  }, []);
+  return <div ref={el} />;
+}
+```
