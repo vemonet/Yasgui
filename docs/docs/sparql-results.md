@@ -1,6 +1,6 @@
 # SPARQL Results
 
-::: info Previously Yasr
+::: info Formerly Yasr
 
 The term `yasr` is kept for compatibility in the CSS class and the local storage key.
 
