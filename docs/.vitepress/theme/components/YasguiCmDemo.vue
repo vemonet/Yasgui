@@ -52,8 +52,8 @@ onMounted(async () => {
     import("@matdata/yasgui-graph-plugin"),
     import("yasgui-geo-tg"),
   ]);
-  SparqlStudio.Yasr.registerPlugin("Graph", GraphPlugin as any);
-  SparqlStudio.Yasr.registerPlugin("Geo", GeoPlugin as any);
+  SparqlStudio.Results.registerPlugin("Graph", GraphPlugin as any);
+  SparqlStudio.Results.registerPlugin("Geo", GeoPlugin as any);
 
   const endpointOf = () => yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
   const onReady = (conn: any) => {

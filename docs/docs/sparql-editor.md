@@ -2,7 +2,7 @@
 
 ::: info Previously Yasqe
 
-The term yasqe is kept for compatibility, especially in the CSS classes.
+The term `yasqe` is kept for compatibility in the CSS classes and local storage key.
 
 :::
 
