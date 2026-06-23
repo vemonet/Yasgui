@@ -13,7 +13,7 @@ export type {
   RequestArgs,
   Prefixes,
   IYasqe,
-  YasqeFactory,
+  SparqlEditorFactory,
   LanguageServerInfo,
   SparqlFoldingRange,
 } from "./yasqe";
@@ -39,7 +39,7 @@ export * as qlueLs from "./languageServers/qlueLs";
 //   SparqlEngine,
 //   QlueLsClient,
 // } from "./languageServers/qlueLs";
-// Editor-agnostic language-server contract shared by both Yasqe editors (Monaco + CodeMirror).
+// Editor-agnostic language-server contract shared by both SparqlEditor editors (Monaco + CodeMirror).
 export type {
   LspConnection,
   LanguageServerDef,

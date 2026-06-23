@@ -158,3 +158,24 @@ html[data-theme="dark"] {
 
 /* Language-server settings panel styles (`.yasqe-settings-*`) are injected at runtime by the
    shared `openSettingsPanel` helper in @rdfjs/sparql-utils, so both editors share one source. */
+
+/* LSP diagnostics mirrored into the left glyph margin (decorations are set in index.ts via
+   `setupDiagnosticGlyphs`; Monaco itself only draws inline squiggles). Severity colors are
+   theme-independent so they stay legible in both light and dark. */
+.yasqe-glyph-error,
+.yasqe-glyph-warning,
+.yasqe-glyph-info {
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 13px 13px;
+  cursor: pointer;
+}
+.yasqe-glyph-error {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6.5' fill='%23e5484d'/><rect x='7.1' y='4' width='1.8' height='5' rx='.9' fill='%23fff'/><circle cx='8' cy='11.2' r='1' fill='%23fff'/></svg>");
+}
+.yasqe-glyph-warning {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M8 1.8 14.7 13.5a1 1 0 0 1-.87 1.5H2.17a1 1 0 0 1-.87-1.5z' fill='%23e0a800'/><rect x='7.1' y='6' width='1.8' height='4' rx='.9' fill='%23fff'/><circle cx='8' cy='12' r='1' fill='%23fff'/></svg>");
+}
+.yasqe-glyph-info {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6.5' fill='%234c8bf5'/><circle cx='8' cy='5' r='1' fill='%23fff'/><rect x='7.1' y='7' width='1.8' height='5' rx='.9' fill='%23fff'/></svg>");
+}

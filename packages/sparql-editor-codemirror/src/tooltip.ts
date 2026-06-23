@@ -4,9 +4,9 @@
  * 		position tooltip within codemirror frame as much as possible, to avoid z-index issues with external things on page
  * 		use html as content
  */
-import Yasqe from "./";
+import SparqlEditor from "./";
 
-export default function tooltip(_yasqe: Yasqe, parent: HTMLDivElement, html: string) {
+export default function tooltip(_yasqe: SparqlEditor, parent: HTMLDivElement, html: string) {
   var tooltip: HTMLDivElement;
   parent.onmouseover = function () {
     if (!tooltip) {

@@ -1,7 +1,7 @@
 # Request configuration
 
 `requestConfig` controls how queries are sent to the endpoint. It is accepted by both
-[Yasqe](./yasqe) and [SparqlStudio](./yasgui) (where it sets the default for every tab).
+[Yasqe](./sparql-editor) and [SparqlStudio](./sparql-studio) (where it sets the default for every tab).
 
 Every field may be a value **or** a `(yasqe) => value` function, so you can compute it per request.
 
@@ -31,5 +31,5 @@ new SparqlStudio(el, {
 
 ::: tip CORS
 If the endpoint does not return CORS headers, set a `corsProxy` on SparqlStudio rather than fighting the
-request config. See [SparqlStudio · CORS](./yasgui#cors).
+request config. See [SparqlStudio · CORS](./sparql-studio#cors).
 :::

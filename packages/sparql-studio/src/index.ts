@@ -11,17 +11,17 @@ import { default as Tab, PersistedJson as PersistedTabJson } from "./Tab";
 import { EndpointSelectConfig, CatalogueItem } from "./endpointSelect";
 import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";
-import { default as Yasr, Config as YasrConfig } from "@rdfjs/sparql-results";
+import { default as SparqlResults, Config as SparqlResultsConfig } from "@rdfjs/sparql-results";
 import { addClass, removeClass } from "@rdfjs/sparql-utils";
-import type { DeepPartial, IYasqe, YasqeFactory, RequestConfig } from "@rdfjs/sparql-utils";
+import type { DeepPartial, IYasqe, SparqlEditorFactory, RequestConfig } from "@rdfjs/sparql-utils";
 import "./index.scss";
 import "./darkmode.css";
 import "@rdfjs/sparql-results/src/scss/global.scss";
 if (window) {
-  //We're storing yasr as a member of SparqlStudio, but _also_ in the window
-  //That way, we dont have to tweak e.g. pro plugins to register themselves to both
-  //SparqlStudio.Yasr _and_ Yasr.
-  if (Yasr) (window as any).Yasr = Yasr;
+  //We're storing the results class as a member of SparqlStudio, but _also_ in the window.
+  //The `Yasr` name is kept for compatibility so existing Yasr plugins can register themselves to
+  //both `SparqlStudio.Yasr` and the `window.Yasr` global without changes.
+  if (SparqlResults) (window as any).Yasr = SparqlResults;
 }
 export type YasguiRequestConfig = Omit<RequestConfig<SparqlStudio>, "adjustQueryBeforeRequest"> & {
   adjustQueryBeforeRequest: RequestConfig<any>["adjustQueryBeforeRequest"];
@@ -48,10 +48,10 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
    * (e.g. `@rdfjs/sparql-editor-monaco` for Monaco or `@rdfjs/sparql-editor-codemirror` for CodeMirror 6) and supplies
    * a factory that builds it into `parent`, given the per-tab config SparqlStudio injects. Wire any
    * editor-specific options (theme, language server, ...) inside the factory:
-   *   yasqe: (parent, conf) => new Yasqe(parent, { ...conf, lsp: { client } })
+   *   editor: (parent, conf) => new SparqlEditor(parent, { ...conf, lsp: { client } })
    */
-  yasqe: YasqeFactory;
-  yasr: YasrConfig;
+  editor: SparqlEditorFactory;
+  results: SparqlResultsConfig;
   requestConfig: YasguiRequestConfig;
   contextMenuContainer: HTMLElement | undefined;
   nonSslDomain?: string;
@@ -106,9 +106,9 @@ export class SparqlStudio extends EventEmitter {
   public tabPanelsEl: HTMLDivElement;
   public config: Config;
   public persistentConfig: PersistentConfig;
-  // Single shared editor instance, built by the consumer-supplied `config.yasqe` factory.
+  // Single shared editor instance, built by the consumer-supplied `config.editor` factory.
   // Tabs share this instance and swap its content/endpoint on activation via syncEditorsWithTab.
-  public yasqe: IYasqe | undefined;
+  public editor: IYasqe | undefined;
   private yasqeWrapperEl: HTMLDivElement | undefined;
   // The tab that initiated the in-flight query, so async query events route back to it even if the
   // user switches tabs in the meantime
@@ -192,10 +192,10 @@ export class SparqlStudio extends EventEmitter {
   }
   /** Build the single shared editor (via the consumer factory) and route its events to the active tab. */
   private initGlobalYasqe() {
-    if (typeof this.config.yasqe !== "function") {
+    if (typeof this.config.editor !== "function") {
       throw new Error(
         "SparqlStudio is editor-independent: import an editor (e.g. @rdfjs/sparql-editor-monaco or @rdfjs/sparql-editor-codemirror) and " +
-          "pass it as the `yasqe` factory, e.g. new SparqlStudio(el, { yasqe: (parent, conf) => new Yasqe(parent, conf) })",
+          "pass it as the `yasqe` factory, e.g. new SparqlStudio(el, { yasqe: (parent, conf) => new SparqlEditor(parent, conf) })",
       );
     }
     this.yasqeWrapperEl = document.createElement("div");
@@ -209,7 +209,7 @@ export class SparqlStudio extends EventEmitter {
       // SparqlStudio owns language-server settings persistence (one set per server, shared across tabs).
       getLanguageServerSettings: (label: string) => this.persistentConfig.getLanguageServerSettings(label),
     };
-    this.yasqe = this.config.yasqe(this.yasqeWrapperEl, yasqeConf);
+    this.editor = this.config.editor(this.yasqeWrapperEl, yasqeConf);
     this.setupGlobalYasqeListeners();
   }
 
@@ -220,7 +220,7 @@ export class SparqlStudio extends EventEmitter {
     const switching = this.applyStoredLanguageServer(endpoint);
     // When we switch servers, the new server's `onReady` already configures it for this endpoint;
     // otherwise fire the active server's per-entry `onEndpointChange` hook.
-    if (!switching) this.yasqe?.notifyEndpointChange?.(endpoint);
+    if (!switching) this.editor?.notifyEndpointChange?.(endpoint);
   }
 
   /**
@@ -228,7 +228,7 @@ export class SparqlStudio extends EventEmitter {
    * Returns true when it triggered a switch to a *different* server.
    */
   private applyStoredLanguageServer(endpoint: string): boolean {
-    const yasqe = this.yasqe;
+    const yasqe = this.editor;
     if (!yasqe?.setLanguageServer || !yasqe.getLanguageServers) return false;
     const label = this.persistentConfig.getLanguageServerForEndpoint(endpoint);
     if (!label) return false;
@@ -245,9 +245,9 @@ export class SparqlStudio extends EventEmitter {
   }
 
   private setupGlobalYasqeListeners() {
-    const yasqe = this.yasqe;
+    const yasqe = this.editor;
     if (!yasqe) return;
-    // Yasqe events are emitted instance-first: (yasqe, ...payload). We route them to the active tab.
+    // SparqlEditor events are emitted instance-first: (yasqe, ...payload). We route them to the active tab.
     yasqe.on("blur", () => this.getActiveTab()?.handleYasqeBlur(yasqe));
     yasqe.on("query", () => {
       const tab = this.getActiveTab();
@@ -298,12 +298,12 @@ export class SparqlStudio extends EventEmitter {
 
   /** Load a tab query, request config and endpoint backend into the shared editor. */
   public updateEditorsContent(tab: Tab) {
-    if (!this.yasqe) return;
+    if (!this.editor) return;
     const tabConfig = tab.getPersistedJson();
-    this.yasqe.setValue(tabConfig.yasqe.value);
-    this.yasqe.setSize(tabConfig.yasqe.editorHeight || this.yasqe.config.editorHeight);
-    this.yasqe.config.requestConfig = () => tab.getProcessedRequestConfig() as any;
-    this.yasqe.config.createShareableLink = () => tab.getShareableLink();
+    this.editor.setValue(tabConfig.yasqe.value);
+    this.editor.setSize(tabConfig.yasqe.editorHeight || this.editor.config.editorHeight);
+    this.editor.config.requestConfig = () => tab.getProcessedRequestConfig() as any;
+    this.editor.config.createShareableLink = () => tab.getShareableLink();
     this.emitEndpointChange(tab.getEndpoint());
   }
 
@@ -501,7 +501,9 @@ export class SparqlStudio extends EventEmitter {
     while (this.rootEl.firstChild) this.rootEl.firstChild.remove();
   }
   public static linkUtils = shareLink;
-  public static Yasr = Yasr;
+  /** The results-viewer class, for registering Yasr plugins. `Yasr` is kept for plugin compatibility. */
+  public static Yasr = SparqlResults;
+  public static Results = SparqlResults;
   public static defaults = initializeDefaults();
   public static corsEnabled: { [endpoint: string]: boolean } = {};
 }

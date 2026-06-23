@@ -1,6 +1,6 @@
 /**
- * Yasqe · the standalone Monaco-based SPARQL query editor.
- * @module Yasqe
+ * SparqlEditor · the standalone Monaco-based SPARQL query editor.
+ * @module SparqlEditor
  */
 import { EventEmitter } from "events";
 import { Storage as YStorage } from "@rdfjs/sparql-utils";
@@ -51,10 +51,10 @@ import type {
 } from "@rdfjs/sparql-utils";
 export type { LanguageServerSettingsSchema, SettingFieldSchema, LspConnection } from "@rdfjs/sparql-utils";
 
-/** A language server made available to the Monaco-based Yasqe. The editor-agnostic descriptor with
- * its `yasqe` hook argument bound to this editor's {@link Yasqe}. Defined once in
+/** A language server made available to the Monaco-based SparqlEditor. The editor-agnostic descriptor with
+ * its `yasqe` hook argument bound to this editor's {@link SparqlEditor}. Defined once in
  * `@rdfjs/sparql-utils` so the SAME object also works with `@rdfjs/sparql-editor-codemirror`. */
-export type LanguageServerDef = SharedLanguageServerDef<Yasqe>;
+export type LanguageServerDef = SharedLanguageServerDef<SparqlEditor>;
 
 /** Adapt a Monaco `MonacoLanguageClient` to the editor-agnostic {@link LspConnection} handed to
  * language-server hooks. Cached per client so identity-based de-dup (e.g. qlue-ls's backend cache,
@@ -72,42 +72,48 @@ function toLspConnection(client: MonacoLanguageClient): LspConnection {
   return conn;
 }
 
-export interface Yasqe {
-  on(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
-  off(eventName: "query", handler: (instance: Yasqe, req: Request, abortController?: AbortController) => void): this;
-  on(eventName: "queryAbort", handler: (instance: Yasqe, req: Request) => void): this;
-  off(eventName: "queryAbort", handler: (instance: Yasqe, req: Request) => void): this;
-  on(eventName: "queryResponse", handler: (instance: Yasqe, response: any, duration: number) => void): this;
-  off(eventName: "queryResponse", handler: (instance: Yasqe, response: any, duration: number) => void): this;
-  on(eventName: "error", handler: (instance: Yasqe) => void): this;
-  off(eventName: "error", handler: (instance: Yasqe) => void): this;
-  on(eventName: "blur", handler: (instance: Yasqe) => void): this;
-  off(eventName: "blur", handler: (instance: Yasqe) => void): this;
-  on(eventName: "queryBefore", handler: (instance: Yasqe, config: YasqeAjaxConfig) => void): this;
-  off(eventName: "queryBefore", handler: (instance: Yasqe, config: YasqeAjaxConfig) => void): this;
-  on(eventName: "queryResults", handler: (instance: Yasqe, results: any, duration: number) => void): this;
-  off(eventName: "queryResults", handler: (instance: Yasqe, results: any, duration: number) => void): this;
-  on(eventName: "autocompletionShown", handler: (instance: Yasqe, widget: any) => void): this;
-  off(eventName: "autocompletionShown", handler: (instance: Yasqe, widget: any) => void): this;
-  on(eventName: "autocompletionClose", handler: (instance: Yasqe) => void): this;
-  off(eventName: "autocompletionClose", handler: (instance: Yasqe) => void): this;
-  on(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): this;
-  off(eventName: "resize", handler: (instance: Yasqe, newSize: string) => void): this;
+export interface SparqlEditor {
+  on(
+    eventName: "query",
+    handler: (instance: SparqlEditor, req: Request, abortController?: AbortController) => void,
+  ): this;
+  off(
+    eventName: "query",
+    handler: (instance: SparqlEditor, req: Request, abortController?: AbortController) => void,
+  ): this;
+  on(eventName: "queryAbort", handler: (instance: SparqlEditor, req: Request) => void): this;
+  off(eventName: "queryAbort", handler: (instance: SparqlEditor, req: Request) => void): this;
+  on(eventName: "queryResponse", handler: (instance: SparqlEditor, response: any, duration: number) => void): this;
+  off(eventName: "queryResponse", handler: (instance: SparqlEditor, response: any, duration: number) => void): this;
+  on(eventName: "error", handler: (instance: SparqlEditor) => void): this;
+  off(eventName: "error", handler: (instance: SparqlEditor) => void): this;
+  on(eventName: "blur", handler: (instance: SparqlEditor) => void): this;
+  off(eventName: "blur", handler: (instance: SparqlEditor) => void): this;
+  on(eventName: "queryBefore", handler: (instance: SparqlEditor, config: YasqeAjaxConfig) => void): this;
+  off(eventName: "queryBefore", handler: (instance: SparqlEditor, config: YasqeAjaxConfig) => void): this;
+  on(eventName: "queryResults", handler: (instance: SparqlEditor, results: any, duration: number) => void): this;
+  off(eventName: "queryResults", handler: (instance: SparqlEditor, results: any, duration: number) => void): this;
+  on(eventName: "autocompletionShown", handler: (instance: SparqlEditor, widget: any) => void): this;
+  off(eventName: "autocompletionShown", handler: (instance: SparqlEditor, widget: any) => void): this;
+  on(eventName: "autocompletionClose", handler: (instance: SparqlEditor) => void): this;
+  off(eventName: "autocompletionClose", handler: (instance: SparqlEditor) => void): this;
+  on(eventName: "resize", handler: (instance: SparqlEditor, newSize: string) => void): this;
+  off(eventName: "resize", handler: (instance: SparqlEditor, newSize: string) => void): this;
   on(
     eventName: "languageServerChange",
-    handler: (instance: Yasqe, def: { label: string; description?: string }, index: number) => void,
+    handler: (instance: SparqlEditor, def: { label: string; description?: string }, index: number) => void,
   ): this;
   off(
     eventName: "languageServerChange",
-    handler: (instance: Yasqe, def: { label: string; description?: string }, index: number) => void,
+    handler: (instance: SparqlEditor, def: { label: string; description?: string }, index: number) => void,
   ): this;
   on(eventName: string, handler: () => void): this;
 }
 
-export class Yasqe extends EventEmitter {
+export class SparqlEditor extends EventEmitter {
   private static storageNamespace = "triply";
   public rootEl: HTMLDivElement;
-  public storage: YStorage = new YStorage(Yasqe.storageNamespace);
+  public storage: YStorage = new YStorage(SparqlEditor.storageNamespace);
   public config: Config;
   public persistentConfig?: PersistentConfig;
   public queryValid = true;
@@ -121,6 +127,9 @@ export class Yasqe extends EventEmitter {
   public activeLanguageServerIndex = -1;
   /** Disposables for the context-menu language-server entries (re-created on every switch). */
   private lsMenuDisposables: { dispose(): void }[] = [];
+  /** Glyph-margin diagnostic icons (mirrors model markers into the left margin) + its marker listener. */
+  private diagnosticGlyphs?: editor.IEditorDecorationsCollection;
+  private markerListener?: { dispose(): void };
   /** Serializes language server switches so concurrent calls (init + a restored preference) don't race. */
   private lsSwitchQueue: Promise<void> = Promise.resolve();
   /** Index of the most recently requested language server. A queued activation whose index no longer
@@ -136,7 +145,9 @@ export class Yasqe extends EventEmitter {
   /** Dispose handle for an open settings panel, so a second open (or a server switch) closes the first. */
   private lsSettingsPanelDispose?: () => void;
   private static menuInstanceCounter = 0;
-  private readonly menuInstanceId = Yasqe.menuInstanceCounter++;
+  private readonly menuInstanceId = SparqlEditor.menuInstanceCounter++;
+  /** The `.yasqe_buttons` container; the share popup is appended to and positioned within it. */
+  private buttonsEl?: HTMLDivElement;
 
   private req?: Request;
   private abortController?: AbortController;
@@ -190,13 +201,17 @@ export class Yasqe extends EventEmitter {
         },
       });
 
-      // Save the query on Cmd/Ctrl+S (prevents the browser's "save page" dialog)
+      // Share the query URL on Cmd/Ctrl+S (also persists the query and prevents the browser's
+      // "save page" dialog). Shown in the right-click menu right under "Run SPARQL Query".
       this.editor?.addAction({
-        id: "yasqe-save-query",
-        label: "Save SPARQL Query",
+        id: "yasqe-share-query",
+        label: "Share query URL",
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
+        contextMenuGroupId: "navigation",
+        contextMenuOrder: 1,
         run: () => {
           this.saveQuery();
+          this.openSharePopup();
         },
       });
 
@@ -216,6 +231,9 @@ export class Yasqe extends EventEmitter {
       this.editor?.onDidBlurEditorText(() => {
         this.emit("blur");
       });
+
+      // Mirror LSP diagnostics into the left glyph margin (Monaco only shows squiggles by default)
+      this.setupDiagnosticGlyphs(monaco);
 
       // Do some post processing, init storage
       this.drawButtons();
@@ -283,7 +301,7 @@ export class Yasqe extends EventEmitter {
 
   /**
    * Extract the PREFIX declarations from the current query as a `{ prefix: iri }` map.
-   * Used by Yasr to resolve prefixed names in results.
+   * Used by SparqlResults to resolve prefixed names in results.
    */
   public getPrefixesFromQuery(): { [prefix: string]: string } {
     return getPrefixesFromQuery(this.getValue());
@@ -482,8 +500,8 @@ export class Yasqe extends EventEmitter {
       MenuRegistry.appendMenuItem(MenuId.EditorContext, {
         submenu,
         title: "Language server",
-        group: "1_language_server",
-        order: 1,
+        group: "navigation",
+        order: 2,
       }),
     );
     servers.forEach((s, i) => {
@@ -530,8 +548,8 @@ export class Yasqe extends EventEmitter {
       const action = this.editor?.addAction({
         id: `yasqe-language-server-${i}`,
         label,
-        contextMenuGroupId: "1_language_server",
-        contextMenuOrder: i,
+        contextMenuGroupId: "navigation",
+        contextMenuOrder: 2 + i,
         run: () => {
           this.setLanguageServer(i).catch(() => {});
         },
@@ -543,8 +561,8 @@ export class Yasqe extends EventEmitter {
       const action = this.editor?.addAction({
         id: `yasqe-language-server-configure`,
         label: `Configure ${activeServer.label}…`,
-        contextMenuGroupId: "1_language_server",
-        contextMenuOrder: servers.length,
+        contextMenuGroupId: "navigation",
+        contextMenuOrder: 2 + servers.length,
         run: () => this.openLanguageServerSettings(),
       });
       if (action) this.lsMenuDisposables.push(action);
@@ -639,7 +657,7 @@ export class Yasqe extends EventEmitter {
     const languageServers = rawConf.languageServers;
     const mergeableConf = { ...rawConf };
     delete mergeableConf.languageServers;
-    this.config = merge({}, Yasqe.defaults, mergeableConf);
+    this.config = merge({}, SparqlEditor.defaults, mergeableConf);
     if (languageServers) this.config.languageServers = languageServers as LanguageServerDef[];
 
     // Initialize the editor and then setup everything else. Exposed as `ready` so consumers can
@@ -678,17 +696,17 @@ export class Yasqe extends EventEmitter {
   private handleCursorActivity() {
     // this.autocomplete(true);
   }
-  private handleQuery(_yasqe: Yasqe, req: Request, abortController?: AbortController) {
+  private handleQuery(_yasqe: SparqlEditor, req: Request, abortController?: AbortController) {
     this.req = req;
     this.abortController = abortController;
     this.updateQueryButton();
   }
-  private handleQueryResponse(_yasqe: Yasqe, _response: any, duration: number) {
+  private handleQueryResponse(_yasqe: SparqlEditor, _response: any, duration: number) {
     this.lastQueryDuration = duration;
     this.req = undefined;
     this.updateQueryButton();
   }
-  private handleQueryAbort(_yasqe: Yasqe, _req: Request) {
+  private handleQueryAbort(_yasqe: SparqlEditor, _req: Request) {
     this.req = undefined;
     this.updateQueryButton();
   }
@@ -718,7 +736,7 @@ export class Yasqe extends EventEmitter {
     this.off("queryAbort", this.handleQueryAbort);
   }
   /**
-   * Emit an event, always passing this Yasqe instance as the first argument to listeners
+   * Emit an event, always passing this SparqlEditor instance as the first argument to listeners
    * (matches the documented `on(event, (instance, ...data) => ...)` API). So callers emit only the
    * payload, e.g. `this.emit("queryResponse", response, duration)`.
    */
@@ -732,9 +750,104 @@ export class Yasqe extends EventEmitter {
     if (typeof persistenceId === "string") return persistenceId;
     return persistenceId(this);
   }
+  /**
+   * Open the "share query" popup (link input + Shorten/cURL buttons). Triggered from the right-click
+   * menu / Cmd+Ctrl+S, since the Monaco editor has no share button. No-op without `createShareableLink`.
+   */
+  public openSharePopup() {
+    const buttons = this.buttonsEl;
+    if (!this.config.createShareableLink || !buttons) return;
+    // Toggle: a second invocation closes an open popup.
+    const existing = buttons.querySelector(".yasqe_sharePopup");
+    if (existing) {
+      existing.remove();
+      return;
+    }
+    let popup: HTMLDivElement | undefined = document.createElement("div");
+    popup.className = "yasqe_sharePopup";
+    buttons.appendChild(popup);
+    document.body.addEventListener(
+      "click",
+      (event) => {
+        if (popup && event.target !== popup && !popup.contains(<any>event.target)) {
+          popup.remove();
+          popup = undefined;
+        }
+      },
+      true,
+    );
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = this.config.createShareableLink(this);
+    input.onfocus = function () {
+      input.select();
+    };
+    // Work around Chrome's little problem
+    input.onmouseup = function () {
+      return false;
+    };
+
+    const inputWrapper = document.createElement("div");
+    inputWrapper.className = "inputWrapper";
+    inputWrapper.appendChild(input);
+    popup.appendChild(inputWrapper);
+
+    // We need to track which buttons are drawn here since the two implementations don't play nice together
+    const popupInputButtons: HTMLButtonElement[] = [];
+    const createShortLink = this.config.createShortLink;
+    if (createShortLink) {
+      popup.className += " enableShort";
+      const shortBtn = document.createElement("button");
+      popupInputButtons.push(shortBtn);
+      shortBtn.innerHTML = "Shorten";
+      shortBtn.className = "yasqe_btn yasqe_btn-sm shorten";
+      popup.appendChild(shortBtn);
+      shortBtn.onclick = () => {
+        popupInputButtons.forEach((button) => (button.disabled = true));
+        createShortLink(this, input.value).then(
+          (value) => {
+            input.value = value;
+            input.focus();
+          },
+          (err) => {
+            const errSpan = document.createElement("span");
+            errSpan.className = "shortlinkErr";
+            let textContent = "An error has occurred";
+            if (typeof err === "string" && err.length !== 0) {
+              textContent = err;
+            } else if (err.message && err.message.length !== 0) {
+              textContent = err.message;
+            }
+            errSpan.textContent = textContent;
+            input.replaceWith(errSpan);
+          },
+        );
+      };
+    }
+
+    const curlBtn = document.createElement("button");
+    popupInputButtons.push(curlBtn);
+    curlBtn.innerText = "cURL";
+    curlBtn.className = "yasqe_btn yasqe_btn-sm curl";
+    popup.appendChild(curlBtn);
+    curlBtn.onclick = () => {
+      popupInputButtons.forEach((button) => (button.disabled = true));
+      input.value = this.getAsCurlString();
+      input.focus();
+      popup?.appendChild(curlBtn);
+    };
+
+    // Position below the buttons row, right-aligned to it (anchor on the query button when present).
+    const anchor: HTMLElement = this.queryBtn ?? buttons;
+    popup.style.top = anchor.offsetTop + anchor.offsetHeight + "px";
+    popup.style.left = anchor.offsetLeft + anchor.clientWidth - popup.clientWidth + "px";
+    input.focus();
+  }
+
   private drawButtons() {
     const buttons = document.createElement("div");
     buttons.className = "yasqe_buttons";
+    this.buttonsEl = buttons;
     this.getWrapperElement().appendChild(buttons);
 
     if (this.config.pluginButtons) {
@@ -749,112 +862,6 @@ export class Yasqe extends EventEmitter {
       }
     }
 
-    /**
-     * draw share link button
-     */
-    if (this.config.createShareableLink) {
-      const svgShare = drawSvgStringAsElement(imgs.share);
-      const shareLinkWrapper = document.createElement("button");
-      shareLinkWrapper.className = "yasqe_share";
-      shareLinkWrapper.title = "Share query";
-      shareLinkWrapper.setAttribute("aria-label", "Share query");
-      shareLinkWrapper.appendChild(svgShare);
-      buttons.appendChild(shareLinkWrapper);
-      shareLinkWrapper.addEventListener("click", (event: MouseEvent) => showSharePopup(event));
-      shareLinkWrapper.addEventListener("keydown", (event: KeyboardEvent) => {
-        if (event.code === "Enter") {
-          showSharePopup(event);
-        }
-      });
-
-      const showSharePopup = (event: MouseEvent | KeyboardEvent) => {
-        event.stopPropagation();
-        let popup: HTMLDivElement | undefined = document.createElement("div");
-        popup.className = "yasqe_sharePopup";
-        buttons.appendChild(popup);
-        document.body.addEventListener(
-          "click",
-          (event) => {
-            if (popup && event.target !== popup && !popup.contains(<any>event.target)) {
-              popup.remove();
-              popup = undefined;
-            }
-          },
-          true,
-        );
-        const input = document.createElement("input");
-        input.type = "text";
-        input.value = this.config.createShareableLink(this);
-
-        input.onfocus = function () {
-          input.select();
-        };
-        // Work around Chrome's little problem
-        input.onmouseup = function () {
-          // $this.unbind("mouseup");
-          return false;
-        };
-        popup.innerHTML = "";
-
-        const inputWrapper = document.createElement("div");
-        inputWrapper.className = "inputWrapper";
-
-        inputWrapper.appendChild(input);
-
-        popup.appendChild(inputWrapper);
-
-        // We need to track which buttons are drawn here since the two implementations don't play nice together
-        const popupInputButtons: HTMLButtonElement[] = [];
-        const createShortLink = this.config.createShortLink;
-        if (createShortLink) {
-          popup.className = popup.className += " enableShort";
-          const shortBtn = document.createElement("button");
-          popupInputButtons.push(shortBtn);
-          shortBtn.innerHTML = "Shorten";
-          shortBtn.className = "yasqe_btn yasqe_btn-sm shorten";
-          popup.appendChild(shortBtn);
-          shortBtn.onclick = () => {
-            popupInputButtons.forEach((button) => (button.disabled = true));
-            createShortLink(this, input.value).then(
-              (value) => {
-                input.value = value;
-                input.focus();
-              },
-              (err) => {
-                const errSpan = document.createElement("span");
-                errSpan.className = "shortlinkErr";
-                // Throwing a string or an object should work
-                let textContent = "An error has occurred";
-                if (typeof err === "string" && err.length !== 0) {
-                  textContent = err;
-                } else if (err.message && err.message.length !== 0) {
-                  textContent = err.message;
-                }
-                errSpan.textContent = textContent;
-                input.replaceWith(errSpan);
-              },
-            );
-          };
-        }
-
-        const curlBtn = document.createElement("button");
-        popupInputButtons.push(curlBtn);
-        curlBtn.innerText = "cURL";
-        curlBtn.className = "yasqe_btn yasqe_btn-sm curl";
-        popup.appendChild(curlBtn);
-        curlBtn.onclick = () => {
-          popupInputButtons.forEach((button) => (button.disabled = true));
-          input.value = this.getAsCurlString();
-          input.focus();
-          popup?.appendChild(curlBtn);
-        };
-
-        const svgPos = svgShare.getBoundingClientRect();
-        popup.style.top = svgShare.offsetTop + svgPos.height + "px";
-        popup.style.left = svgShare.offsetLeft + svgShare.clientWidth - popup.clientWidth + "px";
-        input.focus();
-      };
-    }
     /**
      * Draw query btn
      */
@@ -973,7 +980,7 @@ export class Yasqe extends EventEmitter {
   }
   public handleLocalStorageQuotaFull(_e: any) {
     console.warn("Localstorage quota exceeded. Clearing all queries");
-    Yasqe.clearStorage();
+    SparqlEditor.clearStorage();
   }
 
   public saveQuery() {
@@ -1004,7 +1011,7 @@ export class Yasqe extends EventEmitter {
 
   /**
    * Surface language-server errors in the shared bottom-right notification (see
-   * `createLspErrorNotification` in `@rdfjs/sparql-utils`). Yasqe is language-server agnostic, so
+   * `createLspErrorNotification` in `@rdfjs/sparql-utils`). SparqlEditor is language-server agnostic, so
    * this only understands generic JSON-RPC: any server->client message carrying an `error` (i.e. a
    * JSON-RPC error response) is shown. Transient errors (request cancelled / content modified) are
    * ignored. The qlue-ls helpers send no `window/showMessage`, so this is the only channel through
@@ -1142,8 +1149,57 @@ export class Yasqe extends EventEmitter {
     if (this.editor) this.editor.layout();
   }
 
+  /**
+   * Mirror the model's LSP diagnostics into the left glyph margin as severity icons. Monaco renders
+   * markers only as inline squiggles (the overview ruler is disabled here), so there is no gutter
+   * cue by default. Keeps one icon per line, using the most severe diagnostic on that line and
+   * collecting every message on it as the hover.
+   */
+  private setupDiagnosticGlyphs(monaco: typeof import("monaco-editor")) {
+    const ed = this.editor;
+    const model = ed?.getModel();
+    if (!ed || !model) return;
+    this.diagnosticGlyphs = ed.createDecorationsCollection();
+    const severityClass: Record<number, string> = {
+      [monaco.MarkerSeverity.Error]: "yasqe-glyph-error",
+      [monaco.MarkerSeverity.Warning]: "yasqe-glyph-warning",
+      [monaco.MarkerSeverity.Info]: "yasqe-glyph-info",
+      [monaco.MarkerSeverity.Hint]: "yasqe-glyph-info",
+    };
+    const refresh = () => {
+      const byLine = new Map<number, { severity: number; messages: string[] }>();
+      for (const m of monaco.editor.getModelMarkers({ resource: model.uri })) {
+        const entry = byLine.get(m.startLineNumber);
+        if (!entry) byLine.set(m.startLineNumber, { severity: m.severity, messages: [m.message] });
+        else {
+          entry.messages.push(m.message);
+          if (m.severity > entry.severity) entry.severity = m.severity;
+        }
+      }
+      const decorations: editor.IModelDeltaDecoration[] = [];
+      for (const [line, { severity, messages }] of byLine) {
+        decorations.push({
+          range: new monaco.Range(line, 1, line, 1),
+          options: {
+            glyphMarginClassName: severityClass[severity] ?? "yasqe-glyph-info",
+            glyphMarginHoverMessage: messages.map((value) => ({ value })),
+            stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+          },
+        });
+      }
+      this.diagnosticGlyphs?.set(decorations);
+    };
+    refresh();
+    // onDidChangeMarkers fires with the affected resource URIs; refresh when ours is among them.
+    this.markerListener = monaco.editor.onDidChangeMarkers((uris) => {
+      if (uris.some((u) => u.toString() === model.uri.toString())) refresh();
+    });
+  }
+
   public destroy() {
     // Abort running query
+    this.markerListener?.dispose();
+    this.diagnosticGlyphs?.clear();
     this.abortQuery();
     this.unregisterEventListeners();
     this.resizeWrapper?.removeEventListener("mousedown", this.initDrag.bind(this), false);
@@ -1162,7 +1218,7 @@ export class Yasqe extends EventEmitter {
    */
   static Sparql = { executeQuery, getAjaxConfig, getUrlArguments, getAcceptHeader, getAsCurlString };
   static clearStorage() {
-    const storage = new YStorage(Yasqe.storageNamespace);
+    const storage = new YStorage(SparqlEditor.storageNamespace);
     storage.removeNamespace();
   }
   static defaults = getDefaults();
@@ -1177,9 +1233,9 @@ export interface Config {
    * By default, this feature is enabled, and the only the query value is appended to the link.
    * ps. This function should return an object which is parseable by jQuery.param (http://api.jquery.com/jQuery.param/)
    */
-  createShareableLink: (yasqe: Yasqe) => string;
-  createShortLink: ((yasqe: Yasqe, longLink: string) => Promise<string>) | undefined;
-  consumeShareLink: ((yasqe: Yasqe) => void) | undefined | null;
+  createShareableLink: (yasqe: SparqlEditor) => string;
+  createShortLink: ((yasqe: SparqlEditor, longLink: string) => Promise<string>) | undefined;
+  consumeShareLink: ((yasqe: SparqlEditor) => void) | undefined | null;
   /**
    * Change persistency settings for the YASQE query value. Setting the values
    * to null, will disable persistancy: nothing is stored between browser
@@ -1188,10 +1244,10 @@ export interface Config {
    * By default, the ID is dynamically generated using the closest dom ID, to avoid collissions when using multiple YASQE items on one
    * page
    */
-  persistenceId: ((yasqe: Yasqe) => string) | string | undefined | null;
+  persistenceId: ((yasqe: SparqlEditor) => string) | string | undefined | null;
   persistencyExpire: number; //seconds
   showQueryButton: boolean;
-  requestConfig: RequestConfig<Yasqe> | ((yasqe: Yasqe) => RequestConfig<Yasqe>);
+  requestConfig: RequestConfig<SparqlEditor> | ((yasqe: SparqlEditor) => RequestConfig<SparqlEditor>);
   pluginButtons: (() => HTMLElement[] | HTMLElement) | undefined;
   resizeable: boolean;
   editorHeight: string;
@@ -1234,4 +1290,4 @@ export interface PersistentConfig {
   languageServerSettings?: { [label: string]: Record<string, unknown> };
 }
 
-export default Yasqe;
+export default SparqlEditor;

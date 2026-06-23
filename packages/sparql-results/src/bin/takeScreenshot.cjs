@@ -252,7 +252,7 @@ const getHtml = (plugin) => `
   <script type="text/javascript">
     window.onload = function () {
       console.log('onload')
-      window.yasqe = Yasqe(document.getElementById("yasqe"), {
+      window.yasqe = SparqlEditor(document.getElementById("yasqe"), {
         requestConfig: {
           endpoint: "${endpoint}"
         },
@@ -268,7 +268,7 @@ const getHtml = (plugin) => `
         window.yasr.setResponse(response, duration);
       });
       yasqe.query();
-      window.yasr = Yasr(document.getElementById("yasr"), {
+      window.yasr = SparqlResults(document.getElementById("yasr"), {
         prefixes: function () {
           yasqe.getPrefixesFromQuery();
         },

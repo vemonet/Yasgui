@@ -1,21 +1,27 @@
-# Yasqe (editor)
+# SPARQL Editor
+
+::: info Previously Yasqe
+
+The term yasqe is kept for compatibility, especially in the CSS classes.
+
+:::
 
 `@rdfjs/sparql-editor-monaco` is the SPARQL query editor on its own, the Monaco editor plus an optional language
 client. Use it when you want only the editor, without tabs or the result viewer.
 
 ```ts
-import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
+import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
 import "@rdfjs/sparql-editor-monaco/style.css";
-import { createQlueLsWorker } from "./qlue-ls";
+import QlueLsWorker from "./qlue-ls.worker?worker";
 
 const endpoint = "https://sparql.dblp.org/sparql";
-const yasqe = new Yasqe(document.getElementById("yasqe")!, {
+const editor = new SparqlEditor(document.getElementById("yasqe")!, {
   value: "SELECT * WHERE { ?s ?p ?o } LIMIT 10",
   requestConfig: { endpoint },
   languageServers: [
     {
       label: "Qlue-ls",
-      worker: createQlueLsWorker,
+      worker: () => new QlueLsWorker({ name: "qlue-ls" }),
       onReady: (client) => {
         qlueLs.configureSettings(client);
         qlueLs.configureBackend(client, endpoint);
@@ -26,8 +32,8 @@ const yasqe = new Yasqe(document.getElementById("yasqe")!, {
   ],
 });
 
-yasqe.on("query", (yasqe, req) => console.log("running", req));
-yasqe.on("queryResponse", (yasqe, response, duration) => console.log(response, duration));
+editor.on("query", (yasqe, req) => console.log("running", req));
+editor.on("queryResponse", (yasqe, response, duration) => console.log(response, duration));
 ```
 
 With an empty `languageServers`, Yasqe still works as a syntax-highlighted editor, you just don't get

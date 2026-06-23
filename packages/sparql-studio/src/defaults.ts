@@ -1,6 +1,6 @@
 import { Config } from "./";
-import Yasr from "@rdfjs/sparql-results";
-import { defaultRequestConfig, YasqeFactory } from "@rdfjs/sparql-utils";
+import SparqlResults from "@rdfjs/sparql-results";
+import { defaultRequestConfig, SparqlEditorFactory } from "@rdfjs/sparql-utils";
 import { CatalogueItem } from "./endpointSelect";
 
 export default function initialize(): Config<CatalogueItem> {
@@ -27,9 +27,9 @@ export default function initialize(): Config<CatalogueItem> {
     persistenceLabelResponse: "response",
     persistenceLabelConfig: "config",
     // No default editor: SparqlStudio is editor-independent and the consumer must supply a `yasqe`
-    // factory (e.g. (parent, conf) => new Yasqe(parent, conf)). Validated in the constructor.
-    yasqe: undefined as unknown as YasqeFactory,
-    yasr: Yasr.defaults,
+    // factory (e.g. (parent, conf) => new SparqlEditor(parent, conf)). Validated in the constructor.
+    editor: undefined as unknown as SparqlEditorFactory,
+    results: SparqlResults.defaults,
     endpointCatalogueOptions: {
       getData: () => {
         return [

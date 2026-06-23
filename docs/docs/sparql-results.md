@@ -1,27 +1,33 @@
-# Yasr (results)
+# SPARQL Results
+
+::: info Previously Yasr
+
+The term yasr is kept for compatibility, especially in the CSS classes.
+
+:::
 
 `@rdfjs/sparql-results` renders a SPARQL response, as a table, raw response, graph or map. Use it standalone
 when you have results from anywhere and want SparqlStudio's viewer without the editor.
 
-Wire it to a [Yasqe](./yasqe) instance (or feed it a response from any source):
+Wire it to a [Yasqe](./sparql-editor) instance (or feed it a response from any source):
 
 ```ts
-import Yasqe from "@rdfjs/sparql-editor-monaco";
-import Yasr from "@rdfjs/sparql-results";
+import SparqlEditor from "@rdfjs/sparql-editor-monaco";
+import SparqlResults from "@rdfjs/sparql-results";
 import "@rdfjs/sparql-editor-monaco/style.css";
 import "@rdfjs/sparql-results/style.css";
 
-const yasqe = new Yasqe(document.getElementById("yasqe")!, {
+const editor = new SparqlEditor(document.getElementById("yasqe")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
 });
-const yasr = new Yasr(document.getElementById("yasr")!, {
+const results = new SparqlResults(document.getElementById("yasr")!, {
   // resolve prefixed names in results using the query's PREFIX declarations
-  prefixes: () => yasqe.getPrefixesFromQuery(),
+  prefixes: () => editor.getPrefixesFromQuery(),
 });
 
 // queryResponse is emitted instance-first: (yasqe, response, duration)
-yasqe.on("queryResponse", (yasqe, response, duration) => {
-  yasr.setResponse(response, duration);
+editor.on("queryResponse", (yasqe, response, duration) => {
+  results.setResponse(response, duration);
 });
 ```
 
@@ -30,8 +36,8 @@ yasqe.on("queryResponse", (yasqe, response, duration) => {
 You don't need Yasqe at all, `setResponse` accepts any SPARQL JSON / response object:
 
 ```ts
-const yasr = new Yasr(document.getElementById("yasr")!);
-yasr.setResponse(sparqlResultsJson);
+const results = new SparqlResults(document.getElementById("yasr")!);
+results.setResponse(sparqlResultsJson);
 ```
 
 ## Result-view plugins

@@ -2,7 +2,7 @@
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
 import type { Plugin } from "../";
-import Yasr from "../../";
+import SparqlResults from "../../";
 import "./index.scss";
 import { EditorState } from "@codemirror/state";
 import { EditorView, lineNumbers } from "@codemirror/view";
@@ -29,14 +29,14 @@ export interface PluginConfig {
   maxLines: number;
 }
 export default class Response implements Plugin<PluginConfig> {
-  private yasr: Yasr;
+  private yasr: SparqlResults;
   label = "Response";
   priority = 2;
-  helpReference = "https://vemonet.github.io/SparqlStudio/docs/plugins#response";
+  helpReference = "https://sparql.studio/docs/plugins#response";
   private config: DeepReadonly<PluginConfig>;
   private overLay: HTMLDivElement | undefined;
   private cm: EditorView | undefined;
-  constructor(yasr: Yasr) {
+  constructor(yasr: SparqlResults) {
     this.yasr = yasr;
     this.config = Response.defaults;
     if (yasr.config.plugins["response"] && yasr.config.plugins["response"].dynamicConfig) {

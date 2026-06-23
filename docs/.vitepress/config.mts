@@ -6,10 +6,13 @@ import typedocSidebar from "../api/typedoc-sidebar.json";
 const siteUrl = "https://sparql.studio";
 const ogImage = `${siteUrl}/sparql-studio.svg`;
 
+const shortDescription= "SPARQL query editor and results viewer";
+const description= "Modular SPARQL query editor and results viewer for the web, with multiple language servers available";
+
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "SPARQL Studio",
-  description: "SPARQL Studio · a SPARQL query editor and results viewer for the web (fork of Yasgui)",
+  description,
   base: "/",
   lang: "en-US",
   cleanUrls: true,
@@ -33,24 +36,24 @@ export default defineConfig({
     // Open Graph
     ["meta", { property: "og:type", content: "website" }],
     ["meta", { property: "og:site_name", content: "SPARQL Studio" }],
-    ["meta", { property: "og:title", content: "SPARQL Studio · SPARQL query editor and results viewer" }],
+    ["meta", { property: "og:title", content: shortDescription }],
     [
       "meta",
       {
         property: "og:description",
-        content: "SPARQL Studio · a modular SPARQL query editor and results viewer for the web (fork of Yasgui)",
+        content: description,
       },
     ],
     ["meta", { property: "og:image", content: ogImage }],
     ["meta", { property: "og:url", content: `${siteUrl}/` }],
     // Twitter
     ["meta", { name: "twitter:card", content: "summary" }],
-    ["meta", { name: "twitter:title", content: "SPARQL Studio · SPARQL query editor and results viewer" }],
+    ["meta", { name: "twitter:title", content: shortDescription }],
     [
       "meta",
       {
         name: "twitter:description",
-        content: "SPARQL Studio · a modular SPARQL query editor and results viewer for the web (fork of Yasgui)",
+        content: description,
       },
     ],
     ["meta", { name: "twitter:image", content: ogImage }],
@@ -76,9 +79,9 @@ export default defineConfig({
         {
           text: "Packages",
           items: [
-            { text: "SPARQL Studio (full app)", link: "/docs/yasgui" },
-            { text: "SPARQL editor (Monaco)", link: "/docs/yasqe" },
-            { text: "SPARQL results", link: "/docs/yasr" },
+            { text: "SPARQL Studio", link: "/docs/sparql-studio" },
+            { text: "SPARQL Editor", link: "/docs/sparql-editor" },
+            { text: "SPARQL Results", link: "/docs/sparql-results" },
           ],
         },
         {
@@ -94,8 +97,8 @@ export default defineConfig({
         {
           text: "Reference",
           items: [
-            { text: "API reference", link: "/api/" },
             { text: "Build from source", link: "/docs/build" },
+            { text: "API reference", link: "/api/" },
           ],
         },
       ],
