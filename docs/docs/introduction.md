@@ -30,21 +30,14 @@ Try it now on the [live demo](/). Then head to [Getting started](./getting-start
 
 ## ⚡️ Powered by language servers
 
-SPARQL Studio's smart features, semantic highlighting, diagnostics, code actions, hover, formatting and autocompletion, all come from a **SPARQL [language server (LSP)](https://microsoft.github.io/language-server-protocol/)**. SPARQL Studio editors are language server agnostic: you provide a ready language server and they wire a language client to it. All server-specific configuration lives in your app, which keeps the libraries small and lets you swap servers later.
+SPARQL Studio's smart features, semantic highlighting, diagnostics, code actions, hover, formatting and autocompletion, all come from a **SPARQL [language server (LSP)](https://microsoft.github.io/language-server-protocol/)**.
 
-The live demo uses 3 language servers:
-
-- [**qlue-ls**](https://github.com/IoannisNezis/Qlue-ls), a WASM SPARQL language server, with endpoint-powered completion
-- [**swls**](https://github.com/SemanticWebLanguageServer/swls), the semantic web language server
-- [**Traqula**](https://github.com/comunica/traqula), SPARQL 1.2 JS parser
+The editors are language-server agnostic: you provide a ready server and they wire a language client to it, so all server-specific config lives in your app and you can swap servers later. The recommended server is [qlue-ls](https://github.com/IoannisNezis/Qlue-ls) (WASM, endpoint-powered completion); see [Language server](./language-server) for the full setup and how to use others.
 
 ## 📝 Two editors to choose from
 
-SPARQL Studio is editor-independent, you pick the editor implementation when embedding it:
+SPARQL Studio is editor-independent: you pick the editor when embedding it, and both implement the
+same interface so they are interchangeable behind the editor factory.
 
-| Editor | Package | When to use |
-| --- | --- | --- |
-| **Monaco** | `@rdfjs/sparql-editor-monaco` | The editor that powers VS Code, more features. |
-| **CodeMirror 6** | `@rdfjs/sparql-editor-codemirror` | More lightweight. |
-
-Both implement the same shared editor interface, so they are interchangeable behind SPARQL Studio's editor factory.
+- **Monaco** (`@rdfjs/sparql-editor-monaco`) · the editor that powers VSCode, more features.
+- **CodeMirror 6** (`@rdfjs/sparql-editor-codemirror`) · more lightweight.

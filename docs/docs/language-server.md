@@ -1,13 +1,13 @@
 # Language server
 
 Smart features, autocompletion, diagnostics, hover, formatting and semantic highlighting, come from
-a **SPARQL language server (LSP)** running in a Web Worker. Yasqe and SparqlStudio are language-server
+a **SPARQL language server (LSP)** running in a Web Worker. SparqlEditor and SparqlStudio are language-server
 **agnostic**: you pass them an LSP `Worker` (or a factory that returns one) and they connect a
 language client to it for you, waiting until the worker signals it is ready. The same worker works in
 both editors (Monaco connects a `monaco-languageclient`; CodeMirror builds an `LSPClient` internally).
 
 The recommended server is [**qlue-ls**](https://github.com/IoannisNezis/Qlue-ls), a fast WASM SPARQL
-language server. Yasqe ships the qlue-ls plumbing (settings, backend/endpoint registration, prefix
+language server. SparqlEditor ships the qlue-ls plumbing (settings, backend/endpoint registration, prefix
 discovery, completion-query templates and types) under the `qlueLs` namespace, so the only thing you
 write yourself is the WASM worker:
 
@@ -23,37 +23,10 @@ hand it the worker directly, no readiness wrapper or Promise needed. This is the
 specific code you maintain (it depends on the `qlue-ls` package); everything else comes from the
 `qlueLs` helpers.
 
-```ts [qlue-ls.worker.ts]
-// @ts-ignore qlue-ls is loaded as a WASM module via vite-plugin-wasm
-import init, { init_language_server, listen } from "qlue-ls?init";
-
-init().then(() => {
-  // Connection Worker <-> Language Server (WASM)
-  const wasmInputStream = new TransformStream();
-  const wasmOutputStream = new TransformStream();
-  const wasmReader = wasmOutputStream.readable.getReader();
-  const wasmWriter = wasmInputStream.writable.getWriter();
-
-  // Initialize and start the language server
-  const server = init_language_server(wasmOutputStream.writable.getWriter());
-  listen(server, wasmInputStream.readable.getReader());
-
-  // Language Client -> Language Server
-  self.onmessage = (message) => wasmWriter.write(JSON.stringify(message.data));
-  // Language Server -> Language Client
-  (async () => {
-    while (true) {
-      const { value, done } = await wasmReader.read();
-      if (done) break;
-      self.postMessage(JSON.parse(value));
-    }
-  })();
-
-  // Signal to the host that the WASM server is initialized and ready
-  self.postMessage({ type: "ready" });
-});
-export {};
-```
+The worker file is the same for both editors — see the copy-paste version in
+[Getting started · Set up the language server](./getting-started#_3-set-up-the-language-server). The
+**contract** is all that matters here: post `{ type: "ready" }` once started, then bridge messages
+both ways between `self` and the WASM server. Any server that honors that contract works.
 
 ## Hooking it up
 
@@ -95,26 +68,10 @@ the editor in Monaco, a dropdown in CodeMirror) and the user's choice is remembe
   });
   ```
 
-Standalone **Yasqe** is the same — the per-server `onReady` (and `onEndpointChange`, which you can
-trigger yourself via `yasqe.notifyEndpointChange(endpoint)`) carry the setup:
-
-  ```ts [main.ts]
-  import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
-  import QlueLsWorker from "./qlue-ls.worker?worker";
-
-  new SparqlEditor(el, {
-    languageServers: [
-      {
-        label: "Qlue-ls",
-        worker: () => new QlueLsWorker({ name: "qlue-ls" }),
-        onReady: (lc) => {
-          qlueLs.configureSettings(lc);
-          qlueLs.configureBackend(lc, "https://sparql.dblp.org/sparql");
-        },
-      },
-    ],
-  });
-  ```
+Standalone **SparqlEditor** takes the identical `languageServers` array (it is the editor's own option) —
+the per-server `onReady` and `onEndpointChange` carry the setup, except you trigger the latter
+yourself with `yasqe.notifyEndpointChange(endpoint)` since there is no SparqlStudio to call it. See
+[SPARQL Editor](./sparql-editor) for the standalone example.
 
 ::: warning Per-server vs SparqlStudio-level
 The per-server `onEndpointChange` only fires for the active server, so each server handles endpoints
@@ -208,7 +165,7 @@ format/share/run buttons). See `dev/codemirror.html` in the repo for the full re
 
 ## Using a different language server
 
-Yasqe and SparqlStudio only need an LSP `Worker` (the same field for both editors). The `qlueLs`
+SparqlEditor and SparqlStudio only need an LSP `Worker` (the same field for both editors). The `qlueLs`
 helpers are a convenience for qlue-ls; they are not required. To use, for example,
 [swls](https://github.com/SemanticWebLanguageServer/swls) instead:
 

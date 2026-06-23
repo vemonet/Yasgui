@@ -3,7 +3,7 @@ import { addClass, removeClass, getAsValue } from "@rdfjs/sparql-utils";
 import { TabListEl } from "./TabElements";
 import TabPanel from "./TabPanel";
 import { defaultQueryValue } from "@rdfjs/sparql-utils";
-import type { IYasqe, RequestConfig, PlainRequestConfig } from "@rdfjs/sparql-utils";
+import type { IEditor, RequestConfig, PlainRequestConfig } from "@rdfjs/sparql-utils";
 import {
   default as SparqlResults,
   Parser,
@@ -58,7 +58,7 @@ export class Tab extends EventEmitter {
   public yasgui: SparqlStudio;
   // The editor is a single shared instance owned by SparqlStudio (built by the consumer-supplied
   // factory). Tabs read it through this getter and swap content on activation.
-  private get editor(): IYasqe | undefined {
+  private get editor(): IEditor | undefined {
     return this.yasgui.editor;
   }
   private results: SparqlResults | undefined;
@@ -351,11 +351,11 @@ export class Tab extends EventEmitter {
     }
     return processedReqConfig as PlainRequestConfig;
   }
-  handleYasqeBlur = (yasqe: IYasqe) => {
+  handleYasqeBlur = (yasqe: IEditor) => {
     this.persistentJson.yasqe.value = yasqe.getValue();
     this.emit("change", this, this.persistentJson);
   };
-  handleYasqeQuery = (yasqe: IYasqe) => {
+  handleYasqeQuery = (yasqe: IEditor) => {
     //the blur event might not have fired (e.g. when pressing ctrl-enter). So, we'd like to persist the query as well if needed
     if (yasqe.getValue() !== this.persistentJson.yasqe.value) {
       this.persistentJson.yasqe.value = yasqe.getValue();
@@ -369,17 +369,17 @@ export class Tab extends EventEmitter {
   handleYasqeQueryBefore = () => {
     this.emit("queryBefore", this);
   };
-  handleYasqeResize = (_yasqe: IYasqe, newSize: string) => {
+  handleYasqeResize = (_yasqe: IEditor, newSize: string) => {
     this.persistentJson.yasqe.editorHeight = newSize;
     this.emit("change", this, this.persistentJson);
   };
-  handleAutocompletionShown = (_yasqe: IYasqe, widget: string) => {
+  handleAutocompletionShown = (_yasqe: IEditor, widget: string) => {
     this.emit("autocompletionShown", this, widget);
   };
-  handleAutocompletionClose = (_yasqe: IYasqe) => {
+  handleAutocompletionClose = (_yasqe: IEditor) => {
     this.emit("autocompletionClose", this);
   };
-  handleQueryResponse = (_yasqe: IYasqe, response: any, duration: number) => {
+  handleQueryResponse = (_yasqe: IEditor, response: any, duration: number) => {
     this.emit("queryResponse", this);
     if (!this.results) throw new Error("Resultset visualizer not initialized. Cannot draw results");
     this.results.setResponse(response, duration);

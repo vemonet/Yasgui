@@ -12,7 +12,7 @@ export type {
   YasqePersistentConfig,
   RequestArgs,
   Prefixes,
-  IYasqe,
+  IEditor,
   SparqlEditorFactory,
   LanguageServerInfo,
   SparqlFoldingRange,

@@ -27,7 +27,7 @@ The `dev/` folder is a working reference for integrating the packages:
 
 - `dev/qluels.ts` + `dev/qluels.worker.ts` show the qlue-ls worker; the backend/settings plumbing
   comes from the package's `qlueLs` helpers (see [Language server](./language-server)).
-- `dev/index.html` / `yasqe.html` / `yasr.html` show SparqlStudio / Yasqe / Yasr with the language server.
+- `dev/index.html` / `editor.html` / `results.html` show SPARQL Studio / Editor / Results with the language server.
 
 ## The documentation site
 

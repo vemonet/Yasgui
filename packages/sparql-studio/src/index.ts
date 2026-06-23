@@ -13,7 +13,7 @@ import * as shareLink from "./linkUtils";
 import TabElements from "./TabElements";
 import { default as SparqlResults, Config as SparqlResultsConfig } from "@rdfjs/sparql-results";
 import { addClass, removeClass } from "@rdfjs/sparql-utils";
-import type { DeepPartial, IYasqe, SparqlEditorFactory, RequestConfig } from "@rdfjs/sparql-utils";
+import type { DeepPartial, IEditor, SparqlEditorFactory, RequestConfig } from "@rdfjs/sparql-utils";
 import "./index.scss";
 import "./darkmode.css";
 import "@rdfjs/sparql-results/src/scss/global.scss";
@@ -108,7 +108,7 @@ export class SparqlStudio extends EventEmitter {
   public persistentConfig: PersistentConfig;
   // Single shared editor instance, built by the consumer-supplied `config.editor` factory.
   // Tabs share this instance and swap its content/endpoint on activation via syncEditorsWithTab.
-  public editor: IYasqe | undefined;
+  public editor: IEditor | undefined;
   private yasqeWrapperEl: HTMLDivElement | undefined;
   // The tab that initiated the in-flight query, so async query events route back to it even if the
   // user switches tabs in the meantime
