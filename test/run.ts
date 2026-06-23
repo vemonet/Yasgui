@@ -36,7 +36,7 @@ describe("Yasqe", function () {
   });
 
   beforeEach(async () => {
-    page = await getPage(browser, "yasqe.html");
+    page = await getPage(browser, "editor.html");
     await page.evaluate(() => localStorage.clear());
     // Wait for the Monaco editor async init to finish (editor is created in initEditor() which is not awaited in the constructor)
     await page.waitForFunction(() => !!(window as any).yasqe?.editor, { timeout: 15000 });
