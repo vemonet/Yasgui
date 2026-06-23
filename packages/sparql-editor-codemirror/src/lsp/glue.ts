@@ -183,7 +183,7 @@ export function semanticTokens(delay = 200): LSPClientExtension {
             effects: setSemanticTokens.of(decodeSemanticTokens(res.data, this.view, legend.tokenTypes)),
           });
         } catch {
-          // ignore — will retry on next edit
+          // ignore, will retry on next edit
         }
       }
       destroy() {

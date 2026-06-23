@@ -213,3 +213,59 @@ WHERE {
 ## Error
 
 Appears automatically when a query fails. Shows detailed error messages, HTTP status codes, SPARQL endpoint errors and CORS troubleshooting guidance for network errors, syntax problems or an unavailable endpoint.
+
+## Writing a plugin
+
+A plugin is a class that implements the `Plugin` interface and renders into the result area. Register it with `SparqlStudio.Results.registerPlugin(name, PluginClass)` **before** creating the app. The constructor receives the `SparqlResults` instance; render into `this.results.resultsEl`.
+
+```ts
+import SparqlStudio from "@rdfjs/sparql-studio";
+import type { Plugin } from "@rdfjs/sparql-results";
+
+class BooleanPlugin implements Plugin<undefined> {
+  // Higher wins when several plugins can handle the same response.
+  priority = 10;
+  // Hide it from the plugin tabs (it is auto-selected via canHandleResults instead).
+  hideFromSelection = true;
+
+  constructor(private results: InstanceType<typeof SparqlStudio.Results>) {}
+
+  // Required: can this plugin render the current response?
+  canHandleResults() {
+    return typeof this.results.results?.getBoolean?.() === "boolean";
+  }
+
+  // Required: render into the results element.
+  draw() {
+    const el = document.createElement("div");
+    el.textContent = this.results.results?.getBoolean() ? "True" : "False";
+    this.results.resultsEl.appendChild(el);
+  }
+
+  // Required: a tab/selection icon (an SVG element renders best).
+  getIcon() {
+    const icon = document.createElement("span");
+    icon.textContent = "✓/✗";
+    return icon;
+  }
+}
+
+SparqlStudio.Results.registerPlugin("myBoolean", BooleanPlugin);
+```
+
+### The `Plugin` interface
+
+| member | required | purpose |
+| --- | --- | --- |
+| `priority` | yes | when multiple plugins return `true` from `canHandleResults()`, the highest priority is auto-selected |
+| `canHandleResults()` | yes | whether this plugin can render the current `results` |
+| `draw(persistentConfig?, runtimeConfig?)` | yes | render into `this.results.resultsEl` (may be async) |
+| `getIcon()` | yes | the `Element` shown on the plugin's selection tab |
+| `hideFromSelection` | — | hide the selection tab (e.g. auto-only plugins like Boolean/Error) |
+| `label` | — | display name on the tab (defaults to the registered name) |
+| `options` | — | the plugin's settings object, seeded from `dynamicConfig` |
+| `initialize()` / `destroy()` | — | async setup / teardown hooks |
+| `download(filename?)` | — | return a `DownloadInfo` (`{ contentType, getData, filename, title }`) to enable the download button |
+| `helpReference` | — | URL shown as a help link for the plugin |
+
+The parsed response is on `this.results.results` (a `Parser`): `getBoolean()`, `getBindings()`, `getVariables()`, the content type, etc. See the built-in [table](https://github.com/rdfjs/Yasgui/tree/main/packages/sparql-results/src/plugins/table) and [boolean](https://github.com/rdfjs/Yasgui/tree/main/packages/sparql-results/src/plugins/boolean) plugins for full references.

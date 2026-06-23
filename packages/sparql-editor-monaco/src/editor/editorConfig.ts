@@ -7,10 +7,10 @@
  * authoritative coloring comes from qlue-ls LSP *semantic tokens*; the Monarch grammar only
  * provides highlighting before the language server responds.
  *
- * This module is language-server agnostic: it does NOT create or know about any specific
+ * This module is language server agnostic: it does NOT create or know about any specific
  * language server. A ready-to-use LSP `Worker` can be injected by the caller; when provided,
  * a monaco-languageclient is wired to it (giving completions, diagnostics, formatting, semantic
- * tokens, etc. — whatever that server supports). When omitted, the editor still works with
+ * tokens, etc. whatever that server supports). When omitted, the editor still works with
  * Monarch-based syntax highlighting only.
  */
 
@@ -68,7 +68,7 @@ export interface SparqlThemeOverrides {
 }
 
 /**
- * Connect a `monaco-languageclient` LanguageClient to a ready language-server `Worker`. SparqlEditor calls
+ * Connect a `monaco-languageclient` LanguageClient to a ready language server `Worker`. SparqlEditor calls
  * this for the active language server (it may switch between several), so it is decoupled from the
  * editor setup in {@link startMonacoEditor}. The returned wrapper is already started.
  */
@@ -173,7 +173,7 @@ export async function startMonacoEditor(
         "editor.lightbulb.enabled": "On",
         "editor.wordBasedSuggestions": "off",
         "editor.experimental.asyncTokenization": true,
-        // Use language-server semantic tokens (parser-based) on top of the Monarch fallback grammar
+        // Use language server semantic tokens (parser-based) on top of the Monarch fallback grammar
         "editor.semanticHighlighting.enabled": true,
         "editor.tabSize": 2,
         "editor.insertSpaces": true,

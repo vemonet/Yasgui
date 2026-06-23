@@ -57,7 +57,7 @@ export type { LanguageServerSettingsSchema, SettingFieldSchema, LspConnection } 
 export type LanguageServerDef = SharedLanguageServerDef<SparqlEditor>;
 
 /** Adapt a Monaco `MonacoLanguageClient` to the editor-agnostic {@link LspConnection} handed to
- * language-server hooks. Cached per client so identity-based de-dup (e.g. qlue-ls's backend cache,
+ * language server hooks. Cached per client so identity-based de-dup (e.g. qlue-ls's backend cache,
  * keyed on the connection object) keeps working across repeated hook calls. */
 const lspConnections = new WeakMap<MonacoLanguageClient, LspConnection>();
 function toLspConnection(client: MonacoLanguageClient): LspConnection {
@@ -125,7 +125,7 @@ export class SparqlEditor extends EventEmitter {
   public ready: Promise<void>;
   /** Index of the active language server in `config.languageServers`, or -1 when none is active. */
   public activeLanguageServerIndex = -1;
-  /** Disposables for the context-menu language-server entries (re-created on every switch). */
+  /** Disposables for the context-menu language server entries (re-created on every switch). */
   private lsMenuDisposables: { dispose(): void }[] = [];
   /** Glyph-margin diagnostic icons (mirrors model markers into the left margin) + its marker listener. */
   private diagnosticGlyphs?: editor.IEditorDecorationsCollection;
@@ -410,7 +410,7 @@ export class SparqlEditor extends EventEmitter {
   //     monaco.editor.setModelLanguage(model, "plaintext");
   //     monaco.editor.setModelLanguage(model, languageId);
   //   } catch (error) {
-  //     console.warn("Failed to refresh semantic tokens after language-server switch:", error);
+  //     console.warn("Failed to refresh semantic tokens after language server switch:", error);
   //   }
   // }
 
@@ -525,7 +525,7 @@ export class SparqlEditor extends EventEmitter {
         }),
       );
     });
-    // "Configure <active server>..." — only when the active server exposes a settings schema.
+    // "Configure <active server>..." only when the active server exposes a settings schema.
     const activeServer = servers[this.activeLanguageServerIndex];
     if (activeServer?.configSchema && activeServer.configCallback) {
       const configId = `yasqe.languageServer.${this.menuInstanceId}.configure`;
@@ -1010,8 +1010,8 @@ export class SparqlEditor extends EventEmitter {
   private lsErrorNotification?: LspErrorNotification;
 
   /**
-   * Surface language-server errors in the shared bottom-right notification (see
-   * `createLspErrorNotification` in `@rdfjs/sparql-utils`). SparqlEditor is language-server agnostic, so
+   * Surface language server errors in the shared bottom-right notification (see
+   * `createLspErrorNotification` in `@rdfjs/sparql-utils`). SparqlEditor is language server agnostic, so
    * this only understands generic JSON-RPC: any server->client message carrying an `error` (i.e. a
    * JSON-RPC error response) is shown. Transient errors (request cancelled / content modified) are
    * ignored. The qlue-ls helpers send no `window/showMessage`, so this is the only channel through
@@ -1266,7 +1266,7 @@ export interface Config {
    */
   themes: { light?: Record<string, any>; dark?: Record<string, any> };
   /**
-   * The language servers the consumer makes available (yasqe is language-server agnostic). The
+   * The language servers the consumer makes available (yasqe is language server agnostic). The
    * first is activated on load; when two or more are configured a switcher appears in the editor's
    * right-click context menu. Servers are started lazily (the worker is resolved only when a server
    * is first activated). When empty, the editor runs with Monarch syntax highlighting only.

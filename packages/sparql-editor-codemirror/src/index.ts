@@ -1,7 +1,7 @@
 /**
  * SparqlEditor (CodeMirror 6 edition) · the standalone CodeMirror-based SPARQL query editor.
  *
- * SparqlEditor is language-server agnostic. The embedder supplies each server as a Web `Worker` (the
+ * SparqlEditor is language server agnostic. The embedder supplies each server as a Web `Worker` (the
  * universal LS transport, identical to the Monaco-based `@rdfjs/sparql-editor-monaco`) via
  * `config.languageServers`; SparqlEditor builds the `@codemirror/lsp-client` `LSPClient` internally. All
  * language features (highlighting, diagnostics, completion, hover, formatting) come from the active
@@ -92,7 +92,7 @@ import { sparqlFallbackHighlight } from "./lsp/sparqlHighlight";
 export type LanguageServerDef = SharedLanguageServerDef<SparqlEditor>;
 
 /** Adapt a CodeMirror `LSPClient` to the editor-agnostic {@link LspConnection} handed to
- * language-server hooks. Cached per client so identity-based de-dup (e.g. qlue-ls's backend cache,
+ * language server hooks. Cached per client so identity-based de-dup (e.g. qlue-ls's backend cache,
  * keyed on the connection object) keeps working across repeated hook calls. */
 const lspConnections = new WeakMap<LSPClient, LspConnection>();
 function toLspConnection(client: LSPClient): LspConnection {
@@ -216,13 +216,13 @@ export class SparqlEditor extends EventEmitter implements IEditor {
   private activeClient?: LSPClient;
   /** Resolved LSPClient per server index, so switching back is instant (clients are heavy/WASM). */
   private lsClients = new Map<number, LSPClient>();
-  /** Serializes language-server switches so concurrent calls (init + a restored preference) don't race. */
+  /** Serializes language server switches so concurrent calls (init + a restored preference) don't race. */
   private lsSwitchQueue: Promise<void> = Promise.resolve();
   /** Index of the most recently requested language server. A queued activation whose index no longer
    * matches this has been superseded (e.g. the constructor's default 0 followed by a restored
    * preference); it bails before any client setup so we never start a server just to dispose it. */
   private requestedLanguageServerIndex = -1;
-  /** The language-server switcher button (only drawn when 2+ servers are configured). */
+  /** The language server switcher button (only drawn when 2+ servers are configured). */
   private lsSelectEl?: HTMLButtonElement;
   /** Document-level click handler that closes the open switcher menu (removed on destroy). */
   private lsMenuOutsideClick?: (e: MouseEvent) => void;
@@ -905,7 +905,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
   }
 
   /**
-   * Draw the language-server switcher: a labelled dropdown button (showing the active server's
+   * Draw the language server switcher: a labelled dropdown button (showing the active server's
    * label) that, when clicked, opens a menu listing each server with its label and a dimmed
    * description. Only drawn when two or more servers are configured.
    */
@@ -949,7 +949,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
         });
         menu!.appendChild(item);
       });
-      // "Configure <active server>…" — only when the active server exposes a settings schema.
+      // "Configure <active server>…" only when the active server exposes a settings schema.
       const active = servers[this.activeLanguageServerIndex];
       if (active?.configSchema && active.configCallback) {
         const configItem = document.createElement("button");
@@ -1166,8 +1166,8 @@ export class SparqlEditor extends EventEmitter implements IEditor {
   private lsErrorNotification?: LspErrorNotification;
 
   /**
-   * Surface language-server errors in the shared bottom-right notification (see
-   * `createLspErrorNotification` in `@rdfjs/sparql-utils`). SparqlEditor is language-server agnostic, so
+   * Surface language server errors in the shared bottom-right notification (see
+   * `createLspErrorNotification` in `@rdfjs/sparql-utils`). SparqlEditor is language server agnostic, so
    * this only understands generic JSON-RPC: `LSPClient.request` rejects with the raw `error` object
    * of a JSON-RPC error response. The client is usually shared across tabs, so `request` is wrapped
    * only once and a per-instance notifier is kept in a listener list
@@ -1281,7 +1281,7 @@ export interface Config {
    * Language Server Protocol integration. SparqlEditor ships no SPARQL grammar of its own, all language
    * features (highlighting, diagnostics, completion, hover, formatting) come from the server. The
    * embedder supplies each server as a Web `Worker` (the universal LS transport, identical to the
-   * Monaco-based `@rdfjs/sparql-editor-monaco` — the SAME `languageServers` array works for either editor); SparqlEditor
+   * Monaco-based `@rdfjs/sparql-editor-monaco`, the SAME `languageServers` array works for either editor); SparqlEditor
    * builds the `LSPClient` internally and wires diagnostics + semantic-token highlighting. The first
    * is activated on load; when two or more are configured a switcher dropdown appears. qlue-ls (or
    * any SPARQL server) lives in the embedder, never in SparqlEditor's dependencies. When empty, SparqlEditor is a
@@ -1289,7 +1289,7 @@ export interface Config {
    */
   languageServers: LanguageServerDef[];
   /**
-   * Optional store for language-server settings panel values, keyed by server label. When provided
+   * Optional store for language server settings panel values, keyed by server label. When provided
    * (e.g. by SparqlStudio, to persist per endpoint), it is the source of truth for pre-filling the panel
    * and re-applying settings when a server (re)starts. Pairs with the `languageServerSettingsChange`
    * event. When omitted, SparqlEditor falls back to its own local-storage persistence.

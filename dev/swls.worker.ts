@@ -1,7 +1,7 @@
 /**
  * swls SPARQL language server running as a Web Worker (WASM).
  *
- * Consumer-side config: yasqe is language-server agnostic and just receives this worker.
+ * Consumer-side config: yasqe is language server agnostic and just receives this worker.
  * Unlike qlue-ls, swls speaks length-prefixed LSP frames (`Content-Length` headers), so this
  * worker frames outgoing messages and deframes incoming bytes back into JSON-RPC objects.
  *

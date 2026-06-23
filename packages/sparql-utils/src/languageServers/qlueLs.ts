@@ -450,7 +450,7 @@ const lastBackendByClient = new WeakMap<QlueLsClient, string>();
 
 /**
  * Register a SPARQL endpoint with the qlue-ls client and make it the default backend (so completions
- * resolve against it). Editor-agnostic — works with both the Monaco and CodeMirror language clients.
+ * resolve against it). Editor-agnostic works with both the Monaco and CodeMirror language clients.
  * Safe to call repeatedly (e.g. from a server's `onReady` or an endpoint-change handler): the same
  * endpoint is only registered once per client.
  */

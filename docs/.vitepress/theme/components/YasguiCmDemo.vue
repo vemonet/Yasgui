@@ -201,7 +201,7 @@ onBeforeUnmount(() => {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.15s;
-  z-index: 10;
+  z-index: 1100;
 }
 .yasgui-demo__help:hover .yasgui-demo__help-pop,
 .yasgui-demo__help:focus-within .yasgui-demo__help-pop {

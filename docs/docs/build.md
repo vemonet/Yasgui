@@ -1,7 +1,6 @@
 # Build from source
 
-The repository is an npm workspaces monorepo with five packages under `packages/`: `sparql-utils`,
-`sparql-editor-monaco`, `sparql-editor-codemirror`, `sparql-results` and `sparql-studio`.
+The repository is an npm workspaces monorepo with five packages under `packages/`: `sparql-utils`, `sparql-editor-monaco`, `sparql-editor-codemirror`, `sparql-results` and `sparql-studio`.
 
 Install:
 
@@ -34,13 +33,10 @@ For each package, `build:lib` emits into `packages/<pkg>/build`:
 - ESM (`*.js`), the main entry point.
 - CSS (`*.css`).
 - TypeScript declarations.
-- The editor / language-server worker assets.
-
+- The editor / language server worker assets.
 
 ::: info Assets bundling
-
 Asset URLs use a relative base (`base: "./"`) so they resolve in any consuming bundler.
-
 :::
 
 ## The documentation website
@@ -70,4 +66,3 @@ One-liner to build and test the docs website:
 ```sh
 npm run build && npm run docs:build && npm run docs:preview
 ```
-

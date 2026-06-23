@@ -2,7 +2,7 @@
  * Build a connected `@codemirror/lsp-client` {@link LSPClient} from a Web Worker LSP server.
  *
  * This is the CodeMirror counterpart to the Monaco editor's `connectLanguageClient`: the editor is
- * language-server agnostic and the consumer only provides a worker (see `LanguageServerDef.worker`).
+ * language server agnostic and the consumer only provides a worker (see `LanguageServerDef.worker`).
  * The client is wired with the base `languageServerExtensions()` plus the reusable glue
  * ({@link ./glue}) that adds pull-diagnostics and semantic-token highlighting, so any LSP worker
  * gets full editor features. Document open + the LSP plugin are attached by the editor (it owns the

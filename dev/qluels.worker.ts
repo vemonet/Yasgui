@@ -1,7 +1,7 @@
 /**
  * qlue-ls SPARQL language server running as a Web Worker (WASM).
  *
- * This is consumer-side config: yasqe is language-server agnostic and just receives this worker.
+ * This is consumer-side config: yasqe is language server agnostic and just receives this worker.
  * The SAME worker drives both the Monaco editor (`@rdfjs/sparql-editor-monaco`) and the CodeMirror editor
  * (`@rdfjs/sparql-editor-codemirror`).
  */

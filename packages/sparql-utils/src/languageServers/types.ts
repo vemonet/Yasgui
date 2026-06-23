@@ -1,5 +1,5 @@
 /**
- * Editor-agnostic language-server contract shared by both SparqlEditor editors (`@rdfjs/sparql-editor-monaco`,
+ * Editor-agnostic language server contract shared by both SparqlEditor editors (`@rdfjs/sparql-editor-monaco`,
  * Monaco-based, and `@rdfjs/sparql-editor-codemirror`, CodeMirror 6-based).
  *
  * A SPARQL language server is defined ONCE as a {@link LanguageServerDef} (a Web Worker plus
@@ -11,7 +11,7 @@
  */
 
 /**
- * Minimal editor/transport-agnostic JSON-RPC connection handed to language-server hooks. Each
+ * Minimal editor/transport-agnostic JSON-RPC connection handed to language server hooks. Each
  * editor adapts its native client to this: the Monaco `MonacoLanguageClient`
  * (`sendNotification`/`sendRequest`) passes through, the CodeMirror `LSPClient`
  * (`notification`/`request`) is mapped onto it.

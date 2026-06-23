@@ -148,7 +148,7 @@ export default defineConfig({
         "@lezer/highlight",
       ],
     },
-    // The qlue-ls language-server worker is compiled here and loads WebAssembly, so it needs
+    // The qlue-ls language server worker is compiled here and loads WebAssembly, so it needs
     // the wasm plugin, ES-format workers and the import.meta.url esbuild rewrite (dev pre-bundling).
     plugins: [wasm()],
     worker: {

@@ -1,46 +1,29 @@
 # Language server
 
-Smart features, autocompletion, diagnostics, hover, formatting and semantic highlighting, come from
-a **SPARQL language server (LSP)** running in a Web Worker. SparqlEditor and SparqlStudio are language-server
-**agnostic**: you pass them an LSP `Worker` (or a factory that returns one) and they connect a
-language client to it for you, waiting until the worker signals it is ready. The same worker works in
-both editors (Monaco connects a `monaco-languageclient`; CodeMirror builds an `LSPClient` internally).
+Smart features, completion, diagnostics, hover, formatting and semantic highlighting, come from a **SPARQL language server (LSP)** running in a Web Worker. 
 
-The recommended server is [**qlue-ls**](https://github.com/IoannisNezis/Qlue-ls), a fast WASM SPARQL
-language server. SparqlEditor ships the qlue-ls plumbing (settings, backend/endpoint registration, prefix
-discovery, completion-query templates and types) under the `qlueLs` namespace, so the only thing you
-write yourself is the WASM worker:
+`SparqlEditor` and `SparqlStudio` are language-server **agnostic**: you pass them an LSP `Worker` (or a factory that returns one) and they connect a language client to it for you, waiting until the worker signals it is ready. The same worker works in both editors (Monaco connects a `monaco-languageclient`; CodeMirror builds an `LSPClient` internally).
+
+The server used throughout this documentation is [**qlue-ls**](https://github.com/IoannisNezis/Qlue-ls), a fast WASM SPARQL language server. `SparqlEditor` ships the qlue-ls plumbing (settings, backend/endpoint registration, prefix discovery, completion-query templates and types) under the `qlueLs` namespace, so the only thing you write yourself is the WASM worker:
 
 ```ts
-import { qlueLs } from "@rdfjs/sparql-utils"; // editor-agnostic; also re-exported from "@rdfjs/sparql-editor-monaco"
+import { qlueLs } from "@rdfjs/sparql-utils";
 ```
 
 ## The worker
 
-qlue-ls is distributed as a WASM module; you wrap it in a Web Worker that posts a `ready` message
-once its WASM is initialized. The editor waits for that signal before connecting the client, so you
-hand it the worker directly, no readiness wrapper or Promise needed. This is the only qlue-ls
-specific code you maintain (it depends on the `qlue-ls` package); everything else comes from the
-`qlueLs` helpers.
+qlue-ls is distributed as a WASM module; you wrap it in a Web Worker that posts a `ready` message once its WASM is initialized. The editor waits for that signal before connecting the client, so you hand it the worker directly, no readiness wrapper or Promise needed. This is the only qlue-ls specific code you maintain (it depends on the `qlue-ls` package); everything else comes from the `qlueLs` helpers.
 
-The worker file is the same for both editors — see the copy-paste version in
-[Getting started · Set up the language server](./getting-started#_3-set-up-the-language-server). The
-**contract** is all that matters here: post `{ type: "ready" }` once started, then bridge messages
-both ways between `self` and the WASM server. Any server that honors that contract works.
+The worker file is the same for both editors, see the copy-paste version in [Getting started · Set up the language server](./getting-started#_3-set-up-the-language-server). The **contract** is all that matters here: post `{ type: "ready" }` once started, then bridge messages both ways between `self` and the WASM server. Any server that honors that contract works.
 
 ## Hooking it up
 
-Configure one or more servers through the `languageServers` array. Each entry has a `label`, the
-`worker` (instance or factory) and two optional **per-server** hooks — only the *active* server's
-hooks fire:
+Configure one or more servers through the `languageServers` array. Each entry has a `label`, the `worker` (instance or factory) and two optional **per-server** hooks, only the *active* server's hooks fire:
 
-- `onReady(client, yasqe)` — runs when that server becomes active (on load or when switched to).
-  Use it to push settings and register the active endpoint as the default backend.
-- `onEndpointChange(client, endpoint, yasqe)` — runs when the endpoint changes while that server is
-  active. Use it to re-register the backend for the new endpoint.
+- `onReady(client, yasqe)` · runs when that server becomes active (on load or when switched to). Use it to push settings and register the active endpoint as the default backend.
+- `onEndpointChange(client, endpoint, yasqe)` · runs when the endpoint changes while that server is active. Use it to re-register the backend for the new endpoint.
 
-The first entry is activated on load; with two or more configured, a switcher appears (right-click
-the editor in Monaco, a dropdown in CodeMirror) and the user's choice is remembered per endpoint.
+The first entry is activated on load; with two or more configured, a switcher appears (right-click the editor in Monaco, a dropdown in CodeMirror) and the user's choice is remembered per endpoint.
 
   ```ts [main.ts]
   import SparqlStudio from "@rdfjs/sparql-studio";
@@ -68,26 +51,16 @@ the editor in Monaco, a dropdown in CodeMirror) and the user's choice is remembe
   });
   ```
 
-Standalone **SparqlEditor** takes the identical `languageServers` array (it is the editor's own option) —
-the per-server `onReady` and `onEndpointChange` carry the setup, except you trigger the latter
-yourself with `yasqe.notifyEndpointChange(endpoint)` since there is no SparqlStudio to call it. See
-[SPARQL Editor](./sparql-editor) for the standalone example.
+Standalone **SparqlEditor** takes the identical `languageServers` array (it is the editor's own option), the per-server `onReady` and `onEndpointChange` carry the setup, except you trigger the latter yourself with `yasqe.notifyEndpointChange(endpoint)` since there is no SparqlStudio to call it. See [SPARQL Editor](./sparql-editor) for the standalone example.
 
 ::: warning Per-server vs SparqlStudio-level
-The per-server `onEndpointChange` only fires for the active server, so each server handles endpoints
-its own way. SparqlStudio still has a top-level `onEndpointChange(yasgui, endpoint)` for app-wide,
-server-independent work (analytics, UI). Both fire.
+The per-server `onEndpointChange` only fires for the active server, so each server handles endpoints its own way. SparqlStudio still has a top-level `onEndpointChange(yasgui, endpoint)` for app-wide, server-independent work (analytics, UI). Both fire.
 :::
 
-`qlueLs.configureBackend` is safe to call repeatedly (it skips re-registering the same endpoint on
-the same client). `yasqe.getLanguageClient()` returns the active `monaco-languageclient`, so you can
-also send any other LSP request or custom notification yourself.
+`qlueLs.configureBackend` is safe to call repeatedly (it skips re-registering the same endpoint on the same client). `yasqe.getLanguageClient()` returns the active `monaco-languageclient`, so you can also send any other LSP request or custom notification yourself.
 
 ::: tip Offering several servers
-List more than one entry to let users switch at runtime (e.g. qlue-ls for QLever endpoints, another
-server for large Virtuoso ones). Each entry's `worker` is resolved lazily the first time it is
-activated, so unused servers are never started. The reserved `configSchema` / `configCallback`
-fields are placeholders for a future generic config UI and are not yet implemented.
+List more than one entry to let users switch at runtime (e.g. qlue-ls for QLever endpoints, another server for large Virtuoso ones). Each entry's `worker` is resolved lazily the first time it is activated, so unused servers are never started. The reserved `configSchema` / `configCallback` fields are placeholders for a future generic config UI and are not yet implemented.
 :::
 
 ## The `qlueLs` helpers
@@ -124,18 +97,12 @@ The qlue-ls `BackendConfiguration` (what `createBackendConf` builds) is flat and
 | `engine`, `requestMethod`, `healthCheckUrl` | — | optional |
 
 ::: tip Auto-discovering prefixes
-`configureBackend` / `createBackendConf` call `fetchPrefixMap` for you when you don't pass a
-`prefixMap`: many endpoints expose their prefixes via `sh:namespace` / `sh:prefix`, and `qlueLs`
-falls back to `fallbackPrefixMap` (a broad set of common vocab prefixes) when none are returned.
+`configureBackend` / `createBackendConf` call `fetchPrefixMap` for you when you don't pass a `prefixMap`: many endpoints expose their prefixes via `sh:namespace` / `sh:prefix`, and `qlueLs` falls back to `fallbackPrefixMap` (a broad set of common vocab prefixes) when none are returned.
 :::
 
 ## CodeMirror editor (`@rdfjs/sparql-editor-codemirror`)
 
-The Monaco editor (`@rdfjs/sparql-editor-monaco`) is the default, but SparqlStudio is editor-independent: you can build
-the editor factory around the CodeMirror 6 editor instead. The `languageServers` config is
-**identical** — same `worker` field, same `qlueLs` helpers (they operate on the editor-agnostic
-connection passed to `onReady` / `onEndpointChange`). The only change is the editor import; CodeMirror
-builds the `@codemirror/lsp-client` `LSPClient` from your worker internally:
+The Monaco editor (`@rdfjs/sparql-editor-monaco`) is the default, but SparqlStudio is editor-independent: you can build the editor factory around the CodeMirror 6 editor instead. The `languageServers` config is **identical**, same `worker` field, same `qlueLs` helpers (they operate on the editor-agnostic connection passed to `onReady` / `onEndpointChange`). The only change is the editor import; CodeMirror builds the `@codemirror/lsp-client` `LSPClient` from your worker internally:
 
 ```ts
 import SparqlStudio from "@rdfjs/sparql-studio";
@@ -165,13 +132,10 @@ format/share/run buttons). See `dev/codemirror.html` in the repo for the full re
 
 ## Using a different language server
 
-SparqlEditor and SparqlStudio only need an LSP `Worker` (the same field for both editors). The `qlueLs`
-helpers are a convenience for qlue-ls; they are not required. To use, for example,
-[swls](https://github.com/SemanticWebLanguageServer/swls) instead:
+SparqlEditor and SparqlStudio only need an LSP `Worker` (the same field for both editors). The `qlueLs` helpers are a convenience for qlue-ls; they are not required. To use, for example, [swls](https://github.com/SemanticWebLanguageServer/swls) instead:
 
 1. Replace `qlue-ls.worker.ts` with that server's worker (it must post a `ready` message once started).
 2. Add it as another `languageServers` entry (its own `worker`), alongside or instead of qlue-ls.
-3. In that entry's `onReady` / `onEndpointChange`, send whatever that server needs to target an
-   endpoint (its own custom requests) on the connection you receive.
+3. In that entry's `onReady` / `onEndpointChange`, send whatever that server needs to target an endpoint (its own custom requests) on the connection you receive.
 
 No changes to the `@rdfjs/*` packages are required.

@@ -6,8 +6,7 @@ The term `yasr` is kept for compatibility in the CSS class and the local storage
 
 :::
 
-`@rdfjs/sparql-results` renders a SPARQL response, as a table, raw response, graph or map. Use it standalone
-when you have results from anywhere and want SparqlStudio's viewer without the editor.
+`@rdfjs/sparql-results` renders a SPARQL response, as a table, raw response, graph or map. Use it standalone when you have results from anywhere and want SparqlStudio's viewer without the editor.
 
 Wire it to a [SparqlEditor](./sparql-editor) instance (or feed it a response from any source):
 
@@ -40,12 +39,35 @@ const results = new SparqlResults(document.getElementById("yasr")!);
 results.setResponse(sparqlResultsJson);
 ```
 
+## Programmatic API
+
+```ts
+results.setResponse(response, duration);   // parse + render a response
+results.selectPlugin("response");          // switch the active plugin by name
+results.getSelectedPluginName();           // current plugin name
+results.draw();                            // re-render with the current plugin
+results.download();                        // download the current view (if supported)
+results.somethingDrawn();                  // whether a result is currently rendered
+results.results;                           // the parsed response (Parser): getBindings(), getVariables(), getBoolean(), …
+```
+
+## Events
+
+Handlers are **instance-first**: `(results, ...payload)`.
+
+| event | payload | fires when |
+| --- | --- | --- |
+| `draw` | `(results, plugin)` | just before a plugin renders |
+| `drawn` | `(results, plugin)` | after a plugin finishes rendering |
+| `change` | `(results)` | the response or settings change |
+
+```ts
+results.on("drawn", (results, plugin) => console.log("rendered with", plugin));
+```
+
 ## Result-view plugins
 
-Yasr picks a sensible plugin based on the response (a table for `SELECT`, a boolean for `ASK`, etc.)
-and users switch with the tabs above the result area. Built in are **Table**, **Response**,
-**Boolean** and **Error**; **Graph** and **Geo** are community plugins you register before creating
-the app:
+Yasr picks a sensible plugin based on the response (a table for `SELECT`, a boolean for `ASK`, etc.) and users switch with the tabs above the result area. Built in are **Table**, **Response**, **Boolean** and **Error**; **Graph** and **Geo** are community plugins you register before creating the app:
 
 ```ts
 import GraphPlugin from "@matdata/yasgui-graph-plugin";
