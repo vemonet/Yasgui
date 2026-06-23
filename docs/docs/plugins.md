@@ -38,7 +38,7 @@ const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
 
 Notes:
 
-- The key in `plugins` is the name passed to `SparqlStudio.Yasr.registerPlugin(name, …)` (`table`, `response`, `boolean`, plus any community plugins you register).
+- The key in `plugins` is the name passed to `SparqlStudio.Results.registerPlugin(name, …)` (`table`, `response`, `boolean`, plus any community plugins you register).
 - `dynamicConfig` seeds the plugin's per-tab settings. Values the user later changes through the plugin UI are persisted to `localStorage` and take precedence on the next load.
 - Defaults: `pluginOrder` is `['table', 'response']` and `defaultPlugin` is `'table'`.
 
@@ -119,7 +119,7 @@ Register the plugin (under the name `geo`) **before** constructing SparqlStudio,
 import SparqlStudio from '@rdfjs/sparql-studio';
 import GeoPlugin from 'yasgui-geo-tg';
 
-SparqlStudio.Yasr.registerPlugin('geo', GeoPlugin);
+SparqlStudio.Results.registerPlugin('geo', GeoPlugin);
 
 const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
   results: {
@@ -169,7 +169,7 @@ Integrate it:
 import SparqlStudio from '@rdfjs/sparql-studio';
 import GraphPlugin from '@matdata/yasgui-graph-plugin';
 
-SparqlStudio.Yasr.registerPlugin('graph', GraphPlugin);
+SparqlStudio.Results.registerPlugin('graph', GraphPlugin);
 
 const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
   results: {
@@ -193,7 +193,7 @@ class MyGraphPlugin extends GraphPlugin {
   }
 }
 
-SparqlStudio.Yasr.registerPlugin('graph', MyGraphPlugin);
+SparqlStudio.Results.registerPlugin('graph', MyGraphPlugin);
 ```
 
 Example query:

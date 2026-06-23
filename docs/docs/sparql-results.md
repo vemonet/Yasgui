@@ -2,7 +2,7 @@
 
 ::: info Previously Yasr
 
-The term yasr is kept for compatibility, especially in the CSS classes.
+The term `yasr` is kept for compatibility in the CSS class and the local storage key.
 
 :::
 
@@ -51,8 +51,8 @@ the app:
 import GraphPlugin from "@matdata/yasgui-graph-plugin";
 import GeoPlugin from "yasgui-geo-tg";
 
-SparqlStudio.Yasr.registerPlugin("Graph", GraphPlugin);
-SparqlStudio.Yasr.registerPlugin("Geo", GeoPlugin);
+SparqlStudio.Results.registerPlugin("Graph", GraphPlugin);
+SparqlStudio.Results.registerPlugin("Geo", GeoPlugin);
 ```
 
 See [Results plugins](./plugins) for each plugin's config, example queries and how to register your own.

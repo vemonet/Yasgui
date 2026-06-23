@@ -501,9 +501,9 @@ export class SparqlStudio extends EventEmitter {
     while (this.rootEl.firstChild) this.rootEl.firstChild.remove();
   }
   public static linkUtils = shareLink;
-  /** The results-viewer class, for registering Yasr plugins. `Yasr` is kept for plugin compatibility. */
-  public static Yasr = SparqlResults;
+  /** The results-viewer class, for registering result-view plugins. Prefer `Results`; `Yasr` is the same class, kept as an alias for compatibility with existing Yasr plugins. */
   public static Results = SparqlResults;
+  public static Yasr = SparqlResults;
   public static defaults = initializeDefaults();
   public static corsEnabled: { [endpoint: string]: boolean } = {};
 }
