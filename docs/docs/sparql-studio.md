@@ -1,6 +1,6 @@
 # SPARQL Studio
 
-::: info Previously Yasgui
+::: info Formerly Yasgui
 
 The term `yasgui` is kept for compatibility in the CSS classes and local storage key.
 
