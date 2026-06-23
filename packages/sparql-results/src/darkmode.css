@@ -1,5 +1,5 @@
 /*
- * Dark mode for the Yasr results view (buttons, result table, plugins).
+ * Dark mode for the SparqlResults results view (buttons, result table, plugins).
  * Applies both on explicit opt-in (html[data-theme="dark"]) and when the OS/browser prefers dark
  * and the user hasn't forced light.
  *

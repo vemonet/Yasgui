@@ -472,9 +472,9 @@ export async function configureBackend(
 }
 
 /**
- * A small JSON-schema subset describing qlue-ls's most useful settings, ready to pass to a Yasqe
+ * A small JSON-schema subset describing qlue-ls's most useful settings, ready to pass to a SparqlEditor
  * language server's `configSchema`. Keys are dotted paths into {@link Settings} (e.g. `format.tabSize`);
- * Yasqe de-flattens them into a nested object before handing it to the `configCallback`, so a callback
+ * SparqlEditor de-flattens them into a nested object before handing it to the `configCallback`, so a callback
  * of `(client, settings) => qlueLs.configureSettings(client, settings)` applies them directly.
  * Defaults are sourced from {@link defaultSettings} so the panel and the server agree.
  */

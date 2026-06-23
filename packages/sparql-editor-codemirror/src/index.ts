@@ -1,12 +1,12 @@
 /**
- * Yasqe (CodeMirror 6 edition) · the standalone CodeMirror-based SPARQL query editor.
+ * SparqlEditor (CodeMirror 6 edition) · the standalone CodeMirror-based SPARQL query editor.
  *
- * Yasqe is language-server agnostic. The embedder supplies each server as a Web `Worker` (the
+ * SparqlEditor is language-server agnostic. The embedder supplies each server as a Web `Worker` (the
  * universal LS transport, identical to the Monaco-based `@rdfjs/sparql-editor-monaco`) via
- * `config.languageServers`; Yasqe builds the `@codemirror/lsp-client` `LSPClient` internally. All
+ * `config.languageServers`; SparqlEditor builds the `@codemirror/lsp-client` `LSPClient` internally. All
  * language features (highlighting, diagnostics, completion, hover, formatting) come from the active
- * server; Yasqe ships no SPARQL grammar of its own. When two or more servers are configured, a
- * switcher dropdown lets the user pick between them at runtime ({@link Yasqe.setLanguageServer}).
+ * server; SparqlEditor ships no SPARQL grammar of its own. When two or more servers are configured, a
+ * switcher dropdown lets the user pick between them at runtime ({@link SparqlEditor.setLanguageServer}).
  * @module YasqeCodeMirror
  */
 import "./style/yasqe.css";
@@ -86,10 +86,10 @@ import { connectLanguageClient } from "./lsp/connect";
 import { clearSemanticTokens } from "./lsp/glue";
 import { sparqlFallbackHighlight } from "./lsp/sparqlHighlight";
 
-/** A language server made available to the CodeMirror-based Yasqe. The editor-agnostic descriptor
- * with its `yasqe` hook argument bound to this editor's {@link Yasqe}. Defined once in
+/** A language server made available to the CodeMirror-based SparqlEditor. The editor-agnostic descriptor
+ * with its `yasqe` hook argument bound to this editor's {@link SparqlEditor}. Defined once in
  * `@rdfjs/sparql-utils` so the SAME object also works with `@rdfjs/sparql-editor-monaco` (Monaco). */
-export type LanguageServerDef = SharedLanguageServerDef<Yasqe>;
+export type LanguageServerDef = SharedLanguageServerDef<SparqlEditor>;
 
 /** Adapt a CodeMirror `LSPClient` to the editor-agnostic {@link LspConnection} handed to
  * language-server hooks. Cached per client so identity-based de-dup (e.g. qlue-ls's backend cache,
@@ -184,7 +184,7 @@ const blockFoldService = foldService.of((state, lineStart, lineEnd) => {
   return best;
 });
 
-export class Yasqe extends EventEmitter implements IYasqe {
+export class SparqlEditor extends EventEmitter implements IYasqe {
   private static storageNamespace = "triply";
   public rootEl: HTMLDivElement;
   private editorEl: HTMLDivElement;
@@ -248,10 +248,10 @@ export class Yasqe extends EventEmitter implements IYasqe {
     const mergeableConf = { ...rawConf };
     delete mergeableConf.languageServers;
     delete mergeableConf.extensions;
-    this.config = merge({}, Yasqe.defaults, mergeableConf) as Config;
+    this.config = merge({}, SparqlEditor.defaults, mergeableConf) as Config;
     if (extensions) this.config.extensions = extensions as Extension[];
     if (languageServers) this.config.languageServers = languageServers as Config["languageServers"];
-    this.storage = new YStorage(Yasqe.storageNamespace);
+    this.storage = new YStorage(SparqlEditor.storageNamespace);
 
     // Restore persisted query
     let initialValue = this.config.value ?? "";
@@ -448,7 +448,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
     const conf = def?.documentUri;
     if (typeof conf === "function") this.documentUri = conf(this);
     else if (typeof conf === "string") this.documentUri = conf;
-    else this.documentUri = `file:///query${++Yasqe.uriCounter}.rq`;
+    else this.documentUri = `file:///query${++SparqlEditor.uriCounter}.rq`;
     return this.documentUri;
   }
 
@@ -598,7 +598,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
 
   /* Events */
   /**
-   * Emit an event, always passing this Yasqe instance as the first argument to listeners (the
+   * Emit an event, always passing this SparqlEditor instance as the first argument to listeners (the
    * documented `(instance, ...payload)` API), so callers emit only the payload. Matches the Monaco
    * editor and lets the shared SPARQL module (in utils) emit without knowing the instance.
    */
@@ -629,7 +629,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
   }
   public handleLocalStorageQuotaFull(_e: any) {
     console.warn("Localstorage quota exceeded. Clearing all queries");
-    Yasqe.clearStorage();
+    SparqlEditor.clearStorage();
   }
 
   /* Query type */
@@ -672,7 +672,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
   }
   /**
    * Pretty-print the query via the language server's `textDocument/formatting` request and apply
-   * the returned edits. No-op when no language server is connected (Yasqe ships no formatter).
+   * the returned edits. No-op when no language server is connected (SparqlEditor ships no formatter).
    */
   public async format(): Promise<void> {
     const client = this.activeClient;
@@ -1043,12 +1043,12 @@ export class Yasqe extends EventEmitter implements IYasqe {
     if (this.config.queryingDisabled) return Promise.reject("Querying is disabled.");
     this.abortQuery();
     // Wire request emission to internal state via listeners
-    const onQuery = (_y: Yasqe, req: Request, abort?: AbortController) => {
+    const onQuery = (_y: SparqlEditor, req: Request, abort?: AbortController) => {
       this.req = req;
       this.abortController = abort;
       this.updateQueryButton();
     };
-    const onResponse = (_y: Yasqe, _resp: any, duration: number) => {
+    const onResponse = (_y: SparqlEditor, _resp: any, duration: number) => {
       this.lastQueryDuration = duration;
       this.req = undefined;
       this.updateQueryButton();
@@ -1056,7 +1056,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
       this.off("queryResponse", onResponse);
       this.off("queryAbort", onAbort);
     };
-    const onAbort = (_y: Yasqe) => {
+    const onAbort = (_y: SparqlEditor) => {
       this.req = undefined;
       this.updateQueryButton();
       this.off("query", onQuery);
@@ -1167,7 +1167,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
 
   /**
    * Surface language-server errors in the shared bottom-right notification (see
-   * `createLspErrorNotification` in `@rdfjs/sparql-utils`). Yasqe is language-server agnostic, so
+   * `createLspErrorNotification` in `@rdfjs/sparql-utils`). SparqlEditor is language-server agnostic, so
    * this only understands generic JSON-RPC: `LSPClient.request` rejects with the raw `error` object
    * of a JSON-RPC error response. The client is usually shared across tabs, so `request` is wrapped
    * only once and a per-instance notifier is kept in a listener list
@@ -1237,7 +1237,7 @@ export class Yasqe extends EventEmitter implements IYasqe {
     // No-op: autocomplete is now provided by the language server (see `config.languageServers`).
   }
   static clearStorage() {
-    const storage = new YStorage(Yasqe.storageNamespace);
+    const storage = new YStorage(SparqlEditor.storageNamespace);
     storage.removeNamespace();
   }
 }
@@ -1271,20 +1271,20 @@ export interface Config {
   matchBrackets: boolean;
   /** Editor starts as read-only */
   readOnly: boolean;
-  /** Editor theme. Switch at runtime with {@link Yasqe.setTheme}. */
+  /** Editor theme. Switch at runtime with {@link SparqlEditor.setTheme}. */
   theme: "light" | "dark";
-  /** @deprecated No-op. Diagnostics come from the language server (`languageServers`); Yasqe ships no built-in syntax checker. */
+  /** @deprecated No-op. Diagnostics come from the language server (`languageServers`); SparqlEditor ships no built-in syntax checker. */
   syntaxErrorCheck: boolean;
   /** Extra CodeMirror 6 extensions (advanced) */
   extensions: Extension[];
   /**
-   * Language Server Protocol integration. Yasqe ships no SPARQL grammar of its own, all language
+   * Language Server Protocol integration. SparqlEditor ships no SPARQL grammar of its own, all language
    * features (highlighting, diagnostics, completion, hover, formatting) come from the server. The
    * embedder supplies each server as a Web `Worker` (the universal LS transport, identical to the
-   * Monaco-based `@rdfjs/sparql-editor-monaco` — the SAME `languageServers` array works for either editor); Yasqe
+   * Monaco-based `@rdfjs/sparql-editor-monaco` — the SAME `languageServers` array works for either editor); SparqlEditor
    * builds the `LSPClient` internally and wires diagnostics + semantic-token highlighting. The first
    * is activated on load; when two or more are configured a switcher dropdown appears. qlue-ls (or
-   * any SPARQL server) lives in the embedder, never in Yasqe's dependencies. When empty, Yasqe is a
+   * any SPARQL server) lives in the embedder, never in SparqlEditor's dependencies. When empty, SparqlEditor is a
    * plain text editor.
    */
   languageServers: LanguageServerDef[];
@@ -1292,7 +1292,7 @@ export interface Config {
    * Optional store for language-server settings panel values, keyed by server label. When provided
    * (e.g. by SparqlStudio, to persist per endpoint), it is the source of truth for pre-filling the panel
    * and re-applying settings when a server (re)starts. Pairs with the `languageServerSettingsChange`
-   * event. When omitted, Yasqe falls back to its own local-storage persistence.
+   * event. When omitted, SparqlEditor falls back to its own local-storage persistence.
    */
   getLanguageServerSettings?: (label: string) => Record<string, unknown> | undefined;
 
@@ -1311,12 +1311,12 @@ export interface Config {
   /** Legacy hint config; ignored for now */
   hintConfig: any;
 
-  createShareableLink: (yasqe: Yasqe) => string;
-  createShortLink: ((yasqe: Yasqe, longLink: string) => Promise<string>) | undefined;
-  consumeShareLink: ((yasqe: Yasqe) => void) | undefined | null;
-  persistenceId: ((yasqe: Yasqe) => string) | string | undefined | null;
+  createShareableLink: (yasqe: SparqlEditor) => string;
+  createShortLink: ((yasqe: SparqlEditor, longLink: string) => Promise<string>) | undefined;
+  consumeShareLink: ((yasqe: SparqlEditor) => void) | undefined | null;
+  persistenceId: ((yasqe: SparqlEditor) => string) | string | undefined | null;
   persistencyExpire: number;
-  requestConfig: RequestConfig<Yasqe> | ((yasqe: Yasqe) => RequestConfig<Yasqe>);
+  requestConfig: RequestConfig<SparqlEditor> | ((yasqe: SparqlEditor) => RequestConfig<SparqlEditor>);
   pluginButtons: (() => HTMLElement[] | HTMLElement) | undefined;
   prefixCcApi: string;
 }
@@ -1333,4 +1333,4 @@ export interface HintConfig {
   [k: string]: any;
 }
 
-export default Yasqe;
+export default SparqlEditor;

@@ -223,6 +223,18 @@
   filter: alpha(opacity=50);
 }
 
+/* Subtle feedback on the icon buttons (execute, share, format): dim on hover */
+.yasqe .yasqe_buttons .yasqe_share,
+.yasqe .yasqe_buttons .yasqe_format,
+.yasqe .yasqe_buttons .yasqe_queryButton {
+  transition: filter 0.15s ease;
+}
+.yasqe .yasqe_buttons .yasqe_share:hover,
+.yasqe .yasqe_buttons .yasqe_format:hover,
+.yasqe .yasqe_buttons .yasqe_queryButton:not(.query_disabled):hover {
+  filter: brightness(0.8);
+}
+
 @keyframes dash {
   to {
     stroke-dashoffset: 200;

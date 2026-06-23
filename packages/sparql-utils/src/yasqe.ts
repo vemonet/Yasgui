@@ -1,5 +1,5 @@
 /**
- * Shared Yasqe contract. These types are editor-agnostic so that both the Monaco-based
+ * Shared SparqlEditor contract. These types are editor-agnostic so that both the Monaco-based
  * (`@rdfjs/sparql-editor-monaco`) and the CodeMirror 6-based (`@rdfjs/sparql-editor-codemirror`) editors expose the
  * same surface, and SparqlStudio can drive whichever one the consumer injects without depending on a
  * concrete editor implementation.
@@ -60,7 +60,7 @@ export type Prefixes = { [prefixLabel: string]: string };
 
 /**
  * Extract the `PREFIX` declarations from a SPARQL query string as a `{ prefix: iri }` map.
- * Shared by both editors (Monaco and CodeMirror) and used by Yasr to resolve prefixed names
+ * Shared by both editors (Monaco and CodeMirror) and used by SparqlResults to resolve prefixed names
  * in results. A `PREFIX` must be preceded by start-of-string or whitespace.
  */
 export function getPrefixesFromQuery(query: string): Prefixes {
@@ -178,7 +178,7 @@ export function getQueryMode(queryType: QueryType | undefined): "update" | "quer
 }
 
 /**
- * The editor-agnostic Yasqe contract that SparqlStudio programs against. Both editor implementations
+ * The editor-agnostic SparqlEditor contract that SparqlStudio programs against. Both editor implementations
  * satisfy it (they have many more members; this is only the subset SparqlStudio relies on).
  */
 export interface IYasqe {
@@ -246,7 +246,7 @@ export interface LanguageServerInfo {
  * SparqlStudio is editor-independent: the consumer imports an editor (e.g. `@rdfjs/sparql-editor-monaco` or
  * `@rdfjs/sparql-editor-codemirror`) and supplies one of these as `config.yasqe`.
  */
-export type YasqeFactory = (parent: HTMLElement, conf: any) => IYasqe;
+export type SparqlEditorFactory = (parent: HTMLElement, conf: any) => IYasqe;
 
 /** Default query shown in a fresh editor/tab. */
 export const defaultQueryValue = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

@@ -21,13 +21,13 @@
     </div>
     <div id="yasqe"></div>
     <script type="module">
-      import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
+      import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
       import QlueLsWorker from "./qluels.worker?worker";
       import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
 
       window.onpageshow = function () {
         const theme = setupThemeToggle((t) => window.yasqe?.setTheme(t));
-        window.yasqe = new Yasqe(document.getElementById("yasqe"), {
+        window.yasqe = new SparqlEditor(document.getElementById("yasqe"), {
           theme,
           languageServers: [
             {

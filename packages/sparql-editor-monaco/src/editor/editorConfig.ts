@@ -68,7 +68,7 @@ export interface SparqlThemeOverrides {
 }
 
 /**
- * Connect a `monaco-languageclient` LanguageClient to a ready language-server `Worker`. Yasqe calls
+ * Connect a `monaco-languageclient` LanguageClient to a ready language-server `Worker`. SparqlEditor calls
  * this for the active language server (it may switch between several), so it is decoupled from the
  * editor setup in {@link startMonacoEditor}. The returned wrapper is already started.
  */
@@ -145,7 +145,7 @@ export async function connectLanguageClient(lsWorker: Worker): Promise<LanguageC
 
 /**
  * Creates a Monaco editor with SPARQL syntax highlighting. Language-server agnostic: the editor is
- * built here, and Yasqe connects the active language client separately via {@link connectLanguageClient}.
+ * built here, and SparqlEditor connects the active language client separately via {@link connectLanguageClient}.
  * @param editorOptions Optional Monaco editor options, deep-merged OVER the built-in defaults.
  * @param themeOverrides Optional partial light/dark theme objects, deep-merged OVER the built-in themes.
  */

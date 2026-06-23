@@ -1,8 +1,8 @@
 /**
- * Default options for the CodeMirror 6 Yasqe. Override by setting `Yasqe.defaults` or by
+ * Default options for the CodeMirror 6 SparqlEditor. Override by setting `SparqlEditor.defaults` or by
  * passing your own options as the second argument to the constructor.
  */
-import { default as Yasqe, Config } from "./";
+import { default as SparqlEditor, Config } from "./";
 import { defaultQueryValue, defaultRequestConfig, PlainRequestConfig } from "@rdfjs/sparql-utils";
 import * as queryString from "query-string";
 
@@ -20,10 +20,10 @@ export default function get() {
     readOnly: false,
     syntaxErrorCheck: true,
     extensions: [],
-    // Language servers are consumer-provided; none by default (Yasqe is then a plain text editor)
+    // Language servers are consumer-provided; none by default (SparqlEditor is then a plain text editor)
     languageServers: [],
     // Follow the OS/browser preference by default so the editor matches the auto-adapting chrome.
-    // Callers can override by passing `theme` explicitly or via Yasqe.setTheme().
+    // Callers can override by passing `theme` explicitly or via SparqlEditor.setTheme().
     theme:
       typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     showQueryButton: true,
@@ -34,7 +34,7 @@ export default function get() {
     autocompleters: [],
     hintConfig: {},
 
-    createShareableLink: function (yasqe: Yasqe) {
+    createShareableLink: function (yasqe: SparqlEditor) {
       return (
         document.location.protocol +
         "//" +
@@ -46,10 +46,10 @@ export default function get() {
       );
     },
     createShortLink: undefined,
-    consumeShareLink: function (yasqe: Yasqe) {
+    consumeShareLink: function (yasqe: SparqlEditor) {
       yasqe.queryParamsToConfig(yasqe.getUrlParams());
     },
-    persistenceId: function (yasqe: Yasqe) {
+    persistenceId: function (yasqe: SparqlEditor) {
       let id = "";
       let elem: any = yasqe.rootEl;
       if (elem?.id) id = elem.id;

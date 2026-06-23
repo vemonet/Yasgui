@@ -22,14 +22,14 @@
     <div id="yasqe"></div>
     <div id="yasr"></div>
     <script type="module">
-      import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
-      import Yasr from "@rdfjs/sparql-results";
+      import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
+      import SparqlResults from "@rdfjs/sparql-results";
       import QlueLsWorker from "./qluels.worker?worker";
       import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
 
       window.onpageshow = function () {
         const theme = setupThemeToggle((t) => window.yasqe?.setTheme(t));
-        window.yasqe = new Yasqe(document.getElementById("yasqe"), {
+        window.yasqe = new SparqlEditor(document.getElementById("yasqe"), {
           theme,
           requestConfig: { endpoint: DEMO_ENDPOINT },
           languageServerWorker: () => new QlueLsWorker({ name: "qlue-ls" }),
@@ -39,7 +39,7 @@
           console.log({ response: response });
           window.yasr.setResponse(response, duration);
         });
-        window.yasr = new Yasr(document.getElementById("yasr"), {
+        window.yasr = new SparqlResults(document.getElementById("yasr"), {
           prefixes: function () {
             return window.yasqe.getPrefixesFromQuery();
           },

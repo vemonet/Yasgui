@@ -1,9 +1,9 @@
 /**
- * The default Yasqe options. Editor-specific behaviour (line numbers, word wrap, keybindings, ...)
+ * The default SparqlEditor options. Editor-specific behaviour (line numbers, word wrap, keybindings, ...)
  * is configured through Monaco editor options, see the `editorOptions` config field. Override these
- * defaults by setting `Yasqe.defaults`, or by passing your own options as the second constructor argument.
+ * defaults by setting `SparqlEditor.defaults`, or by passing your own options as the second constructor argument.
  */
-import { default as Yasqe, Config, PlainRequestConfig } from "./";
+import { default as SparqlEditor, Config, PlainRequestConfig } from "./";
 import * as queryString from "query-string";
 export default function get() {
   const config: Omit<Config, "requestConfig"> = {
@@ -13,14 +13,14 @@ SELECT * WHERE {
   ?sub ?pred ?obj .
 } LIMIT 10`,
     // Follow the OS/browser preference by default so the editor matches the auto-adapting chrome.
-    // Callers can override by passing `theme` explicitly or via Yasqe.setTheme().
+    // Callers can override by passing `theme` explicitly or via SparqlEditor.setTheme().
     theme:
       typeof window !== "undefined" && window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light",
     // Custom Monaco editor options, deep-merged over the built-in defaults
     editorOptions: {},
     // Custom SPARQL theme overrides, deep-merged over the built-in light/dark themes
     themes: {},
-    createShareableLink: function (yasqe: Yasqe) {
+    createShareableLink: function (yasqe: SparqlEditor) {
       return (
         document.location.protocol +
         "//" +
@@ -34,10 +34,10 @@ SELECT * WHERE {
     pluginButtons: undefined,
     createShortLink: undefined,
 
-    consumeShareLink: function (yasqe: Yasqe) {
+    consumeShareLink: function (yasqe: SparqlEditor) {
       yasqe.queryParamsToConfig(yasqe.getUrlParams());
     },
-    persistenceId: function (yasqe: Yasqe) {
+    persistenceId: function (yasqe: SparqlEditor) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       let id = "";

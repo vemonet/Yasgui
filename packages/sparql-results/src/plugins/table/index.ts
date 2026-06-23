@@ -8,7 +8,7 @@ import $ from "jquery";
 import Parser from "../../parsers";
 import { escape } from "lodash-es";
 import type { Plugin, DownloadInfo } from "../";
-import Yasr from "../../";
+import SparqlResults from "../../";
 import { drawSvgStringAsElement, drawFontAwesomeIconAsSvg, addClass, removeClass } from "@rdfjs/sparql-utils";
 import * as faTableIcon from "@fortawesome/free-solid-svg-icons/faTable";
 import type { DeepReadonly } from "@rdfjs/sparql-utils";
@@ -49,7 +49,7 @@ function expand(this: HTMLDivElement, event: MouseEvent) {
 export default class Table implements Plugin<PluginConfig> {
   private config: DeepReadonly<PluginConfig>;
   private persistentConfig: PersistentConfig = {};
-  private yasr: Yasr;
+  private yasr: SparqlResults;
   private tableControls: Element | undefined;
   private tableEl: HTMLTableElement | undefined;
   private dataTable: Api | undefined;
@@ -68,13 +68,13 @@ export default class Table implements Plugin<PluginConfig> {
         onResize: () => {};
       }
     | undefined;
-  public helpReference = "https://vemonet.github.io/SparqlStudio/docs/plugins#table";
+  public helpReference = "https://sparql.studio/docs/plugins#table";
   public label = "Table";
   public priority = 10;
   public getIcon() {
     return drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faTableIcon));
   }
-  constructor(yasr: Yasr) {
+  constructor(yasr: SparqlResults) {
     this.yasr = yasr;
     //TODO read options from constructor
     this.config = Table.defaults;

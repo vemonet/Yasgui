@@ -23,15 +23,15 @@
 
     <script type="module">
       import SparqlStudio from "@rdfjs/sparql-studio";
-      import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
+      import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
       import QlueLsWorker from "./qluels.worker?worker";
       import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
       window.onpageshow = function () {
-        const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
+        const theme = setupThemeToggle((t) => window.yasgui.editor?.setTheme(t));
         window.yasgui = new SparqlStudio(document.getElementById("yasgui"), {
           requestConfig: { endpoint: DEMO_ENDPOINT },
-          yasqe: (parent, conf) =>
-            new Yasqe(parent, {
+          editor: (parent, conf) =>
+            new SparqlEditor(parent, {
               ...conf,
               theme,
               languageServers: [

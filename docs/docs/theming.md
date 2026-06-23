@@ -17,7 +17,7 @@ The built-in CSS auto-adapts to dark mode:
 ```ts
 function setTheme(theme: "light" | "dark") {
   document.documentElement.dataset.theme = theme; // drives the chrome CSS
-  yasgui.yasqe?.setTheme(theme);                   // drives the Monaco editor
+  yasgui.editor?.setTheme(theme);                   // drives the Monaco editor
 }
 ```
 
@@ -28,7 +28,7 @@ const initial = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dar
 setTheme(initial);
 ```
 
-::: tip Integrating with a framework's dark mode
+::: info Integrating with a framework dark mode
 If your app already has a dark-mode switch (Tailwind, VitePress, etc.), just call both lines from its
 change handler. The [live demo](/) wires SparqlStudio's theme to VitePress' own dark-mode toggle this way.
 :::

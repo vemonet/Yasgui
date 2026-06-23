@@ -2,13 +2,13 @@
  * Make sure not to include any deps from our main index file. That way, we can easily publish the publin as standalone build
  */
 import type { Plugin } from "../";
-import Yasr from "../../";
+import SparqlResults from "../../";
 import { addClass } from "@rdfjs/sparql-utils";
 import "./index.scss";
 
 export default class Error implements Plugin<never> {
-  private yasr: Yasr;
-  constructor(yasr: Yasr) {
+  private yasr: SparqlResults;
+  constructor(yasr: SparqlResults) {
     this.yasr = yasr;
   }
   canHandleResults() {

@@ -24,14 +24,14 @@
 
     <script type="module">
       import SparqlStudio from "@rdfjs/sparql-studio";
-      import Yasqe from "@rdfjs/sparql-editor-codemirror";
+      import SparqlEditor from "@rdfjs/sparql-editor-codemirror";
       import { qlueLs } from "@rdfjs/sparql-utils";
       import QlueLsWorker from "./qluels.worker?worker";
       import SwlsWorker from "./swls.worker?worker";
       import TraqulaWorker from "./traqula.worker?worker";
       import { setupThemeToggle, DEMO_ENDPOINT } from "./utils";
 
-      const theme = setupThemeToggle((t) => window.yasgui.yasqe?.setTheme(t));
+      const theme = setupThemeToggle((t) => window.yasgui.editor?.setTheme(t));
 
       const endpointOf = () => window.yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT;
       const onReady = (conn) => {
@@ -42,8 +42,8 @@
 
       window.yasgui = new SparqlStudio(document.getElementById("yasgui"), {
         requestConfig: { endpoint: DEMO_ENDPOINT },
-        yasqe: (parent, conf) =>
-          new Yasqe(parent, {
+        editor: (parent, conf) =>
+          new SparqlEditor(parent, {
             ...conf,
             theme,
             languageServers: [

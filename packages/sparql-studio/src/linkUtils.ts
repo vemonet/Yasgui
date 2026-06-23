@@ -1,7 +1,7 @@
 import JsUri from "jsuri";
 
 import { default as Tab, PersistedJson } from "./Tab";
-import Yasr from "@rdfjs/sparql-results";
+import SparqlResults from "@rdfjs/sparql-results";
 import { PlainRequestConfig, getAsValue } from "@rdfjs/sparql-utils";
 var getUrlParams = function (_url?: string) {
   var urlFromWindow = false;
@@ -120,7 +120,7 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
       hasQuery = true;
       options.yasqe.value = value;
     } else if (key === "outputFormat" && value.length) {
-      if (Yasr.plugins[value]) {
+      if (SparqlResults.plugins[value]) {
         options.yasr.settings.selectedPlugin = value;
       } else {
         console.warn(`Output format plugin "${value}" not found`);
@@ -192,14 +192,14 @@ export function queryCatalogConfigToTabConfig<Q extends QueryCatalogConfig>(
   }
   if (catalogConfig.renderConfig) {
     if (catalogConfig.renderConfig.output) {
-      if (Yasr.plugins[catalogConfig.renderConfig.output]) {
+      if (SparqlResults.plugins[catalogConfig.renderConfig.output]) {
         options.yasr.settings.selectedPlugin = catalogConfig.renderConfig.output;
       } else {
         console.warn(`Output format plugin "${catalogConfig.renderConfig.output}" not found`);
       }
     }
     if (catalogConfig.renderConfig.settings) {
-      if (Yasr.plugins[catalogConfig.renderConfig.output] && options.yasr.settings.pluginsConfig) {
+      if (SparqlResults.plugins[catalogConfig.renderConfig.output] && options.yasr.settings.pluginsConfig) {
         options.yasr.settings.pluginsConfig[catalogConfig.renderConfig.output] = catalogConfig.renderConfig.settings;
       } else {
         console.warn(`Output format plugin "${catalogConfig.renderConfig.output}" not found, cannot apply settings`);

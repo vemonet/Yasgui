@@ -1,6 +1,6 @@
 /**
- * Yasr · the standalone SPARQL results viewer.
- * @module Yasr
+ * SparqlResults · the standalone SPARQL results viewer.
+ * @module SparqlResults
  */
 import { EventEmitter } from "events";
 import { merge, filter, mapValues, uniqueId } from "lodash-es";
@@ -28,17 +28,17 @@ export interface PersistentConfig {
   pluginsConfig?: { [pluginName: string]: any };
 }
 
-export interface Yasr {
-  on(event: "change", listener: (instance: Yasr) => void): this;
-  emit(event: "change", instance: Yasr): boolean;
-  on(event: "draw", listener: (instance: Yasr, plugin: Plugin<any>) => void): this;
-  emit(event: "draw", instance: Yasr, plugin: Plugin<any>): boolean;
-  on(event: "drawn", listener: (instance: Yasr, plugin: Plugin<any>) => void): this;
-  emit(event: "drawn", instance: Yasr, plugin: Plugin<any>): boolean;
-  on(event: "toggle-help", listener: (instance: Yasr) => void): this;
-  emit(event: "toggle-help", instance: Yasr): boolean;
+export interface SparqlResults {
+  on(event: "change", listener: (instance: SparqlResults) => void): this;
+  emit(event: "change", instance: SparqlResults): boolean;
+  on(event: "draw", listener: (instance: SparqlResults, plugin: Plugin<any>) => void): this;
+  emit(event: "draw", instance: SparqlResults, plugin: Plugin<any>): boolean;
+  on(event: "drawn", listener: (instance: SparqlResults, plugin: Plugin<any>) => void): this;
+  emit(event: "drawn", instance: SparqlResults, plugin: Plugin<any>): boolean;
+  on(event: "toggle-help", listener: (instance: SparqlResults) => void): this;
+  emit(event: "toggle-help", instance: SparqlResults): boolean;
 }
-export class Yasr extends EventEmitter {
+export class SparqlResults extends EventEmitter {
   public results?: Parser;
   public rootEl: HTMLDivElement;
   public headerEl: HTMLDivElement;
@@ -62,10 +62,10 @@ export class Yasr extends EventEmitter {
     this.rootEl = document.createElement("div");
     this.rootEl.className = "yasr";
     parent.appendChild(this.rootEl);
-    this.config = merge({}, Yasr.defaults, conf);
+    this.config = merge({}, SparqlResults.defaults, conf);
 
     //Do some post processing
-    this.storage = new YStorage(Yasr.storageNamespace);
+    this.storage = new YStorage(SparqlResults.storageNamespace);
     this.getConfigFromStorage();
     this.headerEl = document.createElement("div");
     this.headerEl.className = "yasr_header";
@@ -477,7 +477,7 @@ export class Yasr extends EventEmitter {
 
   public handleLocalStorageQuotaFull(_e: any) {
     console.warn("Localstorage quota exceeded. Clearing all queries");
-    Yasr.clearStorage();
+    SparqlResults.clearStorage();
   }
 
   public getResponseFromStorage() {
@@ -533,8 +533,8 @@ export class Yasr extends EventEmitter {
   private initializePlugins() {
     for (const plugin in this.config.plugins) {
       if (!this.config.plugins[plugin]) continue; //falsy value, so assuming it should be disabled
-      if (Yasr.plugins[plugin]) {
-        this.plugins[plugin] = new (<any>Yasr.plugins[plugin])(this);
+      if (SparqlResults.plugins[plugin]) {
+        this.plugins[plugin] = new (<any>SparqlResults.plugins[plugin])(this);
       } else {
         console.warn("Wanted to initialize plugin " + plugin + " but could not find a matching registered plugin");
       }
@@ -544,21 +544,21 @@ export class Yasr extends EventEmitter {
   static defaults: Config = getDefaults();
   static plugins: { [key: string]: typeof Plugin & { defaults?: any } } = {};
   static registerPlugin(name: string, plugin: typeof Plugin, enable = true) {
-    Yasr.plugins[name] = plugin;
+    SparqlResults.plugins[name] = plugin;
     if (enable) {
-      Yasr.defaults.plugins[name] = { enabled: true };
+      SparqlResults.defaults.plugins[name] = { enabled: true };
     } else {
-      Yasr.defaults.plugins[name] = { enabled: false };
+      SparqlResults.defaults.plugins[name] = { enabled: false };
     }
   }
   /**
-   * Collection of Promises to load external scripts used by Yasr Plugins
+   * Collection of Promises to load external scripts used by SparqlResults Plugins
    * That way, the plugins wont load similar scripts simultaneously
    */
   static Dependencies: { [name: string]: Promise<any> } = {};
   static storageNamespace = "triply";
   static clearStorage() {
-    const storage = new YStorage(Yasr.storageNamespace);
+    const storage = new YStorage(SparqlResults.storageNamespace);
     storage.removeNamespace();
   }
 }
@@ -570,7 +570,7 @@ export interface PluginConfig {
   enabled?: boolean;
 }
 export interface Config {
-  persistenceId: ((yasr: Yasr) => string) | string | null;
+  persistenceId: ((yasr: SparqlResults) => string) | string | null;
   persistenceLabelResponse: string;
   persistenceLabelConfig: string;
   maxPersistentResponseSize: number;
@@ -581,7 +581,7 @@ export interface Config {
   pluginOrder: string[];
   defaultPlugin: string;
 
-  prefixes: Prefixes | ((yasr: Yasr) => Prefixes);
+  prefixes: Prefixes | ((yasr: SparqlResults) => Prefixes);
 
   /**
    * Custom renderers for errors.
@@ -592,11 +592,11 @@ export interface Config {
 }
 
 export function registerPlugin(name: string, plugin: typeof Plugin, enable = true) {
-  Yasr.plugins[name] = plugin;
+  SparqlResults.plugins[name] = plugin;
   if (enable) {
-    Yasr.defaults.plugins[name] = { enabled: true };
+    SparqlResults.defaults.plugins[name] = { enabled: true };
   } else {
-    Yasr.defaults.plugins[name] = { enabled: false };
+    SparqlResults.defaults.plugins[name] = { enabled: false };
   }
 }
 
@@ -605,11 +605,11 @@ import * as YasrPluginBoolean from "./plugins/boolean";
 import * as YasrPluginResponse from "./plugins/response";
 import * as YasrPluginError from "./plugins/error";
 
-Yasr.registerPlugin("table", YasrPluginTable.default as any);
-Yasr.registerPlugin("boolean", YasrPluginBoolean.default as any);
-Yasr.registerPlugin("response", YasrPluginResponse.default as any);
-Yasr.registerPlugin("error", YasrPluginError.default as any);
+SparqlResults.registerPlugin("table", YasrPluginTable.default as any);
+SparqlResults.registerPlugin("boolean", YasrPluginBoolean.default as any);
+SparqlResults.registerPlugin("response", YasrPluginResponse.default as any);
+SparqlResults.registerPlugin("error", YasrPluginError.default as any);
 
 export type { Plugin, DownloadInfo } from "./plugins";
 
-export default Yasr;
+export default SparqlResults;

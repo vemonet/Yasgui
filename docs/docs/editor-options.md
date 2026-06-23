@@ -4,7 +4,7 @@ Pass any [Monaco editor options](https://microsoft.github.io/monaco-editor/typed
 via `editorOptions`. They are **deep-merged over** Yasqe's defaults.
 
 ```ts
-new Yasqe(el, {
+new SparqlEditor(el, {
   editorOptions: {
     lineNumbers: "off",
     wordWrap: "off",
@@ -15,11 +15,11 @@ new Yasqe(el, {
 });
 ```
 
-Via SPARQL Studio, forward them through the `yasqe` option:
+Via SPARQL Studio, forward them inside the `editor` factory:
 
 ```ts
 new SparqlStudio(el, {
-  yasqe: { editorOptions: { fontSize: 16 } },
+  editor: (parent, conf) => new SparqlEditor(parent, { ...conf, editorOptions: { fontSize: 16 } }),
 });
 ```
 

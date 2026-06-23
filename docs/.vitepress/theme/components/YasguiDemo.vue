@@ -16,7 +16,7 @@ function syncTheme(dark: boolean) {
   const theme = dark ? "dark" : "light";
   // The surrounding chrome CSS keys off [data-theme] on <html>.
   document.documentElement.dataset.theme = theme;
-  yasgui?.yasqe?.setTheme?.(theme);
+  yasgui?.editor?.setTheme?.(theme);
 }
 
 // isDark is a writable (useDark-backed) ref; flipping it toggles the .dark class,
@@ -27,7 +27,7 @@ function toggleTheme() {
 
 onMounted(async () => {
   const { default: SparqlStudio } = await import("@rdfjs/sparql-studio");
-  const { default: Yasqe, qlueLs } = await import("@rdfjs/sparql-editor-monaco");
+  const { default: SparqlEditor, qlueLs } = await import("@rdfjs/sparql-editor-monaco");
   await import("@rdfjs/sparql-studio/style.css");
   await import("@rdfjs/sparql-editor-monaco/style.css");
   // Worker modules are imported dynamically here (client-only) so they never enter the SSR bundle.
@@ -61,8 +61,8 @@ onMounted(async () => {
   yasgui = new SparqlStudio(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
     // The editor factory builds a Monaco Yasqe, wiring in the theme + the available LSP workers.
-    yasqe: (parent: HTMLElement, conf: any) =>
-      new Yasqe(parent, {
+    editor: (parent: HTMLElement, conf: any) =>
+      new SparqlEditor(parent, {
         ...conf,
         theme: isDark.value ? "dark" : "light",
         languageServers: [
@@ -87,7 +87,7 @@ onMounted(async () => {
           },
         ],
       }),
-    yasr: { prefixes: qlueLs.fallbackPrefixMap },
+    results: { prefixes: qlueLs.fallbackPrefixMap },
   });
   loading.value = false;
 });
@@ -106,6 +106,14 @@ onBeforeUnmount(() => {
       <div v-show="loading" class="yasgui-demo__loading">Loading the SPARQL editor…</div>
       <div ref="container" class="yasgui-demo__root"></div>
       <div class="yasgui-demo__theme-bar">
+        <span class="yasgui-demo__help" tabindex="0" role="button" aria-label="Editor help">
+          <span class="yasgui-demo__help-icon" aria-hidden="true">?</span>
+          <span class="yasgui-demo__help-pop" role="tooltip">
+            <strong>Using Monaco editor.</strong>
+            Right-click in the editor to see the actions menu.<br />
+            Change and configure the language server from there.
+          </span>
+        </span>
         <a class="yasgui-demo__nav-btn" :href="withBase('/codemirror')">CodeMirror editor</a>
         <button
           class="yasgui-demo__theme-toggle"
@@ -147,6 +155,61 @@ onBeforeUnmount(() => {
   justify-content: center;
   gap: 10px;
   padding: 12px 14px;
+}
+.yasgui-demo__help {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-2);
+  cursor: help;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  transition: border-color 0.2s, color 0.2s;
+}
+.yasgui-demo__help:hover,
+.yasgui-demo__help:focus-visible {
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
+}
+.yasgui-demo__help-icon {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+}
+.yasgui-demo__help-pop {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 0;
+  width: max-content;
+  max-width: 260px;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--vp-c-divider);
+  background: var(--vp-c-bg-elv);
+  color: var(--vp-c-text-2);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s;
+  z-index: 10;
+}
+.yasgui-demo__help:hover .yasgui-demo__help-pop,
+.yasgui-demo__help:focus-within .yasgui-demo__help-pop {
+  opacity: 1;
+  visibility: visible;
+}
+.yasgui-demo__help-pop strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--vp-c-text-1);
 }
 .yasgui-demo__nav-btn {
   height: 34px;

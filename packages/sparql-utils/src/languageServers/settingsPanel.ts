@@ -1,7 +1,7 @@
 /**
  * Generic, schema-driven settings panel for a language server (classic DOM, no editor dependency).
  *
- * Shared by both Yasqe editors: a server describes its tunable settings with a
+ * Shared by both SparqlEditor editors: a server describes its tunable settings with a
  * {@link LanguageServerSettingsSchema} (via `LanguageServerDef.configSchema`), the editor renders
  * this modal from that schema and, on Apply, hands the collected values back to the server's
  * `configCallback`. The renderer self-injects its CSS once (same pattern as the LSP error

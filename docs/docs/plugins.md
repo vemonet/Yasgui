@@ -2,7 +2,7 @@
 
 Yasr renders a SPARQL response through one of several plugins. The right plugin is picked automatically from the query type (`SELECT`, `ASK`, `CONSTRUCT`, `DESCRIBE`), the response content type and the data structure, but you can switch manually with the tabs above the result area. Your choice is kept per tab.
 
-The **Table**, **Boolean**, **Response** and **Error** plugins are built in. **Graph** and **Geo** are community plugins registered by the demo (see [Yasr](./yasr#result-view-plugins)).
+The **Table**, **Boolean**, **Response** and **Error** plugins are built in. **Graph** and **Geo** are community plugins registered by the demo (see [Yasr](./sparql-results#result-view-plugins)).
 
 ## Configuring plugins
 
@@ -13,7 +13,7 @@ import SparqlStudio from '@rdfjs/sparql-studio';
 import '@rdfjs/sparql-studio/style.css';
 
 const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
-  yasr: {
+  results: {
     // Tab order in the result area (plugins not listed are appended alphabetically)
     pluginOrder: ['table', 'response'],
     // Plugin selected when no better match is found for a response
@@ -53,7 +53,7 @@ SELECT ?item ?itemLabel WHERE {
 } LIMIT 100
 ```
 
-Config (`yasr.plugins.table.dynamicConfig`):
+Config (`results.plugins.table.dynamicConfig`):
 
 | Option | Type | Default | Description |
 |---|---|---|---|
@@ -63,7 +63,7 @@ Config (`yasr.plugins.table.dynamicConfig`):
 
 ```ts
 const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
-  yasr: {
+  results: {
     plugins: {
       table: { dynamicConfig: { pageSize: 100, compact: true } },
     },
@@ -87,7 +87,7 @@ Shows the raw endpoint response with syntax highlighting (JSON, XML, Turtle…),
 SELECT * WHERE { ?s ?p ?o } LIMIT 10
 ```
 
-Config (`yasr.plugins.response.dynamicConfig`):
+Config (`results.plugins.response.dynamicConfig`):
 
 | Option | Type | Default | Description |
 |---|---|---|---|
@@ -95,7 +95,7 @@ Config (`yasr.plugins.response.dynamicConfig`):
 
 ```ts
 const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
-  yasr: {
+  results: {
     plugins: {
       response: { dynamicConfig: { maxLines: 100 } },
     },
@@ -122,14 +122,14 @@ import GeoPlugin from 'yasgui-geo-tg';
 SparqlStudio.Yasr.registerPlugin('geo', GeoPlugin);
 
 const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
-  yasr: {
+  results: {
     pluginOrder: ['table', 'response', 'geo'],
     defaultPlugin: 'geo',
   },
 });
 ```
 
-The map controls (basemap, color, clustering, export, drawing, time slider…) are driven from the plugin UI; there are no programmatic config options to pass through `yasr.plugins.geo`.
+The map controls (basemap, color, clustering, export, drawing, time slider…) are driven from the plugin UI; there are no programmatic config options to pass through `results.plugins.geo`.
 
 Examples queries:
 
@@ -172,7 +172,7 @@ import GraphPlugin from '@matdata/yasgui-graph-plugin';
 SparqlStudio.Yasr.registerPlugin('graph', GraphPlugin);
 
 const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
-  yasr: {
+  results: {
     pluginOrder: ['table', 'response', 'graph'],
   },
 });

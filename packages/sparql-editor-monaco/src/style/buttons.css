@@ -214,5 +214,15 @@
         }
       }
     }
+
+    /* Subtle feedback on the icon buttons (execute, share): dim on hover */
+    .yasqe_share,
+    .yasqe_queryButton {
+      transition: filter 0.15s ease;
+    }
+    .yasqe_share:hover,
+    .yasqe_queryButton:not(.query_disabled):hover {
+      filter: brightness(0.8);
+    }
   }
 }

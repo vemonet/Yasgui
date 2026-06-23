@@ -1,30 +1,35 @@
-# SparqlStudio (full app)
+# SPARQL Studio
+
+::: info Previously Yasgui
+
+The term yasgui is kept for compatibility, especially in the CSS classes.
+
+:::
 
 `@rdfjs/sparql-studio` is the complete app: query tabs, an endpoint selector, and Yasqe + Yasr wired
 together.
 
 ```ts
 import SparqlStudio from "@rdfjs/sparql-studio";
-import Yasqe, { qlueLs } from "@rdfjs/sparql-editor-monaco";
+import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
 import "@rdfjs/sparql-studio/style.css";
-import { createQlueLsWorker } from "./qlue-ls";
+import QlueLsWorker from "./qlue-ls.worker?worker";
 
 const yasgui = new SparqlStudio(document.getElementById("yasgui")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
   // Editor factory: build the editor and wire in its language server. `conf` is the
   // per-tab config SparqlStudio prepares (value, requestConfig, …); spread it, then add your own.
-  yasqe: (parent, conf) =>
-    new Yasqe(parent, {
+  editor: (parent, conf) =>
+    new SparqlEditor(parent, {
       ...conf,
       languageServers: [
         {
           label: "Qlue-ls",
-          worker: createQlueLsWorker,
+          worker: () => new QlueLsWorker({ name: "qlue-ls" }),
           onReady: (client) => {
             qlueLs.configureSettings(client);
             qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint());
           },
-          // Per-server, fires only while this server is active.
           onEndpointChange: (client, endpoint) => qlueLs.configureBackend(client, endpoint),
         },
       ],
@@ -38,7 +43,7 @@ SparqlStudio is **editor-independent**: instead of an editor config object, you 
 servers and theme. `qlueLs` is only exported from `@rdfjs/sparql-editor-monaco` (the Monaco editor), not from
 `@rdfjs/sparql-studio`.
 
-`yasgui.yasqe.getLanguageClient()` returns the active language client so you can send any LSP request.
+`yasgui.editor.getLanguageClient()` returns the active language client so you can send any LSP request.
 When two or more `languageServers` are configured, a switcher lets users pick one and SparqlStudio
 remembers the choice **per endpoint**, so each endpoint reopens with its preferred server.
 
@@ -68,12 +73,3 @@ The proxy URL is prepended to the request URL.
 By default SparqlStudio persists tabs, queries and the last results to `localStorage` under a namespace
 derived from the container element id. Pass `persistenceId: null` to disable persistence, or a
 string / function to control the namespace.
-
-## See also
-
-- [Request configuration](./request-config) · how queries are sent.
-- [Theming](./theming) · light/dark wiring.
-- [Monaco editor options](./editor-options) · customize the editor.
-
-The shared editor types (`IYasqe`, `YasqeFactory`, `RequestConfig`, `PlainRequestConfig`,
-`QueryType`) live in `@rdfjs/sparql-utils` and are implemented by both editor packages.

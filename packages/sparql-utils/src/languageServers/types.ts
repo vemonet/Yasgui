@@ -1,5 +1,5 @@
 /**
- * Editor-agnostic language-server contract shared by both Yasqe editors (`@rdfjs/sparql-editor-monaco`,
+ * Editor-agnostic language-server contract shared by both SparqlEditor editors (`@rdfjs/sparql-editor-monaco`,
  * Monaco-based, and `@rdfjs/sparql-editor-codemirror`, CodeMirror 6-based).
  *
  * A SPARQL language server is defined ONCE as a {@link LanguageServerDef} (a Web Worker plus
