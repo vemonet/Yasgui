@@ -1,13 +1,12 @@
 # SPARQL Studio
 
-SPARQL Studio is a SPARQL query editor and results viewer for the web. It is a fork of
-[Yasgui](https://github.com/zazuko/Yasgui) and stays compatible with all existing Yasr result-view plugins.
+SPARQL Studio is a SPARQL query editor and results viewer for the web. It is a fork of [Yasgui](https://github.com/zazuko/Yasgui) and stays compatible with all existing Yasr result-view plugins.
 
 Useful links:
 
-- Documentation: https://sparql.studio/docs/introduction
-- Live demo: https://sparql.studio
-- Source code: https://github.com/rdfjs/Yasgui
+- Live demo: [sparql.studio](https://sparql.studio)
+- Documentation: [sparql.studio/docs/introduction](https://sparql.studio/docs/introduction)
+- Source code: [github.com/rdfjs/Yasgui](https://github.com/rdfjs/Yasgui)
 
 ## Packages
 
@@ -52,7 +51,6 @@ Run `npm run build`. It stores the transpiled js/css files in the `build` direct
 
 ## License
 
-SPARQL Studio is a fork of [Yasgui](https://github.com/zazuko/Yasgui) (maintained by Zazuko,
-originally written by Triply).
+SPARQL Studio is a fork of [Yasgui](https://github.com/TriplyDB/Yasgui/) maintained by Zazuko, originally written by Triply.
 
 This code is released under the MIT license.
