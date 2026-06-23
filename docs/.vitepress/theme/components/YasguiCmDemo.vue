@@ -64,7 +64,6 @@ onMounted(async () => {
 
   yasgui = new SparqlStudio(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
-    // The editor factory: build a CodeMirror Yasqe, wiring in the theme + the available LS workers.
     editor: (parent: HTMLElement, conf: any) =>
       new SparqlEditor(parent, {
         ...conf,

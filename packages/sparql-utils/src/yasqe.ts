@@ -6,7 +6,7 @@
  * @module YasqeContract
  */
 
-/** The SPARQL query/update forms, as detected by {@link IYasqe.getQueryType}. */
+/** The SPARQL query/update forms, as detected by {@link IEditor.getQueryType}. */
 export type QueryType =
   | "SELECT"
   | "CONSTRUCT"
@@ -181,7 +181,7 @@ export function getQueryMode(queryType: QueryType | undefined): "update" | "quer
  * The editor-agnostic SparqlEditor contract that SparqlStudio programs against. Both editor implementations
  * satisfy it (they have many more members; this is only the subset SparqlStudio relies on).
  */
-export interface IYasqe {
+export interface IEditor {
   /** The editor's root element. */
   rootEl: HTMLElement;
   /**
@@ -189,8 +189,8 @@ export interface IYasqe {
    * `createShareableLink` and `editorHeight` on the shared instance per tab.
    */
   config: {
-    requestConfig: RequestConfig<any> | ((yasqe: any) => RequestConfig<any>);
-    createShareableLink: (yasqe: any) => string;
+    requestConfig: RequestConfig<any> | ((editor: any) => RequestConfig<any>);
+    createShareableLink: (editor: any) => string;
     editorHeight: string;
     [key: string]: any;
   };
@@ -235,7 +235,7 @@ export interface IYasqe {
   notifyEndpointChange?(endpoint: string): void;
 }
 
-/** Editor-agnostic descriptor of a language server, as surfaced by `IYasqe.getLanguageServers`. */
+/** Editor-agnostic descriptor of a language server, as surfaced by `IEditor.getLanguageServers`. */
 export interface LanguageServerInfo {
   label: string;
   description?: string;
@@ -246,7 +246,7 @@ export interface LanguageServerInfo {
  * SparqlStudio is editor-independent: the consumer imports an editor (e.g. `@rdfjs/sparql-editor-monaco` or
  * `@rdfjs/sparql-editor-codemirror`) and supplies one of these as `config.yasqe`.
  */
-export type SparqlEditorFactory = (parent: HTMLElement, conf: any) => IYasqe;
+export type SparqlEditorFactory = (parent: HTMLElement, conf: any) => IEditor;
 
 /** Default query shown in a fresh editor/tab. */
 export const defaultQueryValue = `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

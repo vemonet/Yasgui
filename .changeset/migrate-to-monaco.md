@@ -8,7 +8,7 @@
 
 - Migrate from CodeMirror 5 to Monaco/CodeMirror 6 editors with language servers
   - Users can now choose between 2 editors: one based on Monaco, the other based on CodeMirror 6
-  - The editor now extends `EventEmitter` instead of `CodeMirror`, with a shared `IYasqe` interface both editors implement
+  - The editor now extends `EventEmitter` instead of `CodeMirror`, with a shared `IEditor` interface both editors implement
   - Enable use of language servers for diagnostics, syntax highlighting, autocompletion, code actions, hover and formatting
   - Delete the editor's built-in autocomplete and grammar code (now handled by the language server)
   - CodeMirror falls back to static SPARQL syntax highlighting when the language server provides no semantic tokens

@@ -1,12 +1,12 @@
 # Getting started
 
 This guide embeds the full SparqlStudio app with the **qlue-ls** language server. If you only
-need the editor or the result viewer, see [Yasqe](./sparql-editor) and [Yasr](./sparql-results).
+need the editor or the result viewer, see [Editor](./sparql-editor) and [Results](./sparql-results).
 
 ## 1. Install
 
 ```bash
-npm install @rdfjs/sparql-studio          # or @rdfjs/sparql-editor-monaco / @rdfjs/sparql-results individually
+npm install @rdfjs/sparql-studio
 ```
 
 To use the qlue-ls language server, also add it and the Vite WASM plugin to **your app**:
@@ -51,7 +51,7 @@ If you don't use a language server at all, none of this is needed, the editor st
 
 ## 3. Set up the language server
 
-The language server runs in a **Web Worker**. The qlue-ls backend/settings plumbing ships with the package (the `qlueLs` helpers), so the only file you write is the worker itself, which is also the only file you change to switch to a different SPARQL language server later. You pass that worker straight to Yasqe: the editor waits for the worker to signal it is ready, then connects the LSP client for you, so no readiness wrapper is needed. See the [Language server](./language-server) page for details; here is the minimal setup:
+The language server runs in a **Web Worker**. The qlue-ls backend/settings plumbing ships with the package (the `qlueLs` helpers), so the only file you write is the worker itself, which is also the only file you change to switch to a different SPARQL language server later. You pass that worker straight to the editor: it waits for the worker to signal it is ready, then connects the LSP client for you, so no readiness wrapper is needed. See the [Language server](./language-server) page for details; here is the minimal setup:
 
 ```ts [qlue-ls.worker.ts]
 // @ts-ignore qlue-ls is loaded as a WASM module via vite-plugin-wasm
@@ -120,5 +120,5 @@ Add more entries to `languageServers` to let users switch at runtime; with two o
 :::
 
 ::: info CodeMirror instead of Monaco
-The factory is also where you choose the editor implementation. To use the CodeMirror 6 editor, import `Yasqe` from `@rdfjs/sparql-editor-codemirror` instead. The `languageServers` config is identical, both editors take the same `worker` (Monaco connects a language client to it, CodeMirror builds an `LSPClient` from it internally). See [Language server](./language-server).
+The factory is also where you choose the editor implementation. To use the CodeMirror 6 editor, import `SparqlEditor` from `@rdfjs/sparql-editor-codemirror` instead. The `languageServers` config is identical, both editors take the same `worker` (Monaco connects a language client to it, CodeMirror builds an `LSPClient` from it internally). See [Language server](./language-server).
 :::

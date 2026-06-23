@@ -60,7 +60,7 @@ onMounted(async () => {
   const onEndpointChange = (client: any, endpoint: string) => qlueLs.configureBackend(client, endpoint);
   yasgui = new SparqlStudio(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
-    // The editor factory builds a Monaco Yasqe, wiring in the theme + the available LSP workers.
+    // The editor factory builds a Monaco editor, wiring in the theme + the available LSP workers.
     editor: (parent: HTMLElement, conf: any) =>
       new SparqlEditor(parent, {
         ...conf,

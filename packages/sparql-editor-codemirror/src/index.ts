@@ -71,7 +71,7 @@ import type {
   DeepPartial,
   QueryType,
   RequestConfig,
-  IYasqe,
+  IEditor,
   Prefixes,
   YasqeAjaxConfig,
   RequestArgs,
@@ -184,7 +184,7 @@ const blockFoldService = foldService.of((state, lineStart, lineEnd) => {
   return best;
 });
 
-export class SparqlEditor extends EventEmitter implements IYasqe {
+export class SparqlEditor extends EventEmitter implements IEditor {
   private static storageNamespace = "triply";
   public rootEl: HTMLDivElement;
   private editorEl: HTMLDivElement;

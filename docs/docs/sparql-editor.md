@@ -32,16 +32,15 @@ const editor = new SparqlEditor(document.getElementById("yasqe")!, {
   ],
 });
 
-editor.on("query", (yasqe, req) => console.log("running", req));
+editor.on("query", (editor, req) => console.log("running", req));
 editor.on("queryResponse", (yasqe, response, duration) => console.log(response, duration));
 ```
 
 With an empty `languageServers`, Yasqe still works as a syntax-highlighted editor, you just don't get
-completion, diagnostics or formatting. List more than one server to let users switch between them at
-runtime (right-click the editor); the active server is exposed via `yasqe.getLanguageClient()` and
-the choice can be changed programmatically with `yasqe.setLanguageServer(labelOrIndex)`. Each entry's
-`onReady` / `onEndpointChange` hooks fire only while that server is active; standalone consumers
-trigger the latter with `yasqe.notifyEndpointChange(endpoint)` (SparqlStudio calls it for you).
+completion, diagnostics or formatting. The `languageServers` array, its per-server `onReady` /
+`onEndpointChange` hooks, the runtime switcher and helpers like `getLanguageClient()` /
+`setLanguageServer()` / `notifyEndpointChange()` are all covered in
+[Language server](./language-server) — this is the same config the full app uses.
 
 ::: warning Events are instance-first
 Yasqe events are emitted **instance-first**, handlers receive `(yasqeInstance, ...payload)`. For

@@ -1,7 +1,6 @@
 # Monaco editor options
 
-Pass any [Monaco editor options](https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html)
-via `editorOptions`. They are **deep-merged over** Yasqe's defaults.
+Pass any [Monaco editor options](https://microsoft.github.io/monaco-editor/typedoc/interfaces/editor.IStandaloneEditorConstructionOptions.html) via `editorOptions`. They are **deep-merged over** the editor defaults.
 
 ```ts
 new SparqlEditor(el, {
@@ -25,13 +24,13 @@ new SparqlStudio(el, {
 
 ## Defaults
 
-Yasqe's defaults already enable:
+The editor's defaults already enable:
 
 - line numbers
 - word wrap
 - bracket matching
 - code folding
-- the VS Code right-click context menu (including **Format Document**)
+- the VSCode right-click context menu (including **Format Document**)
 - semantic highlighting
 
 You only need `editorOptions` to override these or to enable extra Monaco features.

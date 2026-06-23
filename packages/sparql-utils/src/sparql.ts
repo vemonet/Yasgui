@@ -3,16 +3,16 @@
  * `@rdfjs/sparql-editor-codemirror`). Builds the HTTP request from the editor's request config + query,
  * executes it, and emits the query lifecycle events.
  *
- * It operates on the editor-agnostic {@link IYasqe} contract and emits events payload-only: every
+ * It operates on the editor-agnostic {@link IEditor} contract and emits events payload-only: every
  * editor's `emit` prepends the instance, so handlers receive `(instance, ...payload)`.
  * @module sparql
  */
 import { merge, isFunction } from "lodash-es";
 import * as queryString from "query-string";
-import type { IYasqe, RequestConfig, RequestArgs } from "./yasqe";
+import type { IEditor, RequestConfig, RequestArgs } from "./yasqe";
 
 /** A request config, or a function returning one (resolved against the editor at request time). */
-export type YasqeAjaxConfig = RequestConfig<IYasqe> | ((yasqe: IYasqe) => RequestConfig<IYasqe>);
+export type YasqeAjaxConfig = RequestConfig<IEditor> | ((yasqe: IEditor) => RequestConfig<IEditor>);
 
 /** A fully-resolved request, ready to be turned into a `fetch` call. */
 export interface PopulatedAjaxConfig {
@@ -24,15 +24,15 @@ export interface PopulatedAjaxConfig {
   withCredentials: boolean;
 }
 
-function getRequestConfigSettings(yasqe: IYasqe, conf?: YasqeAjaxConfig): RequestConfig<IYasqe> {
+function getRequestConfigSettings(yasqe: IEditor, conf?: YasqeAjaxConfig): RequestConfig<IEditor> {
   if (isFunction(conf)) {
-    return conf(yasqe) as RequestConfig<IYasqe>;
+    return conf(yasqe) as RequestConfig<IEditor>;
   }
-  return (conf ?? {}) as RequestConfig<IYasqe>;
+  return (conf ?? {}) as RequestConfig<IEditor>;
 }
 
-export function getAjaxConfig(yasqe: IYasqe, _config?: YasqeAjaxConfig): PopulatedAjaxConfig | undefined {
-  const config: RequestConfig<IYasqe> = merge(
+export function getAjaxConfig(yasqe: IEditor, _config?: YasqeAjaxConfig): PopulatedAjaxConfig | undefined {
+  const config: RequestConfig<IEditor> = merge(
     {},
     getRequestConfigSettings(yasqe, yasqe.config.requestConfig as YasqeAjaxConfig),
     getRequestConfigSettings(yasqe, _config),
@@ -55,7 +55,7 @@ export function getAjaxConfig(yasqe: IYasqe, _config?: YasqeAjaxConfig): Populat
   };
 }
 
-export async function executeQuery(yasqe: IYasqe, config?: YasqeAjaxConfig): Promise<any> {
+export async function executeQuery(yasqe: IEditor, config?: YasqeAjaxConfig): Promise<any> {
   const queryStart = Date.now();
   try {
     yasqe.emit("queryBefore", config);
@@ -124,11 +124,11 @@ export async function executeQuery(yasqe: IYasqe, config?: YasqeAjaxConfig): Pro
   }
 }
 
-export function getUrlArguments(yasqe: IYasqe, _config?: YasqeAjaxConfig): RequestArgs {
+export function getUrlArguments(yasqe: IEditor, _config?: YasqeAjaxConfig): RequestArgs {
   const queryMode = yasqe.getQueryMode();
 
   const data: RequestArgs = {};
-  const config: RequestConfig<IYasqe> = getRequestConfigSettings(yasqe, _config);
+  const config: RequestConfig<IEditor> = getRequestConfigSettings(yasqe, _config);
   let queryArg = isFunction(config.queryArgument) ? config.queryArgument(yasqe) : config.queryArgument;
   if (!queryArg) queryArg = yasqe.getQueryMode();
   data[queryArg] = config.adjustQueryBeforeRequest ? config.adjustQueryBeforeRequest(yasqe) : yasqe.getValue();
@@ -165,8 +165,8 @@ export function getUrlArguments(yasqe: IYasqe, _config?: YasqeAjaxConfig): Reque
   return data;
 }
 
-export function getAcceptHeader(yasqe: IYasqe, _config?: YasqeAjaxConfig) {
-  const config: RequestConfig<IYasqe> = getRequestConfigSettings(yasqe, _config);
+export function getAcceptHeader(yasqe: IEditor, _config?: YasqeAjaxConfig) {
+  const config: RequestConfig<IEditor> = getRequestConfigSettings(yasqe, _config);
   let acceptHeader = null;
   if (yasqe.getQueryMode() == "update") {
     acceptHeader = isFunction(config.acceptHeaderUpdate) ? config.acceptHeaderUpdate(yasqe) : config.acceptHeaderUpdate;
@@ -183,7 +183,7 @@ export function getAcceptHeader(yasqe: IYasqe, _config?: YasqeAjaxConfig) {
   return acceptHeader;
 }
 
-export function getAsCurlString(yasqe: IYasqe, _config?: YasqeAjaxConfig): string {
+export function getAsCurlString(yasqe: IEditor, _config?: YasqeAjaxConfig): string {
   const ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
   if (!ajaxConfig) return "";
   let url = ajaxConfig.url;
