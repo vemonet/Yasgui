@@ -10,7 +10,7 @@ export interface TabContextConfig {
   enabled: boolean;
 }
 export default class TabContextMenu {
-  private yasgui: SparqlStudio;
+  private sparqlStudio: SparqlStudio;
   private contextEl!: HTMLElement;
   private newTabEl!: HTMLElement;
   private renameTabEl!: HTMLElement;
@@ -20,8 +20,8 @@ export default class TabContextMenu {
   private reOpenOldTab!: HTMLElement;
   private rootEl: HTMLElement;
   private tabRef: TabListEl | undefined; // Need to store it due to scrolling updates
-  constructor(yasgui: SparqlStudio, rootEl: HTMLElement) {
-    this.yasgui = yasgui;
+  constructor(sparqlStudio: SparqlStudio, rootEl: HTMLElement) {
+    this.sparqlStudio = sparqlStudio;
     this.rootEl = rootEl;
     document.addEventListener("click", this.handleContextClick);
     document.addEventListener("keyup", this.closeConfigMenu);
@@ -43,7 +43,7 @@ export default class TabContextMenu {
 
     this.newTabEl = this.getMenuItemEl("New Tab");
     // We can set the function for addTab here already, as it doesn't need any outside data
-    this.newTabEl.onclick = () => this.yasgui.addTab(true);
+    this.newTabEl.onclick = () => this.sparqlStudio.addTab(true);
 
     this.renameTabEl = this.getMenuItemEl("Rename Tab");
 
@@ -88,7 +88,7 @@ export default class TabContextMenu {
     if (!currentTabEl.tabEl) return;
     this.draw(this.rootEl);
     this.tabRef = currentTabEl;
-    const tab = this.yasgui.getTab(currentTabId);
+    const tab = this.sparqlStudio.getTab(currentTabId);
     const bounding = currentTabEl.tabEl.getBoundingClientRect();
     this.contextEl.style.left = `${window.pageXOffset + bounding.left}px`;
     this.contextEl.style.top = `${window.pageYOffset + bounding.bottom}px`;
@@ -102,24 +102,24 @@ export default class TabContextMenu {
       if (!tab) return;
       const config = cloneDeep(tab.getPersistedJson());
       config.id = getRandomId();
-      this.yasgui.addTab(true, config);
+      this.sparqlStudio.addTab(true, config);
     };
 
     // Close tab functionality
     this.closeTabEl.onclick = () => tab?.close();
 
     // Close other tab functionality
-    if (Object.keys(this.yasgui._tabs).length === 1) {
+    if (Object.keys(this.sparqlStudio._tabs).length === 1) {
       addClass(this.closeOtherTabsEl, "disabled");
     } else {
       this.closeOtherTabsEl.onclick = () => {
-        for (const tabId of Object.keys(this.yasgui._tabs)) {
-          if (tabId !== currentTabId) (this.yasgui.getTab(tabId) as Tab).close();
+        for (const tabId of Object.keys(this.sparqlStudio._tabs)) {
+          if (tabId !== currentTabId) (this.sparqlStudio.getTab(tabId) as Tab).close();
         }
       };
     }
-    if (this.yasgui.persistentConfig && this.yasgui.persistentConfig.hasLastClosedTab()) {
-      this.reOpenOldTab.onclick = () => this.yasgui.restoreLastTab();
+    if (this.sparqlStudio.persistentConfig && this.sparqlStudio.persistentConfig.hasLastClosedTab()) {
+      this.reOpenOldTab.onclick = () => this.sparqlStudio.restoreLastTab();
     } else {
       addClass(this.reOpenOldTab, "disabled");
     }
@@ -129,8 +129,8 @@ export default class TabContextMenu {
     if (this.contextEl) this.contextEl.remove();
   };
 
-  public static get(yasgui: SparqlStudio, rootEl: HTMLElement) {
-    const instance = new TabContextMenu(yasgui, rootEl);
+  public static get(sparqlStudio: SparqlStudio, rootEl: HTMLElement) {
+    const instance = new TabContextMenu(sparqlStudio, rootEl);
     return instance;
   }
   public unregisterEventListeners() {

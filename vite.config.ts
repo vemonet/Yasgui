@@ -151,9 +151,8 @@ export default defineConfig({
         rolldownOptions: {
           input: {
             index: resolve(__dirname, "dev/index.html"),
-            editor: resolve(__dirname, "dev/editor.html"),
             codemirror: resolve(__dirname, "dev/codemirror.html"),
-            results: resolve(__dirname, "dev/results.html"),
+            editor_results: resolve(__dirname, "dev/editor_results.html"),
           },
         },
       },

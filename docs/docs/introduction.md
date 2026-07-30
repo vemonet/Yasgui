@@ -36,11 +36,11 @@ The editors are language server agnostic: you provide a language server and they
 
 The live demo wires up 3 language servers:
 
-| Language server                                              | Description                                                  | Implementation | Completion | Semantic tokens |
-| ------------------------------------------------------------ | ------------------------------------------------------------ | -------------- | ---------- | --------------- |
-| [**qlue-ls**](https://github.com/IoannisNezis/Qlue-ls)       | SPARQL language server with endpoint-powered completion and code actions | 🦀 WASM         | ✅          | ✅               |
-| [**swls**](https://github.com/SemanticWebLanguageServer/swls) | Semantic Web Language Server                                 | 🦀 WASM         |            | ☑️               |
-| [**Traqula**](https://github.com/comunica/traqula)           | SPARQL 1.2 parser written in JS                              | 🟨 JS           |            |                 |
+| Language server                                              | Description                                                  | Implementation | Completion | Semantic tokens | Author                                            |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | -------------- | ---------- | --------------- | ------------------------------------------------- |
+| [**qlue-ls**](https://github.com/IoannisNezis/Qlue-ls)       | SPARQL language server with endpoint-powered completion and code actions | 🦀 WASM         | ✅          | ✅               | [Ioannis Nezis](https://github.com/IoannisNezis/) |
+| [**swls**](https://github.com/SemanticWebLanguageServer/swls) | Semantic Web Language Server                                 | 🦀 WASM         |            | ☑️               | [Arthur Vercruysse](https://github.com/ajuvercr)  |
+| [**Traqula**](https://github.com/comunica/traqula)           | SPARQL 1.2 parser written in JS                              | 🟨 JS           |            |                 | [Jitse De Smet](https://github.com/jitsedesmet)   |
 
 ::: info Default syntax highlighting
 

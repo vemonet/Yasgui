@@ -1,6 +1,6 @@
 @use "scss/variables.scss";
-.yasr {
-  .yasr_btn {
+.sparql-results {
+  .sparql-results_btn {
     border: none;
     background: inherit;
   }
@@ -15,7 +15,7 @@
       align-self: center;
     }
   }
-  .yasr_btn.yasr_external_ref_btn {
+  .sparql-results_btn.sparql-results_external_ref_btn {
     font-weight: 600;
     user-select: none;
     // Active and focus shouldn't color the button since it'll open a new page
@@ -39,7 +39,7 @@
       text-decoration: underline;
     }
   }
-  .yasr_btnGroup {
+  .sparql-results_btnGroup {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -52,8 +52,8 @@
       margin-right: 5px;
       text-align: center;
     }
-    .yasr_btn {
-      // redeclared here to target yasr_btns in btnGroup
+    .sparql-results_btn {
+      // redeclared here to target sparql-results_btns in btnGroup
       border-bottom: 2px solid transparent;
       &.selected {
         border-bottom: 2px solid #337ab7;
@@ -67,7 +67,7 @@
 
   // Default med screen +
   @media (max-width: 768px) {
-    .yasr_btn {
+    .sparql-results_btn {
       span {
         display: none;
       }
@@ -78,11 +78,11 @@
     }
   }
 
-  .yasr_header {
+  .sparql-results_header {
     display: flex;
     flex-wrap: wrap;
   }
-  .yasr_fallback_info:not(:empty) {
+  .sparql-results_fallback_info:not(:empty) {
     margin-top: 5px;
     border: 1px solid #d1d1d1;
     padding: 0.5rem;
@@ -91,11 +91,11 @@
       margin: 0;
     }
   }
-  .yasr_help_variable {
+  .sparql-results_help_variable {
     background: #dff0ff;
     color: #428bca;
   }
-  .yasr_response_chip {
+  .sparql-results_response_chip {
     color: #505050;
     background: #f5f5f5;
     border-radius: 6px;
@@ -114,7 +114,7 @@
       display: none;
     }
   }
-  .yasr_plugin_control {
+  .sparql-results_plugin_control {
     display: flex;
     margin-left: auto;
     align-items: center;
@@ -122,7 +122,7 @@
       display: none;
     }
   }
-  .yasr_btn {
+  .sparql-results_btn {
     color: #505050;
     fill: #505050;
     display: flex;

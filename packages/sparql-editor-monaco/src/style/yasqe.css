@@ -1,78 +1,78 @@
-/* CSS Custom Properties for yasqe theming (light defaults) */
+/* CSS Custom Properties for sparql-editor theming (light defaults) */
 :root {
-  --yasqe-text: #000000;
-  --yasqe-border: #d1d1d1;
-  --yasqe-notification-bg: #eeeeee;
-  --yasqe-notification-text: #999999;
-  --yasqe-tooltip-bg: rgba(0, 0, 0, 0.8);
-  --yasqe-tooltip-text: #ffffff;
-  --yasqe-error: #ff0000;
-  --yasqe-btn-bg: #ffffff;
-  --yasqe-btn-text: #333333;
-  --yasqe-btn-border: #cccccc;
-  --yasqe-btn-hover-bg: #ebebeb;
-  --yasqe-btn-hover-border: #adadad;
-  --yasqe-accent: #337ab7;
-  --yasqe-accent-text: #ffffff;
-  --yasqe-popup-bg: #ffffff;
-  --yasqe-popup-border: #e3e3e3;
-  --yasqe-icon: #505050;
+  --sparql-editor-text: #000000;
+  --sparql-editor-border: #d1d1d1;
+  --sparql-editor-notification-bg: #eeeeee;
+  --sparql-editor-notification-text: #999999;
+  --sparql-editor-tooltip-bg: rgba(0, 0, 0, 0.8);
+  --sparql-editor-tooltip-text: #ffffff;
+  --sparql-editor-error: #ff0000;
+  --sparql-editor-btn-bg: #ffffff;
+  --sparql-editor-btn-text: #333333;
+  --sparql-editor-btn-border: #cccccc;
+  --sparql-editor-btn-hover-bg: #ebebeb;
+  --sparql-editor-btn-hover-border: #adadad;
+  --sparql-editor-accent: #337ab7;
+  --sparql-editor-accent-text: #ffffff;
+  --sparql-editor-popup-bg: #ffffff;
+  --sparql-editor-popup-border: #e3e3e3;
+  --sparql-editor-icon: #505050;
 }
 
 /* Dark values, shared by the explicit toggle and the OS preference below */
 html[data-theme="dark"] {
-  --yasqe-text: #d4d4d4;
-  --yasqe-border: #3e3e3e;
-  --yasqe-notification-bg: #2d2d30;
-  --yasqe-notification-text: #cccccc;
-  --yasqe-tooltip-bg: rgba(255, 255, 255, 0.1);
-  --yasqe-tooltip-text: #ffffff;
-  --yasqe-error: #ff6b6b;
-  --yasqe-btn-bg: #2d2d30;
-  --yasqe-btn-text: #d4d4d4;
-  --yasqe-btn-border: #3e3e3e;
-  --yasqe-btn-hover-bg: #3e3e3e;
-  --yasqe-btn-hover-border: #555555;
-  --yasqe-accent: #4fc3f7;
-  --yasqe-accent-text: #1e1e1e;
-  --yasqe-popup-bg: #2d2d30;
-  --yasqe-popup-border: #3e3e3e;
-  --yasqe-icon: #cccccc;
+  --sparql-editor-text: #d4d4d4;
+  --sparql-editor-border: #3e3e3e;
+  --sparql-editor-notification-bg: #2d2d30;
+  --sparql-editor-notification-text: #cccccc;
+  --sparql-editor-tooltip-bg: rgba(255, 255, 255, 0.1);
+  --sparql-editor-tooltip-text: #ffffff;
+  --sparql-editor-error: #ff6b6b;
+  --sparql-editor-btn-bg: #2d2d30;
+  --sparql-editor-btn-text: #d4d4d4;
+  --sparql-editor-btn-border: #3e3e3e;
+  --sparql-editor-btn-hover-bg: #3e3e3e;
+  --sparql-editor-btn-hover-border: #555555;
+  --sparql-editor-accent: #4fc3f7;
+  --sparql-editor-accent-text: #1e1e1e;
+  --sparql-editor-popup-bg: #2d2d30;
+  --sparql-editor-popup-border: #3e3e3e;
+  --sparql-editor-icon: #cccccc;
 }
 
 /* Auto dark mode following the OS/browser preference, unless the user forced light */
 @media (prefers-color-scheme: dark) {
   html:not([data-theme="light"]) {
-    --yasqe-text: #d4d4d4;
-    --yasqe-border: #3e3e3e;
-    --yasqe-notification-bg: #2d2d30;
-    --yasqe-notification-text: #cccccc;
-    --yasqe-tooltip-bg: rgba(255, 255, 255, 0.1);
-    --yasqe-tooltip-text: #ffffff;
-    --yasqe-error: #ff6b6b;
-    --yasqe-btn-bg: #2d2d30;
-    --yasqe-btn-text: #d4d4d4;
-    --yasqe-btn-border: #3e3e3e;
-    --yasqe-btn-hover-bg: #3e3e3e;
-    --yasqe-btn-hover-border: #555555;
-    --yasqe-accent: #4fc3f7;
-    --yasqe-accent-text: #1e1e1e;
-    --yasqe-popup-bg: #2d2d30;
-    --yasqe-popup-border: #3e3e3e;
-    --yasqe-icon: #cccccc;
+    --sparql-editor-text: #d4d4d4;
+    --sparql-editor-border: #3e3e3e;
+    --sparql-editor-notification-bg: #2d2d30;
+    --sparql-editor-notification-text: #cccccc;
+    --sparql-editor-tooltip-bg: rgba(255, 255, 255, 0.1);
+    --sparql-editor-tooltip-text: #ffffff;
+    --sparql-editor-error: #ff6b6b;
+    --sparql-editor-btn-bg: #2d2d30;
+    --sparql-editor-btn-text: #d4d4d4;
+    --sparql-editor-btn-border: #3e3e3e;
+    --sparql-editor-btn-hover-bg: #3e3e3e;
+    --sparql-editor-btn-hover-border: #555555;
+    --sparql-editor-accent: #4fc3f7;
+    --sparql-editor-accent-text: #1e1e1e;
+    --sparql-editor-popup-bg: #2d2d30;
+    --sparql-editor-popup-border: #3e3e3e;
+    --sparql-editor-icon: #cccccc;
   }
 }
 
-.yasqe {
+.sparql-editor {
   position: relative;
-  color: var(--yasqe-text);
+  color: var(--sparql-editor-text);
 
   .svgImg {
     display: inline-block;
   }
   span.shortlinkErr {
     font-size: small;
-    color: var(--yasqe-error);
+    color: var(--sparql-editor-error);
     font-weight: bold;
     float: left;
   }
@@ -92,8 +92,8 @@ html[data-theme="dark"] {
     max-height: 0px;
     /* Clip while collapsed so the (possibly multi-line) text disappears with the box on dismiss. */
     overflow: hidden;
-    color: var(--yasqe-notification-text);
-    background-color: var(--yasqe-notification-bg);
+    color: var(--sparql-editor-notification-text);
+    background-color: var(--sparql-editor-notification-bg);
     font-size: 90%;
     text-align: center;
     transition: max-height 0.2s ease-in;
@@ -104,7 +104,7 @@ html[data-theme="dark"] {
     max-height: 3rem;
   }
   /* Language-server error notifications render via the shared `createLspErrorNotification` helper
-     (@rdfjs/sparql-utils), which injects its own `.yasqe-lsp-error` styles. */
+     (@rdfjs/sparql-utils), which injects its own `.sparql-editor-lsp-error` styles. */
 
   .parseErrorIcon {
     width: 13px;
@@ -113,15 +113,15 @@ html[data-theme="dark"] {
     margin-left: 2px;
     svg {
       g {
-        fill: var(--yasqe-error);
+        fill: var(--sparql-editor-error);
       }
     }
   }
 
-  .yasqe_tooltip {
-    background: var(--yasqe-tooltip-bg);
+  .sparql-editor_tooltip {
+    background: var(--sparql-editor-tooltip-bg);
     border-radius: 5px;
-    color: var(--yasqe-tooltip-text);
+    color: var(--sparql-editor-tooltip-text);
     padding: 5px 15px;
     width: 220px;
     white-space: pre-wrap;
@@ -144,11 +144,11 @@ html[data-theme="dark"] {
   .resizeChip {
     width: 20%;
     height: 4px;
-    background-color: var(--yasqe-border);
+    background-color: var(--sparql-editor-border);
     visibility: hidden;
     border-radius: 2px;
   }
-  /* Show resizeChip when yasqe is hovered */
+  /* Show resizeChip when sparql-editor is hovered */
   &:hover {
     .resizeChip {
       visibility: visible;
@@ -156,26 +156,26 @@ html[data-theme="dark"] {
   }
 }
 
-/* Language-server settings panel styles (`.yasqe-settings-*`) are injected at runtime by the
+/* Language-server settings panel styles (`.sparql-editor-settings-*`) are injected at runtime by the
    shared `openSettingsPanel` helper in @rdfjs/sparql-utils, so both editors share one source. */
 
 /* LSP diagnostics mirrored into the left glyph margin (decorations are set in index.ts via
    `setupDiagnosticGlyphs`; Monaco itself only draws inline squiggles). Severity colors are
    theme-independent so they stay legible in both light and dark. */
-.yasqe-glyph-error,
-.yasqe-glyph-warning,
-.yasqe-glyph-info {
+.sparql-editor-glyph-error,
+.sparql-editor-glyph-warning,
+.sparql-editor-glyph-info {
   background-repeat: no-repeat;
   background-position: center center;
   background-size: 13px 13px;
   cursor: pointer;
 }
-.yasqe-glyph-error {
+.sparql-editor-glyph-error {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6.5' fill='%23e5484d'/><rect x='7.1' y='4' width='1.8' height='5' rx='.9' fill='%23fff'/><circle cx='8' cy='11.2' r='1' fill='%23fff'/></svg>");
 }
-.yasqe-glyph-warning {
+.sparql-editor-glyph-warning {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M8 1.8 14.7 13.5a1 1 0 0 1-.87 1.5H2.17a1 1 0 0 1-.87-1.5z' fill='%23e0a800'/><rect x='7.1' y='6' width='1.8' height='4' rx='.9' fill='%23fff'/><circle cx='8' cy='12' r='1' fill='%23fff'/></svg>");
 }
-.yasqe-glyph-info {
+.sparql-editor-glyph-info {
   background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><circle cx='8' cy='8' r='6.5' fill='%234c8bf5'/><circle cx='8' cy='5' r='1' fill='%23fff'/><rect x='7.1' y='7' width='1.8' height='5' rx='.9' fill='%23fff'/></svg>");
 }

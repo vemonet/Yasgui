@@ -49,7 +49,7 @@ function expand(this: HTMLDivElement, event: MouseEvent) {
 export default class Table implements Plugin<PluginConfig> {
   private config: DeepReadonly<PluginConfig>;
   private persistentConfig: PersistentConfig = {};
-  private yasr: SparqlResults;
+  private sparqlResults: SparqlResults;
   private tableControls: Element | undefined;
   private tableEl: HTMLTableElement | undefined;
   private dataTable: Api | undefined;
@@ -74,8 +74,8 @@ export default class Table implements Plugin<PluginConfig> {
   public getIcon() {
     return drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faTableIcon));
   }
-  constructor(yasr: SparqlResults) {
-    this.yasr = yasr;
+  constructor(sparqlResults: SparqlResults) {
+    this.sparqlResults = sparqlResults;
     //TODO read options from constructor
     this.config = Table.defaults;
   }
@@ -108,11 +108,11 @@ export default class Table implements Plugin<PluginConfig> {
     },
   };
   private getRows(): DataRow[] {
-    if (!this.yasr.results) return [];
-    const bindings = this.yasr.results.getBindings();
+    if (!this.sparqlResults.results) return [];
+    const bindings = this.sparqlResults.results.getBindings();
     if (!bindings) return [];
     // Vars decide the columns
-    const vars = this.yasr.results.getVariables();
+    const vars = this.sparqlResults.results.getVariables();
     // Use "" as the empty value, undefined will throw runtime errors
     return bindings.map((binding, rowId) => [rowId + 1, ...vars.map((variable) => binding[variable] ?? "")]);
   }
@@ -164,8 +164,8 @@ export default class Table implements Plugin<PluginConfig> {
   }
 
   private getColumns(): ConfigColumns[] {
-    if (!this.yasr.results) return [];
-    const prefixes = this.yasr.getPrefixes();
+    if (!this.sparqlResults.results) return [];
+    const prefixes = this.sparqlResults.getPrefixes();
 
     return [
       {
@@ -179,7 +179,7 @@ export default class Table implements Plugin<PluginConfig> {
         render: (data: number, type: any) =>
           type === "filter" || type === "sort" || !type ? data : `<div class="rowNumber">${data}</div>`,
       }, //prepend with row numbers column
-      ...this.yasr.results?.getVariables().map((name) => {
+      ...this.sparqlResults.results?.getVariables().map((name) => {
         return <ConfigColumns>{
           name,
           title: sanitize(name),
@@ -194,7 +194,7 @@ export default class Table implements Plugin<PluginConfig> {
     ];
   }
   private getSizeFirstColumn() {
-    const numResults = this.yasr.results?.getBindings()?.length || 0;
+    const numResults = this.sparqlResults.results?.getBindings()?.length || 0;
     return numResults.toString().length * 8;
   }
 
@@ -205,10 +205,10 @@ export default class Table implements Plugin<PluginConfig> {
     const columns = this.getColumns();
 
     if (rows.length <= (persistentConfig?.pageSize || DEFAULT_PAGE_SIZE)) {
-      this.yasr.pluginControls;
-      addClass(this.yasr.rootEl, "isSinglePage");
+      this.sparqlResults.pluginControls;
+      addClass(this.sparqlResults.rootEl, "isSinglePage");
     } else {
-      removeClass(this.yasr.rootEl, "isSinglePage");
+      removeClass(this.sparqlResults.rootEl, "isSinglePage");
     }
 
     if (this.dataTable) {
@@ -217,7 +217,7 @@ export default class Table implements Plugin<PluginConfig> {
       this.dataTable.destroy(true);
       this.dataTable = undefined;
     }
-    this.yasr.resultsEl.appendChild(this.tableEl);
+    this.sparqlResults.resultsEl.appendChild(this.tableEl);
     // reset some default config properties as they couldn't be initialized beforehand
     const dtConfig: Config = {
       ...(cloneDeep(this.config.tableConfig) as unknown as Config),
@@ -307,21 +307,21 @@ export default class Table implements Plugin<PluginConfig> {
     this.dataTable?.page.len(pageLength).draw("page");
     // Store in persistentConfig
     this.persistentConfig.pageSize = pageLength;
-    this.yasr.storePluginConfig("table", this.persistentConfig);
+    this.sparqlResults.storePluginConfig("table", this.persistentConfig);
   };
   private handleSetCompactToggle = (event: Event) => {
     // Store in persistentConfig
     this.persistentConfig.compact = (event.target as HTMLInputElement).checked;
     // Update the table
     this.draw(this.persistentConfig);
-    this.yasr.storePluginConfig("table", this.persistentConfig);
+    this.sparqlResults.storePluginConfig("table", this.persistentConfig);
   };
   private handleSetEllipsisToggle = (event: Event) => {
     // Store in persistentConfig
     this.persistentConfig.isEllipsed = (event.target as HTMLInputElement).checked;
     // Update the table
     this.draw(this.persistentConfig);
-    this.yasr.storePluginConfig("table", this.persistentConfig);
+    this.sparqlResults.storePluginConfig("table", this.persistentConfig);
   };
   /**
    * Draws controls on each update
@@ -403,11 +403,11 @@ export default class Table implements Plugin<PluginConfig> {
     pageSizerWrapper.appendChild(this.tableSizeField);
     this.tableSizeField.addEventListener("change", this.handleTableSizeSelect);
     this.tableControls.appendChild(pageSizerWrapper);
-    this.yasr.pluginControls.appendChild(this.tableControls);
+    this.sparqlResults.pluginControls.appendChild(this.tableControls);
   }
   download(filename?: string) {
     return {
-      getData: () => this.yasr.results?.asCsv() || "",
+      getData: () => this.sparqlResults.results?.asCsv() || "",
       contentType: "text/csv",
       title: "Download result",
       filename: `${filename || "queryResults"}.csv`,
@@ -415,7 +415,11 @@ export default class Table implements Plugin<PluginConfig> {
   }
 
   public canHandleResults() {
-    return !!this.yasr.results && this.yasr.results.getVariables() && this.yasr.results.getVariables().length > 0;
+    return (
+      !!this.sparqlResults.results &&
+      this.sparqlResults.results.getVariables() &&
+      this.sparqlResults.results.getVariables().length > 0
+    );
   }
   private removeControls() {
     // Unregister listeners and remove references to old fields
@@ -444,6 +448,6 @@ export default class Table implements Plugin<PluginConfig> {
     // According to datatables docs, destroy(true) will also remove all events
     this.dataTable?.destroy(true);
     this.dataTable = undefined;
-    removeClass(this.yasr.rootEl, "isSinglePage");
+    removeClass(this.sparqlResults.rootEl, "isSinglePage");
   }
 }

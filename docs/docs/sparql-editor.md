@@ -2,7 +2,7 @@
 
 ::: info Previously Yasqe
 
-The term `yasqe` is kept for compatibility in the CSS classes and local storage key.
+The editor began as Yasqe. Its CSS classes has been updated: `.yasqe*` -> `.sparql-editor*`.
 
 :::
 
@@ -38,7 +38,7 @@ editor.on("queryResponse", (yasqe, response, duration) => console.log(response, 
 With an empty `languageServers`, Yasqe still works as a syntax-highlighted editor, you just don't get completion, diagnostics or formatting. The `languageServers` array, its per-server `onReady` / `onEndpointChange` hooks, the runtime switcher and helpers like `getLanguageClient()` / `setLanguageServer()` / `notifyEndpointChange()` are all covered in [Language server](./language-server), this is the same config the full app uses.
 
 ::: warning Events are instance-first
-Yasqe events are emitted **instance-first**, handlers receive `(yasqeInstance, ...payload)`. For example `queryResponse` is `(yasqe, response, duration)`.
+Editor events are emitted **instance-first**, handlers receive `(yasqeInstance, ...payload)`. For example `queryResponse` is `(yasqe, response, duration)`.
 :::
 
 ## Common config

@@ -73,7 +73,7 @@ import type {
   RequestConfig,
   IEditor,
   Prefixes,
-  YasqeAjaxConfig,
+  EditorAjaxConfig,
   RequestArgs,
   LspErrorNotification,
   LanguageServerDef as SharedLanguageServerDef,
@@ -233,10 +233,10 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     super();
     if (!parent) throw new Error("No parent passed as argument. Dont know where to draw YASQE");
     this.rootEl = document.createElement("div");
-    this.rootEl.className = "yasqe";
+    this.rootEl.className = "sparql-editor";
     parent.appendChild(this.rootEl);
     this.editorEl = document.createElement("div");
-    this.editorEl.className = "yasqe_editor";
+    this.editorEl.className = "sparql-editor_editor";
     this.rootEl.appendChild(this.editorEl);
 
     // `languageServers` (carrying Worker instances / factory + callback functions) and
@@ -750,7 +750,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
   /* Buttons */
   private drawButtons() {
     const buttons = document.createElement("div");
-    buttons.className = "yasqe_buttons";
+    buttons.className = "sparql-editor_buttons";
     this.rootEl.appendChild(buttons);
 
     // Language-server switcher, leftmost in the button bar (only when 2+ servers are configured).
@@ -771,7 +771,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     {
       const svgFormat = drawSvgStringAsElement(imgs.format);
       const formatBtn = document.createElement("button");
-      formatBtn.className = "yasqe_format";
+      formatBtn.className = "sparql-editor_format";
       formatBtn.title = "Format query (Shift+Alt+F)";
       formatBtn.setAttribute("aria-label", "Format query");
       formatBtn.appendChild(svgFormat);
@@ -782,7 +782,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     if (this.config.createShareableLink) {
       const svgShare = drawSvgStringAsElement(imgs.share);
       const shareLinkWrapper = document.createElement("button");
-      shareLinkWrapper.className = "yasqe_share";
+      shareLinkWrapper.className = "sparql-editor_share";
       shareLinkWrapper.title = "Share query";
       shareLinkWrapper.setAttribute("aria-label", "Share query");
       shareLinkWrapper.appendChild(svgShare);
@@ -790,7 +790,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
       const showSharePopup = (event: MouseEvent | KeyboardEvent) => {
         event.stopPropagation();
         let popup: HTMLDivElement | undefined = document.createElement("div");
-        popup.className = "yasqe_sharePopup";
+        popup.className = "sparql-editor_sharePopup";
         buttons.appendChild(popup);
         document.body.addEventListener(
           "click",
@@ -818,7 +818,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
           const shortBtn = document.createElement("button");
           popupInputButtons.push(shortBtn);
           shortBtn.innerHTML = "Shorten";
-          shortBtn.className = "yasqe_btn yasqe_btn-sm shorten";
+          shortBtn.className = "sparql-editor_btn sparql-editor_btn-sm shorten";
           popup.appendChild(shortBtn);
           shortBtn.onclick = () => {
             popupInputButtons.forEach((b) => (b.disabled = true));
@@ -842,7 +842,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
         const curlBtn = document.createElement("button");
         popupInputButtons.push(curlBtn);
         curlBtn.innerText = "cURL";
-        curlBtn.className = "yasqe_btn yasqe_btn-sm curl";
+        curlBtn.className = "sparql-editor_btn sparql-editor_btn-sm curl";
         popup.appendChild(curlBtn);
         curlBtn.onclick = () => {
           popupInputButtons.forEach((b) => (b.disabled = true));
@@ -862,7 +862,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
 
     if (this.config.showQueryButton) {
       this.queryBtn = document.createElement("button");
-      addClass(this.queryBtn, "yasqe_queryButton");
+      addClass(this.queryBtn, "sparql-editor_queryButton");
       const queryEl = drawSvgStringAsElement(imgs.query);
       addClass(queryEl, "queryIcon");
       this.queryBtn.appendChild(queryEl);
@@ -915,7 +915,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     const hasConfigurable = servers.some((s) => s.configSchema && s.configCallback);
     if (servers.length < 2 && !hasConfigurable) return;
     const select = document.createElement("button");
-    select.className = "yasqe_btn yasqe_lsSelect";
+    select.className = "sparql-editor_btn sparql-editor_lsSelect";
     select.title = "Select language server";
     select.setAttribute("aria-label", "Select language server");
     this.lsSelectEl = select;
@@ -928,17 +928,17 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     };
     const openMenu = () => {
       menu = document.createElement("div");
-      menu.className = "yasqe_lsMenu";
+      menu.className = "sparql-editor_lsMenu";
       servers.forEach((s, i) => {
         const item = document.createElement("button");
-        item.className = "yasqe_lsMenuItem" + (i === this.activeLanguageServerIndex ? " active" : "");
+        item.className = "sparql-editor_lsMenuItem" + (i === this.activeLanguageServerIndex ? " active" : "");
         const label = document.createElement("span");
-        label.className = "yasqe_lsMenuLabel";
+        label.className = "sparql-editor_lsMenuLabel";
         label.textContent = s.label;
         item.appendChild(label);
         if (s.description) {
           const desc = document.createElement("span");
-          desc.className = "yasqe_lsMenuDesc";
+          desc.className = "sparql-editor_lsMenuDesc";
           desc.textContent = s.description;
           item.appendChild(desc);
         }
@@ -953,9 +953,9 @@ export class SparqlEditor extends EventEmitter implements IEditor {
       const active = servers[this.activeLanguageServerIndex];
       if (active?.configSchema && active.configCallback) {
         const configItem = document.createElement("button");
-        configItem.className = "yasqe_lsMenuItem yasqe_lsMenuConfigure";
+        configItem.className = "sparql-editor_lsMenuItem sparql-editor_lsMenuConfigure";
         const label = document.createElement("span");
-        label.className = "yasqe_lsMenuLabel";
+        label.className = "sparql-editor_lsMenuLabel";
         label.textContent = `Configure ${active.label}…`;
         configItem.appendChild(label);
         configItem.addEventListener("click", (e) => {
@@ -1039,7 +1039,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
   }
 
   /* Query lifecycle */
-  public query(config?: YasqeAjaxConfig) {
+  public query(config?: EditorAjaxConfig) {
     if (this.config.queryingDisabled) return Promise.reject("Querying is disabled.");
     this.abortQuery();
     // Wire request emission to internal state via listeners
@@ -1074,12 +1074,12 @@ export class SparqlEditor extends EventEmitter implements IEditor {
       this.emit("queryAbort", this.req);
     }
   }
-  public getAsCurlString(config?: YasqeAjaxConfig): string {
+  public getAsCurlString(config?: EditorAjaxConfig): string {
     return getAsCurlString(this, config);
   }
 
   /** Build the SPARQL request arguments for the current query against the given request config. */
-  public getUrlArguments(requestConfig: YasqeAjaxConfig): RequestArgs {
+  public getUrlArguments(requestConfig: EditorAjaxConfig): RequestArgs {
     return getUrlArguments(this, requestConfig);
   }
 

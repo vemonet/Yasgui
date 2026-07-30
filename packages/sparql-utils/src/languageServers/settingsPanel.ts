@@ -54,47 +54,47 @@ function fieldDefault(field: SettingFieldSchema): boolean | number | string {
   return "";
 }
 
-const STYLE_ID = "yasqe-settings-styles";
+const STYLE_ID = "sparql-editor-settings-styles";
 const STYLES = `
-.yasqe-settings-backdrop {
+.sparql-editor-settings-backdrop {
   position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: center;
   padding: 24px 12px; background: rgba(0, 0, 0, 0.35); overflow: auto;
 }
-.yasqe-settings-dialog {
+.sparql-editor-settings-dialog {
   width: 420px; max-width: 100%; max-height: 100%;
   display: flex; flex-direction: column;
-  background: var(--yasqe-popup-bg, #fff); color: var(--yasqe-text, #000);
-  border: 1px solid var(--yasqe-popup-border, #e3e3e3); border-radius: 6px;
+  background: var(--sparql-editor-popup-bg, #fff); color: var(--sparql-editor-text, #000);
+  border: 1px solid var(--sparql-editor-popup-border, #e3e3e3); border-radius: 6px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); font-size: 13px;
 }
-.yasqe-settings-header { padding: 12px 16px; border-bottom: 1px solid var(--yasqe-popup-border, #e3e3e3); }
-.yasqe-settings-title { margin: 0; font-size: 15px; font-weight: 600; }
-.yasqe-settings-body { padding: 8px 16px; overflow: auto; }
-.yasqe-settings-section { padding: 6px 0; }
-.yasqe-settings-legend {
+.sparql-editor-settings-header { padding: 12px 16px; border-bottom: 1px solid var(--sparql-editor-popup-border, #e3e3e3); }
+.sparql-editor-settings-title { margin: 0; font-size: 15px; font-weight: 600; }
+.sparql-editor-settings-body { padding: 8px 16px; overflow: auto; }
+.sparql-editor-settings-section { padding: 6px 0; }
+.sparql-editor-settings-legend {
   margin: 8px 0 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.04em; color: var(--yasqe-notification-text, #999);
+  letter-spacing: 0.04em; color: var(--sparql-editor-notification-text, #999);
 }
-.yasqe-settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
-.yasqe-settings-row-bool { justify-content: flex-start; cursor: pointer; }
-.yasqe-settings-row-bool input { margin: 0; }
-.yasqe-settings-label { flex: 1; }
-.yasqe-settings-row input[type="number"], .yasqe-settings-row input[type="text"], .yasqe-settings-row select {
+.sparql-editor-settings-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.sparql-editor-settings-row-bool { justify-content: flex-start; cursor: pointer; }
+.sparql-editor-settings-row-bool input { margin: 0; }
+.sparql-editor-settings-label { flex: 1; }
+.sparql-editor-settings-row input[type="number"], .sparql-editor-settings-row input[type="text"], .sparql-editor-settings-row select {
   width: 110px; padding: 3px 6px;
-  background: var(--yasqe-btn-bg, #fff); color: var(--yasqe-text, #000);
-  border: 1px solid var(--yasqe-btn-border, #ccc); border-radius: 3px;
+  background: var(--sparql-editor-btn-bg, #fff); color: var(--sparql-editor-text, #000);
+  border: 1px solid var(--sparql-editor-btn-border, #ccc); border-radius: 3px;
 }
-.yasqe-settings-help { margin: 0 0 4px; font-size: 11px; color: var(--yasqe-notification-text, #999); }
-.yasqe-settings-footer {
+.sparql-editor-settings-help { margin: 0 0 4px; font-size: 11px; color: var(--sparql-editor-notification-text, #999); }
+.sparql-editor-settings-footer {
   display: flex; justify-content: flex-end; gap: 8px;
-  padding: 12px 16px; border-top: 1px solid var(--yasqe-popup-border, #e3e3e3);
+  padding: 12px 16px; border-top: 1px solid var(--sparql-editor-popup-border, #e3e3e3);
 }
-.yasqe-settings-btn { padding: 5px 14px; border-radius: 3px; border: 1px solid var(--yasqe-btn-border, #ccc); cursor: pointer; font-size: 13px; }
-.yasqe-settings-btn-secondary { background: var(--yasqe-btn-bg, #fff); color: var(--yasqe-btn-text, #333); }
-.yasqe-settings-btn-secondary:hover { background: var(--yasqe-btn-hover-bg, #ebebeb); border-color: var(--yasqe-btn-hover-border, #adadad); }
-.yasqe-settings-btn-primary { background: var(--yasqe-accent, #337ab7); color: var(--yasqe-accent-text, #fff); border-color: var(--yasqe-accent, #337ab7); margin-left: 4px; }
-.yasqe-settings-btn-primary:hover { filter: brightness(1.08); }
+.sparql-editor-settings-btn { padding: 5px 14px; border-radius: 3px; border: 1px solid var(--sparql-editor-btn-border, #ccc); cursor: pointer; font-size: 13px; }
+.sparql-editor-settings-btn-secondary { background: var(--sparql-editor-btn-bg, #fff); color: var(--sparql-editor-btn-text, #333); }
+.sparql-editor-settings-btn-secondary:hover { background: var(--sparql-editor-btn-hover-bg, #ebebeb); border-color: var(--sparql-editor-btn-hover-border, #adadad); }
+.sparql-editor-settings-btn-primary { background: var(--sparql-editor-accent, #337ab7); color: var(--sparql-editor-accent-text, #fff); border-color: var(--sparql-editor-accent, #337ab7); margin-left: 4px; }
+.sparql-editor-settings-btn-primary:hover { filter: brightness(1.08); }
 `;
 
 function injectStyles(): void {
@@ -114,23 +114,23 @@ export function openSettingsPanel(opts: SettingsPanelOptions): () => void {
   const { root, schema, serverLabel, current, onApply } = opts;
 
   const backdrop = document.createElement("div");
-  backdrop.className = "yasqe-settings-backdrop";
+  backdrop.className = "sparql-editor-settings-backdrop";
 
   const dialog = document.createElement("div");
-  dialog.className = "yasqe-settings-dialog";
+  dialog.className = "sparql-editor-settings-dialog";
   dialog.setAttribute("role", "dialog");
   dialog.setAttribute("aria-modal", "true");
 
   const header = document.createElement("div");
-  header.className = "yasqe-settings-header";
+  header.className = "sparql-editor-settings-header";
   const title = document.createElement("h3");
-  title.className = "yasqe-settings-title";
+  title.className = "sparql-editor-settings-title";
   title.textContent = schema.title ?? `${serverLabel} settings`;
   header.appendChild(title);
   dialog.appendChild(header);
 
   const body = document.createElement("div");
-  body.className = "yasqe-settings-body";
+  body.className = "sparql-editor-settings-body";
   dialog.appendChild(body);
 
   // Per-field "read current widget value" closures, keyed by setting path, plus a "set" used by Reset.
@@ -147,10 +147,10 @@ export function openSettingsPanel(opts: SettingsPanelOptions): () => void {
 
   for (const [groupName, fields] of groups) {
     const section = document.createElement("div");
-    section.className = "yasqe-settings-section";
+    section.className = "sparql-editor-settings-section";
     if (groupName) {
       const legend = document.createElement("div");
-      legend.className = "yasqe-settings-legend";
+      legend.className = "sparql-editor-settings-legend";
       legend.textContent = groupName;
       section.appendChild(legend);
     }
@@ -158,11 +158,11 @@ export function openSettingsPanel(opts: SettingsPanelOptions): () => void {
       const def = fieldDefault(field);
       const value = current[key] ?? def;
       const row = document.createElement("label");
-      row.className = "yasqe-settings-row";
+      row.className = "sparql-editor-settings-row";
       const labelText = field.title ?? key;
 
       if (field.type === "boolean") {
-        row.classList.add("yasqe-settings-row-bool");
+        row.classList.add("sparql-editor-settings-row-bool");
         const input = document.createElement("input");
         input.type = "checkbox";
         input.checked = Boolean(value);
@@ -176,7 +176,7 @@ export function openSettingsPanel(opts: SettingsPanelOptions): () => void {
         });
       } else {
         const span = document.createElement("span");
-        span.className = "yasqe-settings-label";
+        span.className = "sparql-editor-settings-label";
         span.textContent = labelText;
         row.appendChild(span);
         if (field.type === "string" && field.enum?.length) {
@@ -213,7 +213,7 @@ export function openSettingsPanel(opts: SettingsPanelOptions): () => void {
       section.appendChild(row);
       if (field.description) {
         const help = document.createElement("div");
-        help.className = "yasqe-settings-help";
+        help.className = "sparql-editor-settings-help";
         help.textContent = field.description;
         section.appendChild(help);
       }
@@ -222,18 +222,18 @@ export function openSettingsPanel(opts: SettingsPanelOptions): () => void {
   }
 
   const footer = document.createElement("div");
-  footer.className = "yasqe-settings-footer";
+  footer.className = "sparql-editor-settings-footer";
   const resetBtn = document.createElement("button");
   resetBtn.type = "button";
-  resetBtn.className = "yasqe-settings-btn yasqe-settings-btn-secondary";
+  resetBtn.className = "sparql-editor-settings-btn sparql-editor-settings-btn-secondary";
   resetBtn.textContent = "Reset";
   const cancelBtn = document.createElement("button");
   cancelBtn.type = "button";
-  cancelBtn.className = "yasqe-settings-btn yasqe-settings-btn-secondary";
+  cancelBtn.className = "sparql-editor-settings-btn sparql-editor-settings-btn-secondary";
   cancelBtn.textContent = "Cancel";
   const applyBtn = document.createElement("button");
   applyBtn.type = "button";
-  applyBtn.className = "yasqe-settings-btn yasqe-settings-btn-primary";
+  applyBtn.className = "sparql-editor-settings-btn sparql-editor-settings-btn-primary";
   applyBtn.textContent = "Apply";
   footer.append(resetBtn, cancelBtn, applyBtn);
   dialog.appendChild(footer);

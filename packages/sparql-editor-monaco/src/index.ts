@@ -25,7 +25,7 @@ import type {
   DeepPartial,
   QueryType,
   RequestConfig,
-  YasqeAjaxConfig,
+  EditorAjaxConfig,
   RequestArgs,
   LspErrorNotification,
 } from "@rdfjs/sparql-utils";
@@ -89,8 +89,8 @@ export interface SparqlEditor {
   off(eventName: "error", handler: (instance: SparqlEditor) => void): this;
   on(eventName: "blur", handler: (instance: SparqlEditor) => void): this;
   off(eventName: "blur", handler: (instance: SparqlEditor) => void): this;
-  on(eventName: "queryBefore", handler: (instance: SparqlEditor, config: YasqeAjaxConfig) => void): this;
-  off(eventName: "queryBefore", handler: (instance: SparqlEditor, config: YasqeAjaxConfig) => void): this;
+  on(eventName: "queryBefore", handler: (instance: SparqlEditor, config: EditorAjaxConfig) => void): this;
+  off(eventName: "queryBefore", handler: (instance: SparqlEditor, config: EditorAjaxConfig) => void): this;
   on(eventName: "queryResults", handler: (instance: SparqlEditor, results: any, duration: number) => void): this;
   off(eventName: "queryResults", handler: (instance: SparqlEditor, results: any, duration: number) => void): this;
   on(eventName: "autocompletionShown", handler: (instance: SparqlEditor, widget: any) => void): this;
@@ -146,7 +146,7 @@ export class SparqlEditor extends EventEmitter {
   private lsSettingsPanelDispose?: () => void;
   private static menuInstanceCounter = 0;
   private readonly menuInstanceId = SparqlEditor.menuInstanceCounter++;
-  /** The `.yasqe_buttons` container; the share popup is appended to and positioned within it. */
+  /** The `.sparql-editor_buttons` container; the share popup is appended to and positioned within it. */
   private buttonsEl?: HTMLDivElement;
 
   private req?: Request;
@@ -190,7 +190,7 @@ export class SparqlEditor extends EventEmitter {
       const monaco = await import("monaco-editor");
       // Run the query on Cmd/Ctrl+Enter
       this.editor?.addAction({
-        id: "yasqe-run-query",
+        id: "sparql-editor-run-query",
         label: "Run SPARQL Query",
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
         // Show it in the right-click context menu, at the top
@@ -204,7 +204,7 @@ export class SparqlEditor extends EventEmitter {
       // Share the query URL on Cmd/Ctrl+S (also persists the query and prevents the browser's
       // "save page" dialog). Shown in the right-click menu right under "Run SPARQL Query".
       this.editor?.addAction({
-        id: "yasqe-share-query",
+        id: "sparql-editor-share-query",
         label: "Share query URL",
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
         contextMenuGroupId: "navigation",
@@ -546,7 +546,7 @@ export class SparqlEditor extends EventEmitter {
       const active = i === this.activeLanguageServerIndex;
       const label = `${active ? "✓ " : ""}${s.label}${s.description ? "  ·  " + s.description : ""}`;
       const action = this.editor?.addAction({
-        id: `yasqe-language-server-${i}`,
+        id: `sparql-editor-language-server-${i}`,
         label,
         contextMenuGroupId: "navigation",
         contextMenuOrder: 2 + i,
@@ -559,7 +559,7 @@ export class SparqlEditor extends EventEmitter {
     const activeServer = servers[this.activeLanguageServerIndex];
     if (activeServer?.configSchema && activeServer.configCallback) {
       const action = this.editor?.addAction({
-        id: `yasqe-language-server-configure`,
+        id: `sparql-editor-language-server-configure`,
         label: `Configure ${activeServer.label}…`,
         contextMenuGroupId: "navigation",
         contextMenuOrder: 2 + servers.length,
@@ -648,7 +648,7 @@ export class SparqlEditor extends EventEmitter {
     super();
     if (!parent) throw new Error("No parent passed as argument. Dont know where to draw YASQE");
     this.rootEl = document.createElement("div");
-    this.rootEl.className = "yasqe";
+    this.rootEl.className = "sparql-editor";
     parent.appendChild(this.rootEl);
 
     // `languageServers` carry Worker instances / factory + callback functions that lodash.merge
@@ -758,13 +758,13 @@ export class SparqlEditor extends EventEmitter {
     const buttons = this.buttonsEl;
     if (!this.config.createShareableLink || !buttons) return;
     // Toggle: a second invocation closes an open popup.
-    const existing = buttons.querySelector(".yasqe_sharePopup");
+    const existing = buttons.querySelector(".sparql-editor_sharePopup");
     if (existing) {
       existing.remove();
       return;
     }
     let popup: HTMLDivElement | undefined = document.createElement("div");
-    popup.className = "yasqe_sharePopup";
+    popup.className = "sparql-editor_sharePopup";
     buttons.appendChild(popup);
     document.body.addEventListener(
       "click",
@@ -800,7 +800,7 @@ export class SparqlEditor extends EventEmitter {
       const shortBtn = document.createElement("button");
       popupInputButtons.push(shortBtn);
       shortBtn.innerHTML = "Shorten";
-      shortBtn.className = "yasqe_btn yasqe_btn-sm shorten";
+      shortBtn.className = "sparql-editor_btn sparql-editor_btn-sm shorten";
       popup.appendChild(shortBtn);
       shortBtn.onclick = () => {
         popupInputButtons.forEach((button) => (button.disabled = true));
@@ -828,7 +828,7 @@ export class SparqlEditor extends EventEmitter {
     const curlBtn = document.createElement("button");
     popupInputButtons.push(curlBtn);
     curlBtn.innerText = "cURL";
-    curlBtn.className = "yasqe_btn yasqe_btn-sm curl";
+    curlBtn.className = "sparql-editor_btn sparql-editor_btn-sm curl";
     popup.appendChild(curlBtn);
     curlBtn.onclick = () => {
       popupInputButtons.forEach((button) => (button.disabled = true));
@@ -846,7 +846,7 @@ export class SparqlEditor extends EventEmitter {
 
   private drawButtons() {
     const buttons = document.createElement("div");
-    buttons.className = "yasqe_buttons";
+    buttons.className = "sparql-editor_buttons";
     this.buttonsEl = buttons;
     this.getWrapperElement().appendChild(buttons);
 
@@ -867,7 +867,7 @@ export class SparqlEditor extends EventEmitter {
      */
     if (this.config.showQueryButton) {
       this.queryBtn = document.createElement("button");
-      addClass(this.queryBtn, "yasqe_queryButton");
+      addClass(this.queryBtn, "sparql-editor_queryButton");
 
       /**
        * Add busy/valid/error btns
@@ -1081,7 +1081,7 @@ export class SparqlEditor extends EventEmitter {
   /**
    * Querying
    */
-  public query(config?: YasqeAjaxConfig) {
+  public query(config?: EditorAjaxConfig) {
     if (this.config.queryingDisabled) return Promise.reject("Querying is disabled.");
     // Abort previous request
     this.abortQuery();
@@ -1117,12 +1117,12 @@ export class SparqlEditor extends EventEmitter {
     }
   }
 
-  public getAsCurlString(config?: YasqeAjaxConfig): string {
+  public getAsCurlString(config?: EditorAjaxConfig): string {
     return getAsCurlString(this, config);
   }
 
   /** Build the SPARQL request arguments for the current query against the given request config. */
-  public getUrlArguments(requestConfig: YasqeAjaxConfig): RequestArgs {
+  public getUrlArguments(requestConfig: EditorAjaxConfig): RequestArgs {
     return getUrlArguments(this, requestConfig as any);
   }
 
@@ -1161,10 +1161,10 @@ export class SparqlEditor extends EventEmitter {
     if (!ed || !model) return;
     this.diagnosticGlyphs = ed.createDecorationsCollection();
     const severityClass: Record<number, string> = {
-      [monaco.MarkerSeverity.Error]: "yasqe-glyph-error",
-      [monaco.MarkerSeverity.Warning]: "yasqe-glyph-warning",
-      [monaco.MarkerSeverity.Info]: "yasqe-glyph-info",
-      [monaco.MarkerSeverity.Hint]: "yasqe-glyph-info",
+      [monaco.MarkerSeverity.Error]: "sparql-editor-glyph-error",
+      [monaco.MarkerSeverity.Warning]: "sparql-editor-glyph-warning",
+      [monaco.MarkerSeverity.Info]: "sparql-editor-glyph-info",
+      [monaco.MarkerSeverity.Hint]: "sparql-editor-glyph-info",
     };
     const refresh = () => {
       const byLine = new Map<number, { severity: number; messages: string[] }>();
@@ -1181,7 +1181,7 @@ export class SparqlEditor extends EventEmitter {
         decorations.push({
           range: new monaco.Range(line, 1, line, 1),
           options: {
-            glyphMarginClassName: severityClass[severity] ?? "yasqe-glyph-info",
+            glyphMarginClassName: severityClass[severity] ?? "sparql-editor-glyph-info",
             glyphMarginHoverMessage: messages.map((value) => ({ value })),
             stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
           },

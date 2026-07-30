@@ -59,7 +59,7 @@ export default function get() {
           break;
         }
       }
-      return "yasqe_" + id + "_query";
+      return "sparql-editor_" + id + "_query";
     },
     persistencyExpire: 60 * 60 * 24 * 30,
     pluginButtons: undefined,

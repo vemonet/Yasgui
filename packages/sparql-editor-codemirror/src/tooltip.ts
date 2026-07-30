@@ -11,7 +11,7 @@ export default function tooltip(_yasqe: SparqlEditor, parent: HTMLDivElement, ht
   parent.onmouseover = function () {
     if (!tooltip) {
       tooltip = document.createElement("div");
-      tooltip.className = "yasqe_tooltip";
+      tooltip.className = "sparql-editor_tooltip";
     }
     tooltip.style.display = "block";
     tooltip.innerHTML = html;

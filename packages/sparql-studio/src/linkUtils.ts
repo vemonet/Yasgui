@@ -46,7 +46,7 @@ export function createShareLink(forUrl: string, tab: Tab) {
     } else if (key === "defaultGraphs") {
       configObject.defaultGraphs.forEach((dg) => tmpUrl.addQueryParam("defaultGraph", dg));
     } else if (key === "args") {
-      const args = getAsValue(configObject.args, tab.yasgui);
+      const args = getAsValue(configObject.args, tab.sparqlStudio);
       args.forEach((arg) => tmpUrl.addQueryParam(arg.name, arg.value));
     } else if (typeof configObject[key] === "object") {
       if (configObject[key]) tmpUrl.addQueryParam(key, JSON.stringify(configObject[key]));
@@ -85,25 +85,25 @@ export type ShareConfigObject = {
 };
 
 export function createShareConfig(tab: Tab): ShareConfigObject {
-  const yasgui = tab.yasgui;
+  const sparqlStudio = tab.sparqlStudio;
   const requestConfig = tab.getRequestConfig();
-  const yasrPersistentSetting = tab.getPersistedJson().yasr.settings;
+  const resultsPersistentSetting = tab.getPersistedJson().results.settings;
   return {
     query: tab.getQuery(),
     endpoint: tab.getEndpoint(),
-    requestMethod: getAsValue(requestConfig.method, yasgui),
+    requestMethod: getAsValue(requestConfig.method, sparqlStudio),
     tabTitle: tab.getName(),
-    // headers: isFunction(requestConfig.headers) ? requestConfig.headers(tab.yasgui) : requestConfig.headers,
-    headers: getAsValue(requestConfig.headers, yasgui),
-    contentTypeConstruct: getAsValue(requestConfig.acceptHeaderGraph, yasgui),
-    contentTypeSelect: getAsValue(requestConfig.acceptHeaderSelect, yasgui),
-    args: getAsValue(requestConfig.args, yasgui),
-    namedGraphs: getAsValue(requestConfig.namedGraphs, yasgui),
-    defaultGraphs: getAsValue(requestConfig.defaultGraphs, yasgui),
-    outputFormat: yasrPersistentSetting.selectedPlugin,
+    // headers: isFunction(requestConfig.headers) ? requestConfig.headers(tab.sparqlStudio) : requestConfig.headers,
+    headers: getAsValue(requestConfig.headers, sparqlStudio),
+    contentTypeConstruct: getAsValue(requestConfig.acceptHeaderGraph, sparqlStudio),
+    contentTypeSelect: getAsValue(requestConfig.acceptHeaderSelect, sparqlStudio),
+    args: getAsValue(requestConfig.args, sparqlStudio),
+    namedGraphs: getAsValue(requestConfig.namedGraphs, sparqlStudio),
+    defaultGraphs: getAsValue(requestConfig.defaultGraphs, sparqlStudio),
+    outputFormat: resultsPersistentSetting.selectedPlugin,
     outputSettings:
-      yasrPersistentSetting.pluginsConfig && yasrPersistentSetting.selectedPlugin
-        ? yasrPersistentSetting.pluginsConfig[yasrPersistentSetting.selectedPlugin]
+      resultsPersistentSetting.pluginsConfig && resultsPersistentSetting.selectedPlugin
+        ? resultsPersistentSetting.pluginsConfig[resultsPersistentSetting.selectedPlugin]
         : undefined,
   };
 }
@@ -118,10 +118,10 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
   currentParams.forEach(function ([key, value]) {
     if (key === "query") {
       hasQuery = true;
-      options.yasqe.value = value;
+      options.editor.value = value;
     } else if (key === "outputFormat" && value.length) {
       if (SparqlResults.plugins[value]) {
-        options.yasr.settings.selectedPlugin = value;
+        options.results.settings.selectedPlugin = value;
       } else {
         console.warn(`Output format plugin "${value}" not found`);
       }
@@ -154,8 +154,8 @@ export function getConfigFromUrl(defaults: PersistedJson, _url?: string): Persis
   });
   //Only know where to store the plugins config after we've saved the selected plugin
   //i.e., do this after the previous loop
-  if (pluginsConfig && options.yasr.settings.selectedPlugin && options.yasr.settings.pluginsConfig) {
-    options.yasr.settings.pluginsConfig[options.yasr.settings.selectedPlugin] = pluginsConfig;
+  if (pluginsConfig && options.results.settings.selectedPlugin && options.results.settings.pluginsConfig) {
+    options.results.settings.pluginsConfig[options.results.settings.selectedPlugin] = pluginsConfig;
   }
   if (hasQuery) {
     return options;
@@ -173,7 +173,7 @@ export function queryCatalogConfigToTabConfig<Q extends QueryCatalogConfig>(
   if (catalogConfig.requestConfig) {
     if (catalogConfig.requestConfig.payload) {
       if (catalogConfig.requestConfig.payload.query) {
-        options.yasqe.value = catalogConfig.requestConfig.payload.query;
+        options.editor.value = catalogConfig.requestConfig.payload.query;
       }
       if (catalogConfig.requestConfig.payload["default-graph-uri"]) {
         options.requestConfig.defaultGraphs = Array.isArray(catalogConfig.requestConfig.payload["default-graph-uri"])
@@ -193,14 +193,14 @@ export function queryCatalogConfigToTabConfig<Q extends QueryCatalogConfig>(
   if (catalogConfig.renderConfig) {
     if (catalogConfig.renderConfig.output) {
       if (SparqlResults.plugins[catalogConfig.renderConfig.output]) {
-        options.yasr.settings.selectedPlugin = catalogConfig.renderConfig.output;
+        options.results.settings.selectedPlugin = catalogConfig.renderConfig.output;
       } else {
         console.warn(`Output format plugin "${catalogConfig.renderConfig.output}" not found`);
       }
     }
     if (catalogConfig.renderConfig.settings) {
-      if (SparqlResults.plugins[catalogConfig.renderConfig.output] && options.yasr.settings.pluginsConfig) {
-        options.yasr.settings.pluginsConfig[catalogConfig.renderConfig.output] = catalogConfig.renderConfig.settings;
+      if (SparqlResults.plugins[catalogConfig.renderConfig.output] && options.results.settings.pluginsConfig) {
+        options.results.settings.pluginsConfig[catalogConfig.renderConfig.output] = catalogConfig.renderConfig.settings;
       } else {
         console.warn(`Output format plugin "${catalogConfig.renderConfig.output}" not found, cannot apply settings`);
       }

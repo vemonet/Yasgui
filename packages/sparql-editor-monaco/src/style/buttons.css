@@ -16,12 +16,12 @@
   }
 }
 
-.yasqe {
-  .yasqe_btn {
-    color: var(--yasqe-btn-text);
+.sparql-editor {
+  .sparql-editor_btn {
+    color: var(--sparql-editor-btn-text);
     border: 1px solid transparent;
-    background-color: var(--yasqe-btn-bg);
-    border-color: var(--yasqe-btn-border);
+    background-color: var(--sparql-editor-btn-bg);
+    border-color: var(--sparql-editor-btn-border);
     border-width: 1px;
     display: inline-block;
     text-align: center;
@@ -48,26 +48,26 @@
 
     &:hover {
       outline: 0;
-      background-color: var(--yasqe-btn-hover-bg);
-      border-color: var(--yasqe-btn-hover-border);
+      background-color: var(--sparql-editor-btn-hover-bg);
+      border-color: var(--sparql-editor-btn-hover-border);
     }
 
     &:focus,
     &.selected {
-      color: var(--yasqe-accent-text);
+      color: var(--sparql-editor-accent-text);
       outline: 0;
-      background-color: var(--yasqe-accent);
-      border-color: var(--yasqe-accent);
+      background-color: var(--sparql-editor-accent);
+      border-color: var(--sparql-editor-accent);
     }
 
     &.btn_icon:focus {
-      color: var(--yasqe-btn-text);
+      color: var(--sparql-editor-btn-text);
       border: 1px solid transparent;
-      background-color: var(--yasqe-btn-bg);
-      border-color: var(--yasqe-btn-border);
+      background-color: var(--sparql-editor-btn-bg);
+      border-color: var(--sparql-editor-btn-border);
     }
 
-    &.yasqe_btn-sm {
+    &.sparql-editor_btn-sm {
       padding: 1px 5px;
       font-size: 12px;
       line-height: 1.5;
@@ -75,18 +75,18 @@
     }
   }
 
-  .yasqe_buttons {
+  .sparql-editor_buttons {
     position: absolute;
     top: 10px;
     right: 20px;
 
     svg {
-      fill: var(--yasqe-icon);
+      fill: var(--sparql-editor-icon);
     }
 
     z-index: 5;
 
-    .yasqe_share {
+    .sparql-editor_share {
       cursor: pointer;
       margin-top: 3px;
       display: inline-block;
@@ -102,12 +102,12 @@
       vertical-align: top;
       margin-left: 5px;
     }
-    .yasqe_sharePopup {
+    .sparql-editor_sharePopup {
       position: absolute;
       padding: 4px;
       margin-left: 0px;
-      background-color: var(--yasqe-popup-bg);
-      border: 1px solid var(--yasqe-popup-border);
+      background-color: var(--sparql-editor-popup-bg);
+      border: 1px solid var(--sparql-editor-popup-border);
       border-radius: 2px;
       box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
       width: 600px;
@@ -145,7 +145,7 @@
         width: 100%;
       }
     }
-    .yasqe_queryButton {
+    .sparql-editor_queryButton {
       display: inline-block;
       position: relative;
       border: none;
@@ -216,12 +216,12 @@
     }
 
     /* Subtle feedback on the icon buttons (execute, share): dim on hover */
-    .yasqe_share,
-    .yasqe_queryButton {
+    .sparql-editor_share,
+    .sparql-editor_queryButton {
       transition: filter 0.15s ease;
     }
-    .yasqe_share:hover,
-    .yasqe_queryButton:not(.query_disabled):hover {
+    .sparql-editor_share:hover,
+    .sparql-editor_queryButton:not(.query_disabled):hover {
       filter: brightness(0.8);
     }
   }

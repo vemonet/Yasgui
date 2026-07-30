@@ -21,11 +21,11 @@ export interface PersistedJsonYasr extends YasrPersistentConfig {
 export interface PersistedJson {
   name: string;
   id: string;
-  yasqe: {
+  editor: {
     value: string;
     editorHeight?: string;
   };
-  yasr: {
+  results: {
     settings: YasrPersistentConfig;
     response: Parser.ResponseSummary | undefined;
   };
@@ -55,23 +55,23 @@ export interface Tab {
 }
 export class Tab extends EventEmitter {
   private persistentJson: PersistedJson;
-  public yasgui: SparqlStudio;
+  public sparqlStudio: SparqlStudio;
   // The editor is a single shared instance owned by SparqlStudio (built by the consumer-supplied
   // factory). Tabs read it through this getter and swap content on activation.
   private get editor(): IEditor | undefined {
-    return this.yasgui.editor;
+    return this.sparqlStudio.editor;
   }
   private results: SparqlResults | undefined;
   private rootEl: HTMLDivElement | undefined;
   private controlBarEl: HTMLDivElement | undefined;
-  private yasqeWrapperEl: HTMLDivElement | undefined;
-  private yasrWrapperEl: HTMLDivElement | undefined;
+  private editorWrapperEl: HTMLDivElement | undefined;
+  private resultsWrapperEl: HTMLDivElement | undefined;
   private endpointSelect: EndpointSelect | undefined;
   private tabPanel?: TabPanel;
-  constructor(yasgui: SparqlStudio, conf: PersistedJson) {
+  constructor(sparqlStudio: SparqlStudio, conf: PersistedJson) {
     super();
     if (!conf || conf.id === undefined) throw new Error("Expected a valid configuration to initialize tab with");
-    this.yasgui = yasgui;
+    this.sparqlStudio = sparqlStudio;
     this.persistentJson = conf;
   }
   public name() {
@@ -96,26 +96,26 @@ export class Tab extends EventEmitter {
     // Useful for adding an infos div that goes alongside the editor without needing to rebuild the whole SparqlStudio class
     const editorWrapper = document.createElement("div");
     editorWrapper.className = "editorwrapper";
-    const controlbarAndYasqeDiv = document.createElement("div");
-    //controlbar
+    const controlbarAndEditorDiv = document.createElement("div");
+    // controlbar
     this.controlBarEl = document.createElement("div");
     this.controlBarEl.className = "controlbar";
-    controlbarAndYasqeDiv.appendChild(this.controlBarEl);
+    controlbarAndEditorDiv.appendChild(this.controlBarEl);
 
-    //yasqe
-    this.yasqeWrapperEl = document.createElement("div");
-    controlbarAndYasqeDiv.appendChild(this.yasqeWrapperEl);
-    editorWrapper.appendChild(controlbarAndYasqeDiv);
+    // SPARQL Editor
+    this.editorWrapperEl = document.createElement("div");
+    controlbarAndEditorDiv.appendChild(this.editorWrapperEl);
+    editorWrapper.appendChild(controlbarAndEditorDiv);
 
-    //yasr
-    this.yasrWrapperEl = document.createElement("div");
+    // SPARQL Results
+    this.resultsWrapperEl = document.createElement("div");
 
     this.initTabSettingsMenu();
     this.rootEl.appendChild(editorWrapper);
-    this.rootEl.appendChild(this.yasrWrapperEl);
+    this.rootEl.appendChild(this.resultsWrapperEl);
     this.initControlbar();
     this.initYasr();
-    this.yasgui._setPanel(this.persistentJson.id, this.rootEl);
+    this.sparqlStudio._setPanel(this.persistentJson.id, this.rootEl);
   }
   public hide() {
     removeClass(this.rootEl, "active");
@@ -123,49 +123,49 @@ export class Tab extends EventEmitter {
   public show() {
     this.draw();
     addClass(this.rootEl, "active");
-    this.yasgui.tabElements.selectTab(this.persistentJson.id);
+    this.sparqlStudio.tabElements.selectTab(this.persistentJson.id);
     // Move the single shared Monaco editor into this tab's wrapper and load this tab's content/endpoint
-    if (this.yasqeWrapperEl) this.yasgui.syncEditorsWithTab(this, this.yasqeWrapperEl);
+    if (this.editorWrapperEl) this.sparqlStudio.syncEditorsWithTab(this, this.editorWrapperEl);
     if (this.editor) {
       this.editor.refresh();
-      if (this.yasgui.config.autofocus) this.editor.focus();
+      if (this.sparqlStudio.config.autofocus) this.editor.focus();
     }
     if (this.results) {
       this.results.refresh();
     }
     //refresh, as other tabs might have changed the endpoint history
-    this.setEndpoint(this.getEndpoint(), this.yasgui.persistentConfig.getEndpointHistory());
+    this.setEndpoint(this.getEndpoint(), this.sparqlStudio.persistentConfig.getEndpointHistory());
   }
   public select() {
-    this.yasgui.selectTabId(this.persistentJson.id);
+    this.sparqlStudio.selectTabId(this.persistentJson.id);
   }
   public close() {
     if (this.editor) this.editor.abortQuery();
-    if (this.yasgui.getTab() === this) {
+    if (this.sparqlStudio.getTab() === this) {
       //it's the active tab
       //first select other tab
-      const tabs = this.yasgui.persistentConfig.getTabs();
+      const tabs = this.sparqlStudio.persistentConfig.getTabs();
       const i = tabs.indexOf(this.persistentJson.id);
       if (i > -1) {
-        this.yasgui.selectTabId(tabs[i === tabs.length - 1 ? i - 1 : i + 1]);
+        this.sparqlStudio.selectTabId(tabs[i === tabs.length - 1 ? i - 1 : i + 1]);
       }
     }
-    this.yasgui._removePanel(this.rootEl);
-    this.yasgui.persistentConfig.deleteTab(this.persistentJson.id);
-    this.yasgui.emit("tabClose", this.yasgui, this);
+    this.sparqlStudio._removePanel(this.rootEl);
+    this.sparqlStudio.persistentConfig.deleteTab(this.persistentJson.id);
+    this.sparqlStudio.emit("tabClose", this.sparqlStudio, this);
     this.emit("close", this);
-    this.yasgui.tabElements.get(this.persistentJson.id).delete();
-    delete this.yasgui._tabs[this.persistentJson.id];
+    this.sparqlStudio.tabElements.get(this.persistentJson.id).delete();
+    delete this.sparqlStudio._tabs[this.persistentJson.id];
   }
   public getQuery() {
     // When this tab is the one currently shown in the shared editor, read the live value;
     // otherwise return the persisted value (the editor is showing another tab).
-    if (this.yasgui.getTab() === this && this.editor) return this.editor.getValue();
-    return this.persistentJson.yasqe.value;
+    if (this.sparqlStudio.getTab() === this && this.editor) return this.editor.getValue();
+    return this.persistentJson.editor.value;
   }
   public setQuery(query: string) {
-    this.persistentJson.yasqe.value = query;
-    if (this.yasgui.getTab() === this) this.editor?.setValue(query);
+    this.persistentJson.editor.value = query;
+    if (this.sparqlStudio.getTab() === this) this.editor?.setValue(query);
     this.emit("change", this, this.persistentJson);
     return this;
   }
@@ -174,8 +174,8 @@ export class Tab extends EventEmitter {
   }
   private initControlbar() {
     this.initEndpointSelectField();
-    if (this.yasgui.config.endpointInfo && this.controlBarEl) {
-      this.controlBarEl.appendChild(this.yasgui.config.endpointInfo());
+    if (this.sparqlStudio.config.endpointInfo && this.controlBarEl) {
+      this.controlBarEl.appendChild(this.sparqlStudio.config.endpointInfo());
     }
   }
   public getEditor() {
@@ -195,8 +195,8 @@ export class Tab extends EventEmitter {
     this.endpointSelect = new EndpointSelect(
       this.getEndpoint(),
       this.controlBarEl,
-      this.yasgui.config.endpointCatalogueOptions,
-      this.yasgui.persistentConfig.getEndpointHistory(),
+      this.sparqlStudio.config.endpointCatalogueOptions,
+      this.sparqlStudio.persistentConfig.getEndpointHistory(),
     );
     this.endpointSelect.on("select", (endpoint, endpointHistory) => {
       this.setEndpoint(endpoint, endpointHistory);
@@ -207,7 +207,7 @@ export class Tab extends EventEmitter {
   }
 
   private checkEndpointForCors(endpoint: string) {
-    if (this.yasgui.config.corsProxy && !(endpoint in SparqlStudio.corsEnabled)) {
+    if (this.sparqlStudio.config.corsProxy && !(endpoint in SparqlStudio.corsEnabled)) {
       const askUrl = new URL(endpoint);
       askUrl.searchParams.append("query", "ASK {?x ?y ?z}");
       fetch(askUrl.toString())
@@ -222,8 +222,8 @@ export class Tab extends EventEmitter {
   }
   public setEndpoint(endpoint: string, endpointHistory?: string[]) {
     if (endpoint) endpoint = endpoint.trim();
-    if (endpointHistory && !eq(endpointHistory, this.yasgui.persistentConfig.getEndpointHistory())) {
-      this.yasgui.emit("endpointHistoryChange", this.yasgui, endpointHistory);
+    if (endpointHistory && !eq(endpointHistory, this.sparqlStudio.persistentConfig.getEndpointHistory())) {
+      this.sparqlStudio.emit("endpointHistoryChange", this.sparqlStudio, endpointHistory);
     }
     this.checkEndpointForCors(endpoint); //little cost in checking this as we're caching the check results
 
@@ -237,11 +237,11 @@ export class Tab extends EventEmitter {
     }
     // Notify of the endpoint change, but only when this tab is the one currently shown (otherwise
     // we'd repoint the shared editor while it displays another tab)
-    if (endpoint && this.yasgui.getTab() === this) this.yasgui.emitEndpointChange(endpoint);
+    if (endpoint && this.sparqlStudio.getTab() === this) this.sparqlStudio.emitEndpointChange(endpoint);
     return this;
   }
   public getEndpoint(): string {
-    return getAsValue(this.persistentJson.requestConfig.endpoint, this.yasgui);
+    return getAsValue(this.persistentJson.requestConfig.endpoint, this.sparqlStudio);
   }
   /**
    * Updates the position of the Tab's contextmenu
@@ -257,7 +257,7 @@ export class Tab extends EventEmitter {
     return shareLink.createShareConfig(this);
   }
   private getTabListEl(): TabListEl {
-    return this.yasgui.tabElements.get(this.persistentJson.id);
+    return this.sparqlStudio.tabElements.get(this.persistentJson.id);
   }
   public setName(newName: string) {
     this.getTabListEl().rename(newName);
@@ -300,12 +300,12 @@ export class Tab extends EventEmitter {
   private getStaticRequestConfig() {
     const config: Partial<PlainRequestConfig> = {};
     let key: keyof YasguiRequestConfig;
-    for (key in this.yasgui.config.requestConfig) {
+    for (key in this.sparqlStudio.config.requestConfig) {
       //This config option should never be static or persisted anyway
       if (key === "adjustQueryBeforeRequest") continue;
-      const val = this.yasgui.config.requestConfig[key];
+      const val = this.sparqlStudio.config.requestConfig[key];
       if (typeof val === "function") {
-        (config[key] as any) = val(this.yasgui);
+        (config[key] as any) = val(this.sparqlStudio);
       }
     }
     return config;
@@ -335,9 +335,9 @@ export class Tab extends EventEmitter {
       ),
       //Passing this manually. Dont want to use our own persistentJson, as that's flattened exclude functions
       //The adjustQueryBeforeRequest is meant to be a function though, so let's copy that as is
-      adjustQueryBeforeRequest: this.yasgui.config.requestConfig.adjustQueryBeforeRequest,
+      adjustQueryBeforeRequest: this.sparqlStudio.config.requestConfig.adjustQueryBeforeRequest,
     };
-    if (this.yasgui.config.corsProxy && !SparqlStudio.corsEnabled[this.getEndpoint()]) {
+    if (this.sparqlStudio.config.corsProxy && !SparqlStudio.corsEnabled[this.getEndpoint()]) {
       return {
         ...processedReqConfig,
         args: [
@@ -346,31 +346,31 @@ export class Tab extends EventEmitter {
           { name: "method", value: this.persistentJson.requestConfig.method },
         ],
         method: "POST",
-        endpoint: this.yasgui.config.corsProxy,
+        endpoint: this.sparqlStudio.config.corsProxy,
       } as PlainRequestConfig;
     }
     return processedReqConfig as PlainRequestConfig;
   }
-  handleYasqeBlur = (yasqe: IEditor) => {
-    this.persistentJson.yasqe.value = yasqe.getValue();
+  handleBlur = (yasqe: IEditor) => {
+    this.persistentJson.editor.value = yasqe.getValue();
     this.emit("change", this, this.persistentJson);
   };
-  handleYasqeQuery = (yasqe: IEditor) => {
+  handleQuery = (yasqe: IEditor) => {
     //the blur event might not have fired (e.g. when pressing ctrl-enter). So, we'd like to persist the query as well if needed
-    if (yasqe.getValue() !== this.persistentJson.yasqe.value) {
-      this.persistentJson.yasqe.value = yasqe.getValue();
+    if (yasqe.getValue() !== this.persistentJson.editor.value) {
+      this.persistentJson.editor.value = yasqe.getValue();
       this.emit("change", this, this.persistentJson);
     }
     this.emit("query", this);
   };
-  handleYasqeQueryAbort = () => {
+  handleQueryAbort = () => {
     this.emit("queryAbort", this);
   };
-  handleYasqeQueryBefore = () => {
+  handleQueryBefore = () => {
     this.emit("queryBefore", this);
   };
-  handleYasqeResize = (_yasqe: IEditor, newSize: string) => {
-    this.persistentJson.yasqe.editorHeight = newSize;
+  handleResize = (_yasqe: IEditor, newSize: string) => {
+    this.persistentJson.editor.editorHeight = newSize;
     this.emit("change", this, this.persistentJson);
   };
   handleAutocompletionShown = (_yasqe: IEditor, widget: string) => {
@@ -385,33 +385,33 @@ export class Tab extends EventEmitter {
     this.results.setResponse(response, duration);
     if (!this.results.results) return;
     if (!this.results.results.hasError()) {
-      this.persistentJson.yasr.response = this.results.results.getAsStoreObject(
-        this.yasgui.config.results.maxPersistentResponseSize,
+      this.persistentJson.results.response = this.results.results.getAsStoreObject(
+        this.sparqlStudio.config.results.maxPersistentResponseSize,
       );
     } else {
       // Don't persist if there is an error and remove the previous result
-      this.persistentJson.yasr.response = undefined;
+      this.persistentJson.results.response = undefined;
     }
     this.emit("change", this, this.persistentJson);
   };
 
   private initYasr() {
-    if (!this.yasrWrapperEl) throw new Error("Wrapper for yasr does not exist");
+    if (!this.resultsWrapperEl) throw new Error("Wrapper for SPARQL Results does not exist");
 
-    const yasrConf: Partial<SparqlResultsConfig> = {
-      persistenceId: null, //yasgui handles persistent storing
-      prefixes: (yasr) => {
+    const sparqlResultsConf: Partial<SparqlResultsConfig> = {
+      persistenceId: null, //sparqlStudio handles persistent storing
+      prefixes: (sparqlResults) => {
         // Prefixes defined in YASR's config
         const prefixesFromYasrConf =
-          typeof this.yasgui.config.results.prefixes === "function"
-            ? this.yasgui.config.results.prefixes(yasr)
-            : this.yasgui.config.results.prefixes;
-        const prefixesFromYasqe = this.editor?.getPrefixesFromQuery();
+          typeof this.sparqlStudio.config.results.prefixes === "function"
+            ? this.sparqlStudio.config.results.prefixes(sparqlResults)
+            : this.sparqlStudio.config.results.prefixes;
+        const prefixesFromEditor = this.editor?.getPrefixesFromQuery();
         // Invert twice to make sure both keys and values are unique
-        // YASQE's prefixes should take president
-        return invert(invert({ ...prefixesFromYasrConf, ...prefixesFromYasqe }));
+        // Editor's prefixes should take precedence
+        return invert(invert({ ...prefixesFromYasrConf, ...prefixesFromEditor }));
       },
-      defaultPlugin: this.persistentJson.yasr.settings.selectedPlugin,
+      defaultPlugin: this.persistentJson.results.settings.selectedPlugin,
       getPlainQueryLinkToEndpoint: () => {
         if (this.editor) {
           return shareLink.appendArgsToUrl(
@@ -420,7 +420,7 @@ export class Tab extends EventEmitter {
           );
         }
       },
-      plugins: mapValues(this.persistentJson.yasr.settings.pluginsConfig, (conf) => ({
+      plugins: mapValues(this.persistentJson.results.settings.pluginsConfig, (conf) => ({
         dynamicConfig: conf,
       })),
       errorRenderers: [
@@ -431,17 +431,17 @@ export class Tab extends EventEmitter {
       ],
     };
     // Allow getDownloadFilName to be overwritten by the global config
-    if (yasrConf.getDownloadFileName === undefined) {
-      yasrConf.getDownloadFileName = () => words(deburr(this.getName())).join("-");
+    if (sparqlResultsConf.getDownloadFileName === undefined) {
+      sparqlResultsConf.getDownloadFileName = () => words(deburr(this.getName())).join("-");
     }
 
-    this.results = new SparqlResults(this.yasrWrapperEl, yasrConf, this.persistentJson.yasr.response);
+    this.results = new SparqlResults(this.resultsWrapperEl, sparqlResultsConf, this.persistentJson.results.response);
 
     //populate our own persistent config
-    this.persistentJson.yasr.settings = this.results.getPersistentConfig();
+    this.persistentJson.results.settings = this.results.getPersistentConfig();
     this.results.on("change", () => {
       if (this.results) {
-        this.persistentJson.yasr.settings = this.results.getPersistentConfig();
+        this.persistentJson.results.settings = this.results.getPersistentConfig();
       }
 
       this.emit("change", this, this.persistentJson);
@@ -456,23 +456,23 @@ export class Tab extends EventEmitter {
     this.results = undefined;
     // The Monaco editor is shared/owned by SparqlStudio, so a tab must not destroy it. If this tab is the
     // one currently shown, abort any running query so it doesn't resolve against a closed tab.
-    if (this.yasgui.getTab() === this) this.editor?.abortQuery();
+    if (this.sparqlStudio.getTab() === this) this.editor?.abortQuery();
   }
-  public static getDefaults(yasgui?: SparqlStudio): PersistedJson {
+  public static getDefaults(sparqlStudio?: SparqlStudio): PersistedJson {
     return {
-      yasqe: {
+      editor: {
         value: defaultQueryValue,
       },
-      yasr: {
+      results: {
         response: undefined,
         settings: {
-          selectedPlugin: yasgui ? yasgui.config.results.defaultPlugin : "table",
+          selectedPlugin: sparqlStudio ? sparqlStudio.config.results.defaultPlugin : "table",
           pluginsConfig: {},
         },
       },
-      requestConfig: yasgui ? yasgui.config.requestConfig : { ...SparqlStudio.defaults.requestConfig },
+      requestConfig: sparqlStudio ? sparqlStudio.config.requestConfig : { ...SparqlStudio.defaults.requestConfig },
       id: getRandomId(),
-      name: yasgui ? yasgui.createTabName() : SparqlStudio.defaults.tabName,
+      name: sparqlStudio ? sparqlStudio.createTabName() : SparqlStudio.defaults.tabName,
     };
   }
 }
@@ -501,11 +501,11 @@ function getCorsErrorRenderer(tab: Tab) {
         )}</a>) from an HTTP<strong>S</strong> website (<a href="${safeEndpoint(window.location.href)}">${safeEndpoint(
           window.location.href,
         )}</a>).<br>This is not allowed in modern browsers, see <a target="_blank" rel="noopener noreferrer" href="https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy">https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy</a>.`;
-        if (tab.yasgui.config.nonSslDomain) {
+        if (tab.sparqlStudio.config.nonSslDomain) {
           const errorLink = document.createElement("p");
           errorLink.innerHTML = `As a workaround, you can use the HTTP version of SparqlStudio instead: <a href="${tab.getShareableLink(
-            tab.yasgui.config.nonSslDomain,
-          )}" target="_blank">${tab.yasgui.config.nonSslDomain}</a>`;
+            tab.sparqlStudio.config.nonSslDomain,
+          )}" target="_blank">${tab.sparqlStudio.config.nonSslDomain}</a>`;
           errorSpan.appendChild(errorLink);
         }
         errorEl.appendChild(errorSpan);

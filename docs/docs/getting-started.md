@@ -94,7 +94,7 @@ import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
 import "@rdfjs/sparql-studio/style.css";
 import QlueLsWorker from "./qlue-ls.worker?worker";
 
-const yasgui = new SparqlStudio(document.getElementById("yasgui")!, {
+const sparqlStudio = new SparqlStudio(document.getElementById("sparqlStudio")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
   editor: (parent, conf) =>
     new SparqlEditor(parent, {
@@ -105,7 +105,7 @@ const yasgui = new SparqlStudio(document.getElementById("yasgui")!, {
           worker: () => new QlueLsWorker({ name: "qlue-ls" }),
           onReady: (client) => {
             qlueLs.configureSettings(client);
-            qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint());
+            qlueLs.configureBackend(client, sparqlStudio?.getTab()?.getEndpoint());
           },
           onEndpointChange: (client, endpoint) => qlueLs.configureBackend(client, endpoint),
         },
@@ -135,11 +135,11 @@ import "@rdfjs/sparql-studio/style.css";
 export function Sparql() {
   const el = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const yasgui = new SparqlStudio(el.current!, {
+    const sparqlStudio = new SparqlStudio(el.current!, {
       requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
       editor: (parent, conf) => new SparqlEditor(parent, { ...conf /* + languageServers */ }),
     });
-    return () => yasgui.destroy();
+    return () => sparqlStudio.destroy();
   }, []);
   return <div ref={el} />;
 }

@@ -6,13 +6,13 @@ The **Table**, **Boolean**, **Response** and **Error** plugins are built in. **G
 
 ## Configuring plugins
 
-Plugins are configured through the `yasr` slot of the SparqlStudio config. Three options control which plugins are available and how they are ordered:
+Plugins are configured through the `results` slot of the SparqlStudio config. Three options control which plugins are available and how they are ordered:
 
 ```ts
 import SparqlStudio from '@rdfjs/sparql-studio';
 import '@rdfjs/sparql-studio/style.css';
 
-const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
+const sparqlStudio = new SparqlStudio(document.getElementById('sparqlStudio'), {
   results: {
     // Tab order in the result area (plugins not listed are appended alphabetically)
     pluginOrder: ['table', 'response'],
@@ -62,7 +62,7 @@ Config (`results.plugins.table.dynamicConfig`):
 | `isEllipsed` | `boolean` | `true` | Truncate long cell values with an ellipsis (expand on click). |
 
 ```ts
-const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
+const sparqlStudio = new SparqlStudio(document.getElementById('sparqlStudio'), {
   results: {
     plugins: {
       table: { dynamicConfig: { pageSize: 100, compact: true } },
@@ -94,7 +94,7 @@ Config (`results.plugins.response.dynamicConfig`):
 | `maxLines` | `number` | `30` | Maximum number of lines rendered before the output is truncated (the full payload is still available via copy/download). |
 
 ```ts
-const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
+const sparqlStudio = new SparqlStudio(document.getElementById('sparqlStudio'), {
   results: {
     plugins: {
       response: { dynamicConfig: { maxLines: 100 } },
@@ -121,7 +121,7 @@ import GeoPlugin from 'yasgui-geo-tg';
 
 SparqlStudio.Results.registerPlugin('geo', GeoPlugin);
 
-const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
+const sparqlStudio = new SparqlStudio(document.getElementById('sparqlStudio'), {
   results: {
     pluginOrder: ['table', 'response', 'geo'],
     defaultPlugin: 'geo',
@@ -171,7 +171,7 @@ import GraphPlugin from '@matdata/yasgui-graph-plugin';
 
 SparqlStudio.Results.registerPlugin('graph', GraphPlugin);
 
-const yasgui = new SparqlStudio(document.getElementById('yasgui'), {
+const sparqlStudio = new SparqlStudio(document.getElementById('sparqlStudio'), {
   results: {
     pluginOrder: ['table', 'response', 'graph'],
   },
@@ -182,8 +182,8 @@ Graph settings (compact mode, edge style, node size…) are adjustable from the 
 
 ```ts
 class MyGraphPlugin extends GraphPlugin {
-  constructor(yasr) {
-    super(yasr);
+  constructor(sparqlResults) {
+    super(sparqlResults);
     this.settings.compactMode = true;        // hide literal/class nodes (default: false)
     this.settings.edgeStyle = 'straight';    // 'curved' | 'straight' (default: 'curved')
     this.settings.nodeSize = 'large';        // 'small' | 'medium' | 'large' (default: 'medium')

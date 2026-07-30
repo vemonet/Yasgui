@@ -2,7 +2,7 @@
 
 ::: info Formerly Yasgui
 
-The term `yasgui` is kept for compatibility in the CSS classes and local storage key.
+SPARQL Studio is a fork of [Yasgui](https://github.com/zazuko/Yasgui). Its CSS classes has been updated: `.yasgui*` -> `.sparql-studio*`.
 
 :::
 
@@ -17,13 +17,13 @@ import SparqlStudio from "@rdfjs/sparql-studio";
 import SparqlEditor from "@rdfjs/sparql-editor-monaco";
 import "@rdfjs/sparql-studio/style.css";
 
-const yasgui = new SparqlStudio(document.getElementById("yasgui")!, {
+const sparqlStudio = new SparqlStudio(document.getElementById("sparqlStudio")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
   editor: (parent, conf) => new SparqlEditor(parent, { ...conf /* + languageServers, theme, … */ }),
 });
 ```
 
-The factory is where you choose the editor implementation (Monaco `@rdfjs/sparql-editor-monaco` or CodeMirror `@rdfjs/sparql-editor-codemirror`) and list its [language servers](./language-server), theme and [editor options](./editor-options). `yasgui.editor.getLanguageClient()` returns the active language client so you can send any LSP request. With two or more `languageServers`, a switcher lets users pick one and SparqlStudio remembers the choice **per endpoint**.
+The factory is where you choose the editor implementation (Monaco `@rdfjs/sparql-editor-monaco` or CodeMirror `@rdfjs/sparql-editor-codemirror`) and list its [language servers](./language-server), theme and [editor options](./editor-options). `sparqlStudio.editor.getLanguageClient()` returns the active language client so you can send any LSP request. With two or more `languageServers`, a switcher lets users pick one and SparqlStudio remembers the choice **per endpoint**.
 
 ## Configuration
 
@@ -41,12 +41,12 @@ The factory is where you choose the editor implementation (Monaco `@rdfjs/sparql
 SparqlStudio works in tabs; each tab owns its query, endpoint, editor and results. Drive it after construction:
 
 ```ts
-const yasgui = new SparqlStudio(el, { requestConfig: { endpoint } });
+const sparqlStudio = new SparqlStudio(el, { requestConfig: { endpoint } });
 
 // Tabs
-const tab = yasgui.addTab(true, { ...SparqlStudio.Tab.getDefaults(), name: "My query" }); // true = make active
-yasgui.getTab();          // the active tab (or a tab id: getTab("tab_id"))
-yasgui.getActiveTab();
+const tab = sparqlStudio.addTab(true, { ...SparqlStudio.Tab.getDefaults(), name: "My query" }); // true = make active
+sparqlStudio.getTab();          // the active tab (or a tab id: getTab("tab_id"))
+sparqlStudio.getActiveTab();
 
 // Drive the active tab
 tab.setQuery("SELECT * WHERE { ?s ?p ?o } LIMIT 10");
@@ -59,20 +59,20 @@ tab.close();
 
 ## Events
 
-SparqlStudio extends an event emitter; handlers are **instance-first** (`(yasgui, …)`).
+SparqlStudio extends an event emitter; handlers are **instance-first** (`(sparqlStudio, …)`).
 
 | event | payload | fires when |
 | --- | --- | --- |
-| `query` | `(yasgui, tab)` | a query starts |
-| `queryResponse` | `(yasgui, tab)` | a response arrives |
-| `queryAbort` | `(yasgui, tab)` | a running query is aborted |
-| `tabSelect` | `(yasgui, tabId)` | the active tab changes |
-| `tabAdd` | `(yasgui, tabId)` | a tab is added |
-| `tabClose` | `(yasgui, tab)` | a tab is closed |
-| `endpointHistoryChange` | `(yasgui, history)` | the endpoint history changes |
+| `query` | `(sparqlStudio, tab)` | a query starts |
+| `queryResponse` | `(sparqlStudio, tab)` | a response arrives |
+| `queryAbort` | `(sparqlStudio, tab)` | a running query is aborted |
+| `tabSelect` | `(sparqlStudio, tabId)` | the active tab changes |
+| `tabAdd` | `(sparqlStudio, tabId)` | a tab is added |
+| `tabClose` | `(sparqlStudio, tab)` | a tab is closed |
+| `endpointHistoryChange` | `(sparqlStudio, history)` | the endpoint history changes |
 
 ```ts
-yasgui.on("queryResponse", (yasgui, tab) => console.log(tab.getResults()?.results));
+sparqlStudio.on("queryResponse", (sparqlStudio, tab) => console.log(tab.getResults()?.results));
 ```
 
 ## Endpoint catalogue
