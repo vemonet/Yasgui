@@ -1,104 +1,104 @@
-.yasqe .cm-editor {
+.sparql-editor .cm-editor {
   line-height: 1.5em;
   font-size: 14px;
   border: 1px solid #d1d1d1;
   height: 100%;
 }
-.yasqe .cm-editor.cm-focused {
+.sparql-editor .cm-editor.cm-focused {
   outline: none;
 }
-.yasqe .cm-scroller {
+.sparql-editor .cm-scroller {
   font-family: monospace;
 }
-.yasqe .cm-matchhighlight {
+.sparql-editor .cm-matchhighlight {
   background-color: #dbdeed;
 }
 
 /* Semantic-token colors: the consumer language server glue marks tokens with `cm-st-<tokenType>` classes */
-.yasqe .cm-st-keyword {
+.sparql-editor .cm-st-keyword {
   color: #62036f;
 }
-.yasqe .cm-st-function {
+.sparql-editor .cm-st-function {
   color: #cb4b16;
 }
-.yasqe .cm-st-variable {
+.sparql-editor .cm-st-variable {
   color: #219;
 }
-.yasqe .cm-st-string {
+.sparql-editor .cm-st-string {
   color: #aa1011;
 }
-.yasqe .cm-st-number {
+.sparql-editor .cm-st-number {
   color: #2aa198;
 }
-.yasqe .cm-st-comment {
+.sparql-editor .cm-st-comment {
   color: #708090;
   font-style: italic;
 }
-.yasqe .cm-st-operator {
+.sparql-editor .cm-st-operator {
   color: #000000;
 }
-.yasqe .cm-st-namespace {
+.sparql-editor .cm-st-namespace {
   color: #ff5600;
 }
 /* Additional standard LSP semantic-token types (e.g. emitted by swls), mapped onto the same palette
    so any language server's tokens get colored rather than rendering grey. */
-.yasqe .cm-st-property {
+.sparql-editor .cm-st-property {
   color: #cb4b16; /* like function */
 }
-.yasqe .cm-st-enum {
+.sparql-editor .cm-st-enum {
   color: #62036f; /* like keyword */
 }
-.yasqe .cm-st-enumMember,
-.yasqe .cm-st-boolean {
+.sparql-editor .cm-st-enumMember,
+.sparql-editor .cm-st-boolean {
   color: #2aa198; /* like number / constant */
 }
-.yasqe .cm-st-langTag {
+.sparql-editor .cm-st-langTag {
   color: #ff5600; /* like namespace */
 }
 
 /* Dark theme overrides. The CodeMirror editor chrome (background, gutter, selection) is themed via
    the `darkTheme` extension in index.ts; these rules cover the surrounding container and the
    semantic-token palette, which live outside CodeMirror's own theming. */
-[data-theme="dark"] .yasqe .cm-editor {
+[data-theme="dark"] .sparql-editor .cm-editor {
   border-color: #3a3a3a;
 }
-[data-theme="dark"] .yasqe .cm-matchhighlight {
+[data-theme="dark"] .sparql-editor .cm-matchhighlight {
   background-color: #3a3d41;
 }
-[data-theme="dark"] .yasqe .cm-st-keyword {
+[data-theme="dark"] .sparql-editor .cm-st-keyword {
   color: #7f85e7;
 }
-[data-theme="dark"] .yasqe .cm-st-function {
+[data-theme="dark"] .sparql-editor .cm-st-function {
   color: #32beb3;
 }
-[data-theme="dark"] .yasqe .cm-st-variable {
+[data-theme="dark"] .sparql-editor .cm-st-variable {
   color: #adbebe;
 }
-[data-theme="dark"] .yasqe .cm-st-string {
+[data-theme="dark"] .sparql-editor .cm-st-string {
   color: #9db500;
 }
-[data-theme="dark"] .yasqe .cm-st-number {
+[data-theme="dark"] .sparql-editor .cm-st-number {
   color: #f0591a;
 }
-[data-theme="dark"] .yasqe .cm-st-comment {
+[data-theme="dark"] .sparql-editor .cm-st-comment {
   color: #68828a;
 }
-[data-theme="dark"] .yasqe .cm-st-operator {
+[data-theme="dark"] .sparql-editor .cm-st-operator {
   color: #32beb3;
 }
-[data-theme="dark"] .yasqe .cm-st-namespace {
+[data-theme="dark"] .sparql-editor .cm-st-namespace {
   color: #d6a200;
 }
-[data-theme="dark"] .yasqe .cm-st-property {
+[data-theme="dark"] .sparql-editor .cm-st-property {
   color: #32beb3;
 }
-[data-theme="dark"] .yasqe .cm-st-enum {
+[data-theme="dark"] .sparql-editor .cm-st-enum {
   color: #7f85e7;
 }
-[data-theme="dark"] .yasqe .cm-st-enumMember,
-[data-theme="dark"] .yasqe .cm-st-boolean {
+[data-theme="dark"] .sparql-editor .cm-st-enumMember,
+[data-theme="dark"] .sparql-editor .cm-st-boolean {
   color: #f0591a;
 }
-[data-theme="dark"] .yasqe .cm-st-langTag {
+[data-theme="dark"] .sparql-editor .cm-st-langTag {
   color: #d6a200;
 }

@@ -21,7 +21,7 @@
 html[data-theme="dark"] {
   color-scheme: dark;
 
-  .yasr {
+  .sparql-results {
     color: var(--yr-d-text);
     background: var(--yr-d-bg);
 
@@ -33,32 +33,32 @@ html[data-theme="dark"] {
       color: var(--yr-d-link-hover);
     }
 
-    .yasr_btnGroup .yasr_btn.selected {
+    .sparql-results_btnGroup .sparql-results_btn.selected {
       border-bottom-color: var(--yr-d-link);
     }
-    .yasr_btn {
+    .sparql-results_btn {
       color: var(--yr-d-muted);
       fill: var(--yr-d-muted);
     }
-    .yasr_btn:not(.disabled):hover {
+    .sparql-results_btn:not(.disabled):hover {
       color: var(--yr-d-text);
       fill: var(--yr-d-text);
     }
-    .yasr_btn:focus,
-    .yasr_btn.selected {
+    .sparql-results_btn:focus,
+    .sparql-results_btn.selected {
       color: var(--yr-d-link);
       fill: var(--yr-d-link);
     }
 
-    .yasr_fallback_info:not(:empty) {
+    .sparql-results_fallback_info:not(:empty) {
       border-color: var(--yr-d-border);
       background: var(--yr-d-surface);
     }
-    .yasr_help_variable {
+    .sparql-results_help_variable {
       background: var(--yr-d-help-bg);
       color: var(--yr-d-link);
     }
-    .yasr_response_chip {
+    .sparql-results_response_chip {
       color: var(--yr-d-text);
       background: var(--yr-d-raised);
     }
@@ -66,7 +66,7 @@ html[data-theme="dark"] {
     /* Raw response view (CodeMirror 6) ships only a light theme: a glaring white
        panel in dark mode. Override the editor's CSS variables (set in response/index.ts)
        to get a grey surface, light-grey gutter and JSON token colors legible on dark. */
-    .yasr_results .cm-editor {
+    .sparql-results_results .cm-editor {
       --yr-cm-bg: var(--yr-d-surface);
       --yr-cm-text: var(--yr-d-text);
       --yr-cm-gutter-bg: var(--yr-d-surface);
@@ -78,10 +78,10 @@ html[data-theme="dark"] {
       border-color: var(--yr-d-border);
     }
     /* The overflow fade and "show more" overlay are hardcoded white in the source. */
-    .yasr_results .cm-editor.overflow::before {
+    .sparql-results_results .cm-editor.overflow::before {
       background: linear-gradient(transparent 0%, rgba(37, 37, 38, 0.67) 75%, var(--yr-d-surface) 100%);
     }
-    .yasr_results .overlay_content {
+    .sparql-results_results .overlay_content {
       background: linear-gradient(to right, transparent, var(--yr-d-surface) 5%, var(--yr-d-surface) 95%, transparent 100%);
     }
 
@@ -129,7 +129,7 @@ html[data-theme="dark"] {
   html:not([data-theme="light"]) {
     color-scheme: dark;
 
-    .yasr {
+    .sparql-results {
       color: var(--yr-d-text);
       background: var(--yr-d-bg);
 
@@ -141,32 +141,32 @@ html[data-theme="dark"] {
         color: var(--yr-d-link-hover);
       }
 
-      .yasr_btnGroup .yasr_btn.selected {
+      .sparql-results_btnGroup .sparql-results_btn.selected {
         border-bottom-color: var(--yr-d-link);
       }
-      .yasr_btn {
+      .sparql-results_btn {
         color: var(--yr-d-muted);
         fill: var(--yr-d-muted);
       }
-      .yasr_btn:not(.disabled):hover {
+      .sparql-results_btn:not(.disabled):hover {
         color: var(--yr-d-text);
         fill: var(--yr-d-text);
       }
-      .yasr_btn:focus,
-      .yasr_btn.selected {
+      .sparql-results_btn:focus,
+      .sparql-results_btn.selected {
         color: var(--yr-d-link);
         fill: var(--yr-d-link);
       }
 
-      .yasr_fallback_info:not(:empty) {
+      .sparql-results_fallback_info:not(:empty) {
         border-color: var(--yr-d-border);
         background: var(--yr-d-surface);
       }
-      .yasr_help_variable {
+      .sparql-results_help_variable {
         background: var(--yr-d-help-bg);
         color: var(--yr-d-link);
       }
-      .yasr_response_chip {
+      .sparql-results_response_chip {
         color: var(--yr-d-text);
         background: var(--yr-d-raised);
       }
@@ -174,7 +174,7 @@ html[data-theme="dark"] {
       /* Raw response view (CodeMirror 6) ships only a light theme: a glaring white
          panel in dark mode. Override the editor's CSS variables (set in response/index.ts)
          to get a grey surface, light-grey gutter and JSON token colors legible on dark. */
-      .yasr_results .cm-editor {
+      .sparql-results_results .cm-editor {
         --yr-cm-bg: var(--yr-d-surface);
         --yr-cm-text: var(--yr-d-text);
         --yr-cm-gutter-bg: var(--yr-d-surface);
@@ -186,10 +186,10 @@ html[data-theme="dark"] {
         border-color: var(--yr-d-border);
       }
       /* The overflow fade and "show more" overlay are hardcoded white in the source. */
-      .yasr_results .cm-editor.overflow::before {
+      .sparql-results_results .cm-editor.overflow::before {
         background: linear-gradient(transparent 0%, rgba(37, 37, 38, 0.67) 75%, var(--yr-d-surface) 100%);
       }
-      .yasr_results .overlay_content {
+      .sparql-results_results .overlay_content {
         background: linear-gradient(to right, transparent, var(--yr-d-surface) 5%, var(--yr-d-surface) 95%, transparent 100%);
       }
 

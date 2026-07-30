@@ -7,11 +7,11 @@ export default function initialize(): Config<CatalogueItem> {
   return {
     autofocus: true,
     endpointInfo: undefined,
-    persistenceId: function (yasgui) {
+    persistenceId: function (sparqlStudio) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       var id = "";
-      var elem: any = yasgui.rootEl;
+      var elem: any = sparqlStudio.rootEl;
       if ((<any>elem).id) id = (<any>elem).id;
       for (; elem && elem !== <any>document; elem = elem.parentNode) {
         if (elem) {

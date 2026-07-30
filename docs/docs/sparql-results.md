@@ -2,7 +2,7 @@
 
 ::: info Formerly Yasr
 
-The term `yasr` is kept for compatibility in the CSS class and the local storage key.
+The viewer began as Yasr. It keeps compatibility with existing Yasr plugins, but its CSS classes has been updated: `.yasr*` -> `.sparql-results*`
 
 :::
 
@@ -19,7 +19,7 @@ import "@rdfjs/sparql-results/style.css";
 const editor = new SparqlEditor(document.getElementById("yasqe")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
 });
-const results = new SparqlResults(document.getElementById("yasr")!, {
+const results = new SparqlResults(document.getElementById("sparqlResults")!, {
   // resolve prefixed names in results using the query's PREFIX declarations
   prefixes: () => editor.getPrefixesFromQuery(),
 });
@@ -35,7 +35,7 @@ editor.on("queryResponse", (editor, response, duration) => {
 You don't need SparqlEditor at all, `setResponse` accepts any SPARQL JSON / response object:
 
 ```ts
-const results = new SparqlResults(document.getElementById("yasr")!);
+const results = new SparqlResults(document.getElementById("sparqlResults")!);
 results.setResponse(sparqlResultsJson);
 ```
 

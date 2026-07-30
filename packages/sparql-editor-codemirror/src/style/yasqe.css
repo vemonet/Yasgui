@@ -1,26 +1,26 @@
-.yasqe {
+.sparql-editor {
   position: relative;
 }
-.yasqe .cm-editor {
+.sparql-editor .cm-editor {
   min-height: 60px;
 }
-.yasqe .svgImg {
+.sparql-editor .svgImg {
   display: inline-block;
 }
-.yasqe span.shortlinkErr {
+.sparql-editor span.shortlinkErr {
   font-size: small;
   color: red;
   font-weight: bold;
   float: left;
 }
-.yasqe .notificationContainer {
+.sparql-editor .notificationContainer {
   width: 100%;
   display: flex;
   justify-content: center;
   position: absolute;
   bottom: 0;
 }
-.yasqe .notification {
+.sparql-editor .notification {
   z-index: 4;
   padding: 0 5px;
   max-height: 0px;
@@ -34,19 +34,19 @@
   border-top-right-radius: 2px;
   border-top-left-radius: 2px;
 }
-.yasqe .notification.active {
+.sparql-editor .notification.active {
   max-height: 3rem;
 }
-.yasqe .parseErrorIcon {
+.sparql-editor .parseErrorIcon {
   width: 13px;
   height: 13px;
   margin-top: 2px;
   margin-left: 2px;
 }
-.yasqe .parseErrorIcon svg g {
+.sparql-editor .parseErrorIcon svg g {
   fill: red;
 }
-.yasqe .yasqe_tooltip {
+.sparql-editor .sparql-editor_tooltip {
   background: #333;
   background: rgba(0, 0, 0, 0.8);
   border-radius: 5px;
@@ -57,12 +57,12 @@
   white-space: normal;
   margin-top: 5px;
 }
-.yasqe .notificationLoader {
+.sparql-editor .notificationLoader {
   width: 18px;
   height: 18px;
   vertical-align: middle;
 }
-.yasqe .resizeWrapper {
+.sparql-editor .resizeWrapper {
   width: 100%;
   height: 10px;
   display: flex;
@@ -70,25 +70,25 @@
   justify-content: center;
   cursor: row-resize;
 }
-.yasqe .resizeChip {
+.sparql-editor .resizeChip {
   width: 20%;
   height: 4px;
   background-color: #d1d1d1;
   visibility: hidden;
   border-radius: 2px;
 }
-/* Show resizeChip when yasqe is hovered */
-.yasqe:hover .resizeChip {
+/* Show resizeChip when sparql-editor is hovered */
+.sparql-editor:hover .resizeChip {
   visibility: visible;
 }
 
-[data-theme="dark"] .yasqe .notification {
+[data-theme="dark"] .sparql-editor .notification {
   color: #aaa;
   background-color: #2a2a2a;
 }
-[data-theme="dark"] .yasqe .resizeChip {
+[data-theme="dark"] .sparql-editor .resizeChip {
   background-color: #3a3a3a;
 }
 
 /* Language-server error notifications render via the shared `createLspErrorNotification` helper
-   (@rdfjs/sparql-utils), which injects its own `.yasqe-lsp-error` styles. */
+   (@rdfjs/sparql-utils), which injects its own `.sparql-editor-lsp-error` styles. */

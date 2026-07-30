@@ -7,13 +7,13 @@ export interface TabList {}
 export class TabListEl {
   private tabList: TabList;
   private tabId: string;
-  private yasgui: SparqlStudio;
+  private sparqlStudio: SparqlStudio;
   private renameEl?: HTMLInputElement;
   private nameEl?: HTMLSpanElement;
   public tabEl?: HTMLDivElement;
-  constructor(yasgui: SparqlStudio, tabList: TabList, tabId: string) {
+  constructor(sparqlStudio: SparqlStudio, tabList: TabList, tabId: string) {
     this.tabList = tabList;
-    this.yasgui = yasgui;
+    this.sparqlStudio = sparqlStudio;
     this.tabId = tabId;
   }
   public delete() {
@@ -24,7 +24,7 @@ export class TabListEl {
   }
   public startRename() {
     if (this.renameEl) {
-      const tab = this.yasgui.getTab(this.tabId);
+      const tab = this.sparqlStudio.getTab(this.tabId);
       if (tab) {
         this.renameEl.value = tab.name();
         addClass(this.tabEl, "renaming");
@@ -71,7 +71,7 @@ export class TabListEl {
 
     const handleDeleteTab = (e?: MouseEvent) => {
       e?.preventDefault();
-      this.yasgui.getTab(this.tabId)?.close();
+      this.sparqlStudio.getTab(this.tabId)?.close();
     };
 
     const tabLinkEl = document.createElement("a");
@@ -95,12 +95,12 @@ export class TabListEl {
         this.tabList.tabEntryIndex = currentTabIndex;
       }
     });
-    // if (this.yasgui.persistentConfig.tabIsActive(this.tabId)) {
-    //   this.yasgui.store.dispatch(selectTab(this.tabId))
+    // if (this.sparqlStudio.persistentConfig.tabIsActive(this.tabId)) {
+    //   this.sparqlStudio.store.dispatch(selectTab(this.tabId))
     // }
     tabLinkEl.addEventListener("click", (e) => {
       e.preventDefault();
-      this.yasgui.selectTabId(this.tabId);
+      this.sparqlStudio.selectTabId(this.tabId);
     });
 
     //tab name
@@ -123,12 +123,12 @@ export class TabListEl {
     renameEl.value = name;
     renameEl.onkeyup = (event) => {
       if (event.key === "Enter") {
-        this.yasgui.getTab(this.tabId)?.setName(renameEl.value);
+        this.sparqlStudio.getTab(this.tabId)?.setName(renameEl.value);
         removeClass(this.tabEl, "renaming");
       }
     };
     renameEl.onblur = () => {
-      this.yasgui.getTab(this.tabId)?.setName(renameEl.value);
+      this.sparqlStudio.getTab(this.tabId)?.setName(renameEl.value);
       removeClass(this.tabEl, "renaming");
     };
     tabLinkEl.appendChild(this.renameEl);
@@ -157,7 +157,7 @@ export class TabListEl {
 }
 
 export class TabList {
-  yasgui: SparqlStudio;
+  sparqlStudio: SparqlStudio;
 
   private _selectedTab?: string;
   private addTabEl?: HTMLDivElement;
@@ -166,8 +166,8 @@ export class TabList {
   public tabContextMenu?: TabContextMenu;
   public tabEntryIndex: number | undefined;
 
-  constructor(yasgui: SparqlStudio) {
-    this.yasgui = yasgui;
+  constructor(sparqlStudio: SparqlStudio) {
+    this.sparqlStudio = sparqlStudio;
     this.registerListeners();
     this.tabEntryIndex = this.getActiveIndex();
   }
@@ -176,19 +176,19 @@ export class TabList {
   }
 
   private registerListeners() {
-    this.yasgui.on("query", (_yasgui, tab) => {
+    this.sparqlStudio.on("query", (_sparqlStudio, tab) => {
       const id = tab.getId();
       if (this._tabs[id]) {
         this._tabs[id].setAsQuerying(true);
       }
     });
-    this.yasgui.on("queryResponse", (_yasgui, tab) => {
+    this.sparqlStudio.on("queryResponse", (_sparqlStudio, tab) => {
       const id = tab.getId();
       if (this._tabs[id]) {
         this._tabs[id].setAsQuerying(false);
       }
     });
-    this.yasgui.on("queryAbort", (_yasgui, tab) => {
+    this.sparqlStudio.on("queryAbort", (_sparqlStudio, tab) => {
       const id = tab.getId();
       if (this._tabs[id]) {
         this._tabs[id].setAsQuerying(false);
@@ -239,8 +239,8 @@ export class TabList {
       animation: 100,
       onUpdate: (_ev: any) => {
         const tabs = this.deriveTabOrderFromEls();
-        this.yasgui.emit("tabOrderChanged", this.yasgui, tabs);
-        this.yasgui.persistentConfig.setTabOrder(tabs);
+        this.sparqlStudio.emit("tabOrderChanged", this.sparqlStudio, tabs);
+        this.sparqlStudio.persistentConfig.setTabOrder(tabs);
       },
       filter: ".addTab",
       onMove: (ev: any, _origEv: any) => {
@@ -269,14 +269,14 @@ export class TabList {
     this.addTabEl.appendChild(addTabLink);
     this._tabsListEl.appendChild(this.addTabEl);
     this.tabContextMenu = TabContextMenu.get(
-      this.yasgui,
-      this.yasgui.config.contextMenuContainer ? this.yasgui.config.contextMenuContainer : this._tabsListEl,
+      this.sparqlStudio,
+      this.sparqlStudio.config.contextMenuContainer ? this.sparqlStudio.config.contextMenuContainer : this._tabsListEl,
     );
     return this._tabsListEl;
   }
   handleAddNewTab = (event: Event) => {
     event.preventDefault();
-    this.yasgui.addTab(true);
+    this.sparqlStudio.addTab(true);
   };
   // drawPanels() {
   //   this.tabPanelsEl = document.createElement("div");
@@ -310,12 +310,12 @@ export class TabList {
   }
 
   public drawTab(tabId: string, index?: number) {
-    this._tabs[tabId] = new TabListEl(this.yasgui, this, tabId);
-    const tabConf = this.yasgui.persistentConfig.getTab(tabId);
-    if (index !== undefined && index < this.yasgui.persistentConfig.getTabs().length - 1) {
+    this._tabs[tabId] = new TabListEl(this.sparqlStudio, this, tabId);
+    const tabConf = this.sparqlStudio.persistentConfig.getTab(tabId);
+    if (index !== undefined && index < this.sparqlStudio.persistentConfig.getTabs().length - 1) {
       this._tabsListEl?.insertBefore(
         this._tabs[tabId].draw(tabConf.name),
-        this._tabs[this.yasgui.persistentConfig.getTabs()[index + 1]].tabEl || null,
+        this._tabs[this.sparqlStudio.persistentConfig.getTabs()[index + 1]].tabEl || null,
       );
     } else {
       this._tabsListEl?.insertBefore(this._tabs[tabId].draw(tabConf.name), this.addTabEl || null);

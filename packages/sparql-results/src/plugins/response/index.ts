@@ -29,42 +29,42 @@ export interface PluginConfig {
   maxLines: number;
 }
 export default class Response implements Plugin<PluginConfig> {
-  private yasr: SparqlResults;
+  private sparqlResults: SparqlResults;
   label = "Response";
   priority = 2;
   helpReference = "https://sparql.studio/docs/plugins#response";
   private config: DeepReadonly<PluginConfig>;
   private overLay: HTMLDivElement | undefined;
   private cm: EditorView | undefined;
-  constructor(yasr: SparqlResults) {
-    this.yasr = yasr;
+  constructor(sparqlResults: SparqlResults) {
+    this.sparqlResults = sparqlResults;
     this.config = Response.defaults;
-    if (yasr.config.plugins["response"] && yasr.config.plugins["response"].dynamicConfig) {
+    if (sparqlResults.config.plugins["response"] && sparqlResults.config.plugins["response"].dynamicConfig) {
       this.config = {
         ...this.config,
-        ...yasr.config.plugins["response"].dynamicConfig,
+        ...sparqlResults.config.plugins["response"].dynamicConfig,
       };
     }
   }
   // getDownloadInfo: getDownloadInfo
   canHandleResults() {
-    if (!this.yasr.results) return false;
-    if (!this.yasr.results.getOriginalResponseAsString) return false;
-    var response = this.yasr.results.getOriginalResponseAsString();
-    if ((!response || response.length == 0) && this.yasr.results.getError()) return false; //in this case, show exception instead, as we have nothing to show anyway
+    if (!this.sparqlResults.results) return false;
+    if (!this.sparqlResults.results.getOriginalResponseAsString) return false;
+    var response = this.sparqlResults.results.getOriginalResponseAsString();
+    if ((!response || response.length == 0) && this.sparqlResults.results.getError()) return false; //in this case, show exception instead, as we have nothing to show anyway
     return true;
   }
   public getIcon() {
     return drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faAlignIcon));
   }
   download(filename?: string) {
-    if (!this.yasr.results) return;
-    const contentType = this.yasr.results.getContentType();
-    const type = this.yasr.results.getType();
+    if (!this.sparqlResults.results) return;
+    const contentType = this.sparqlResults.results.getContentType();
+    const type = this.sparqlResults.results.getType();
     const extension = type === "xml" ? "rdf" : type;
     return {
       getData: () => {
-        return this.yasr.results?.getOriginalResponseAsString() || "";
+        return this.sparqlResults.results?.getOriginalResponseAsString() || "";
       },
       filename: `${filename || "queryResults"}${extension ? "." + extension : ""}`,
       contentType: contentType ? contentType : "text/plain",
@@ -93,13 +93,13 @@ export default class Response implements Plugin<PluginConfig> {
       EditorState.readOnly.of(true),
       EditorView.editable.of(false),
     ];
-    const mode = this.yasr.results?.getType();
+    const mode = this.sparqlResults.results?.getType();
     if (mode === "json") {
       extensions.push(json());
     }
 
     this.cm = new EditorView({
-      parent: this.yasr.resultsEl,
+      parent: this.sparqlResults.resultsEl,
       state: EditorState.create({
         doc: value,
         extensions,
@@ -140,22 +140,22 @@ export default class Response implements Plugin<PluginConfig> {
 
     const showMoreButton = document.createElement("button");
     showMoreButton.title = "Show all";
-    addClass(showMoreButton, "yasr_btn", "overlay_btn");
+    addClass(showMoreButton, "sparql-results_btn", "overlay_btn");
     showMoreButton.textContent = "Show all";
     showMoreButton.addEventListener("click", () => this.showMore());
     overlayContent.append(showMoreButton);
 
     const downloadButton = document.createElement("button");
     downloadButton.title = "Download result";
-    addClass(downloadButton, "yasr_btn", "overlay_btn");
+    addClass(downloadButton, "sparql-results_btn", "overlay_btn");
 
     const text = document.createElement("span");
     text.innerText = "Download result";
     downloadButton.appendChild(text);
     downloadButton.appendChild(drawSvgStringAsElement(imgs.download));
-    downloadButton.addEventListener("click", () => this.yasr.download());
+    downloadButton.addEventListener("click", () => this.sparqlResults.download());
     downloadButton.addEventListener("keydown", (event) => {
-      if (event.code === "Space" || event.code === "Enter") this.yasr.download();
+      if (event.code === "Space" || event.code === "Enter") this.sparqlResults.download();
     });
 
     overlayContent.appendChild(downloadButton);
@@ -184,8 +184,8 @@ export default class Response implements Plugin<PluginConfig> {
    * anything else (and unparseable JSON) is shown verbatim.
    */
   private getResponseString(): string {
-    const value = this.yasr.results?.getOriginalResponseAsString() || "";
-    if (this.yasr.results?.getType() === "json") {
+    const value = this.sparqlResults.results?.getOriginalResponseAsString() || "";
+    if (this.sparqlResults.results?.getType() === "json") {
       try {
         return JSON.stringify(JSON.parse(value), null, 2);
       } catch {

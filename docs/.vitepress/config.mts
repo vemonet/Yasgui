@@ -29,7 +29,7 @@ export default defineConfig({
       {
         name: "keywords",
         content:
-          "SPARQL Studio, SPARQL, SPARQL editor, SPARQL query, RDF, linked data, semantic web, Yasgui, Yasqe, Yasr, query editor, SPARQL GUI, Monaco editor",
+          "SPARQL Studio, SPARQL, SPARQL editor, SPARQL query, SPARQL results, RDF, linked data, semantic web, Yasgui, Yasqe, Yasr, query editor, SPARQL GUI, Monaco editor",
       },
     ],
     ["meta", { name: "theme-color", content: "#7d3fbd" }],

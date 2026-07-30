@@ -8,14 +8,14 @@
  * @module errorNotification
  */
 
-const STYLE_ID = "yasqe-lsp-error-styles";
+const STYLE_ID = "sparql-editor-lsp-error-styles";
 
 // Warning-triangle icon (dark amber, matches the pill text), inlined to avoid an extra asset.
 const ICON =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234a3206'%3E%3Cpath d='M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z'/%3E%3C/svg%3E\")";
 
 const STYLES = `
-.yasqe-lsp-error {
+.sparql-editor-lsp-error {
   position: absolute;
   bottom: 8px;
   right: 8px;
@@ -38,17 +38,17 @@ const STYLES = `
   transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
 }
-.yasqe-lsp-error.is-visible { opacity: 1; transform: none; pointer-events: auto; }
-.yasqe-lsp-error__icon {
+.sparql-editor-lsp-error.is-visible { opacity: 1; transform: none; pointer-events: auto; }
+.sparql-editor-lsp-error__icon {
   flex: 0 0 auto;
   width: 15px;
   height: 15px;
   margin-top: 2px;
   background: center / contain no-repeat ${ICON};
 }
-.yasqe-lsp-error__body { min-width: 0; }
-.yasqe-lsp-error__label { font-weight: 600; }
-.yasqe-lsp-error__desc {
+.sparql-editor-lsp-error__body { min-width: 0; }
+.sparql-editor-lsp-error__label { font-weight: 600; }
+.sparql-editor-lsp-error__desc {
   margin-top: 2px;
   opacity: 0.7;
   /* Collapsed preview: up to 2 lines, then ellipsis. */
@@ -59,7 +59,7 @@ const STYLES = `
   overflow: hidden;
   overflow-wrap: anywhere;
 }
-.yasqe-lsp-error.is-expanded .yasqe-lsp-error__desc {
+.sparql-editor-lsp-error.is-expanded .sparql-editor-lsp-error__desc {
   display: block;
   -webkit-line-clamp: unset;
   line-clamp: unset;
@@ -68,7 +68,7 @@ const STYLES = `
   max-height: 9rem;
   opacity: 0.85;
 }
-.yasqe-lsp-error__close {
+.sparql-editor-lsp-error__close {
   position: absolute;
   top: 3px;
   right: 4px;
@@ -85,7 +85,7 @@ const STYLES = `
   cursor: pointer;
   opacity: 0.6;
 }
-.yasqe-lsp-error__close:hover { opacity: 1; background: rgba(0, 0, 0, 0.08); }
+.sparql-editor-lsp-error__close:hover { opacity: 1; background: rgba(0, 0, 0, 0.08); }
 `;
 
 function ensureStyles() {
@@ -187,23 +187,23 @@ export function createLspErrorNotification(
   const autoDismissMs = options.autoDismissMs ?? 5000;
 
   const root = document.createElement("div");
-  root.className = "yasqe-lsp-error";
+  root.className = "sparql-editor-lsp-error";
   root.setAttribute("role", "alert");
 
   const icon = document.createElement("div");
-  icon.className = "yasqe-lsp-error__icon";
+  icon.className = "sparql-editor-lsp-error__icon";
 
   const body = document.createElement("div");
-  body.className = "yasqe-lsp-error__body";
+  body.className = "sparql-editor-lsp-error__body";
   const labelEl = document.createElement("div");
-  labelEl.className = "yasqe-lsp-error__label";
+  labelEl.className = "sparql-editor-lsp-error__label";
   const descEl = document.createElement("div");
-  descEl.className = "yasqe-lsp-error__desc";
+  descEl.className = "sparql-editor-lsp-error__desc";
   body.appendChild(labelEl);
   body.appendChild(descEl);
 
   const closeBtn = document.createElement("button");
-  closeBtn.className = "yasqe-lsp-error__close";
+  closeBtn.className = "sparql-editor-lsp-error__close";
   closeBtn.type = "button";
   closeBtn.setAttribute("aria-label", "Close");
   closeBtn.innerHTML = "&times;"; // keep source ASCII; renders as a × glyph

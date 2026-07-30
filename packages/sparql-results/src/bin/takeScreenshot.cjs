@@ -221,7 +221,7 @@ const getHtml = (plugin) => `
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>YASR</title>
+  <title>SPARQL Results</title>
   <link rel="icon" type="image/png" href="doc/imgs/favicon.png" />
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/7.0.0/polyfill.js"></script>
@@ -231,7 +231,7 @@ const getHtml = (plugin) => `
 	}
 	</style>
   <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
-  <link rel="stylesheet" href="build/yasr.min.css" />
+  <link rel="stylesheet" href="build/sparql-results.css" />
   <link rel="stylesheet" href="build/pro-gallery.min.css">
   <link rel="stylesheet" href="build/pro-geo.min.css">
   <link rel="stylesheet" href="build/pro-geo3d.min.css">
@@ -241,9 +241,9 @@ const getHtml = (plugin) => `
 
 <body>
   <div id="yasqe"></div>
-  <div id="yasr"></div>
+  <div id="sparqlResults"></div>
 
-  <script src="build/yasr.min.js"></script>
+  <script src="build/sparql-results.js"></script>
   <script src="build/pro-gallery.min.js"></script>
   <script src="build/pro-geo.min.js"></script>
   <script src="build/pro-geo3d.min.js"></script>
@@ -252,7 +252,7 @@ const getHtml = (plugin) => `
   <script type="text/javascript">
     window.onload = function () {
       console.log('onload')
-      window.yasqe = SparqlEditor(document.getElementById("yasqe"), {
+      window.yasqe = new SparqlEditor(document.getElementById("yasqe"), {
         requestConfig: {
           endpoint: "${endpoint}"
         },
@@ -265,10 +265,10 @@ const getHtml = (plugin) => `
         console.log({
           response: response
         })
-        window.yasr.setResponse(response, duration);
+        window.sparqlResults.setResponse(response, duration);
       });
       yasqe.query();
-      window.yasr = SparqlResults(document.getElementById("yasr"), {
+      window.sparqlResults = new SparqlResults(document.getElementById("sparqlResults"), {
         prefixes: function () {
           yasqe.getPrefixesFromQuery();
         },
@@ -348,11 +348,11 @@ function waitForImagesToLoad (page) {
   await page.setViewport({ width: getScreenWidth(plugin), height: 1200 });
   await page.goto(`http://localhost:${PORT}`, { waitUntil: ["load", "domcontentloaded", "networkidle0"] });
   //Wait for results to be drawn
-  // await page.waitForFunction('document.getElementsByClassName("yasr_results")[0].childElementCount > 0');
+  // await page.waitForFunction('document.getElementsByClassName("sparql-results_results")[0].childElementCount > 0');
   // await waitForImagesToLoad(page);
   // await wait(100);
   const clip = await page.evaluate(() => {
-    const rect = document.querySelector(".yasr_results").getBoundingClientRect();
+    const rect = document.querySelector(".sparql-results_results").getBoundingClientRect();
     return {
       x: rect.left,
       y: rect.top,

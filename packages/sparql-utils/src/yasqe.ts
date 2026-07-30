@@ -244,7 +244,7 @@ export interface LanguageServerInfo {
 /**
  * Factory that builds an editor instance into `parent`, given the per-tab config SparqlStudio injects.
  * SparqlStudio is editor-independent: the consumer imports an editor (e.g. `@rdfjs/sparql-editor-monaco` or
- * `@rdfjs/sparql-editor-codemirror`) and supplies one of these as `config.yasqe`.
+ * `@rdfjs/sparql-editor-codemirror`) and supplies one of these as `config.editor`.
  */
 export type SparqlEditorFactory = (parent: HTMLElement, conf: any) => IEditor;
 

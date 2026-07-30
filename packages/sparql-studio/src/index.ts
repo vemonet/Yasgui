@@ -39,7 +39,7 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
   //The function allows us to modify the config before we pass it on to a tab
   populateFromUrl: boolean | ((configFromUrl: PersistedTabJson) => PersistedTabJson);
   autoAddOnInit: boolean;
-  persistenceId: ((yasgui: SparqlStudio) => string) | string | null;
+  persistenceId: ((sparqlStudio: SparqlStudio) => string) | string | null;
   persistenceLabelConfig: string;
   persistenceLabelResponse: string;
   persistencyExpire: number;
@@ -59,9 +59,9 @@ export interface Config<EndpointObject extends CatalogueItem = CatalogueItem> {
    * Called whenever the active SPARQL endpoint changes (on load, tab switch, or endpoint edit),
    * with this SparqlStudio instance and the new endpoint. Defined once here, it applies to every tab.
    * Typical use: configure the language server for that endpoint, e.g.
-   *   onEndpointChange: (yasgui, endpoint) => myConfigureBackend(yasgui.yasqe?.getLanguageClient(), endpoint)
+   *   onEndpointChange: (sparqlStudio, endpoint) => myConfigureBackend(sparqlStudio.editor?.getLanguageClient(), endpoint)
    */
-  onEndpointChange?: (yasgui: SparqlStudio, endpoint: string) => void;
+  onEndpointChange?: (sparqlStudio: SparqlStudio, endpoint: string) => void;
 }
 export type PartialConfig = DeepPartial<Config>;
 
@@ -134,7 +134,7 @@ export class SparqlStudio extends EventEmitter {
     this.rootEl.appendChild(this.tabElements.drawTabsList());
     this.rootEl.appendChild(this.tabPanelsEl);
     // Create the single shared Monaco editor before any tab is drawn/shown.
-    this.initGlobalYasqe();
+    this.initGlobalEditor();
     let executeIdAfterInit: string | undefined;
     let optionsFromUrl: PersistedTabJson | undefined;
     if (this.config.populateFromUrl) {
@@ -143,10 +143,10 @@ export class SparqlStudio extends EventEmitter {
         const tabId = this.findTabIdForConfig(optionsFromUrl);
         if (tabId) {
           // when a config is already present,
-          const persistentYasr = this.persistentConfig.getTab(tabId).yasr;
-          this.persistentConfig.getTab(tabId).yasr = {
+          const persistentYasr = this.persistentConfig.getTab(tabId).results;
+          this.persistentConfig.getTab(tabId).results = {
             // Override the settings
-            settings: optionsFromUrl.yasr.settings,
+            settings: optionsFromUrl.results.settings,
             // Keep the old response to save data/time
             response: persistentYasr.response,
           };
@@ -191,26 +191,26 @@ export class SparqlStudio extends EventEmitter {
     }
   }
   /** Build the single shared editor (via the consumer factory) and route its events to the active tab. */
-  private initGlobalYasqe() {
+  private initGlobalEditor() {
     if (typeof this.config.editor !== "function") {
       throw new Error(
         "SparqlStudio is editor-independent: import an editor (e.g. @rdfjs/sparql-editor-monaco or @rdfjs/sparql-editor-codemirror) and " +
-          "pass it as the `yasqe` factory, e.g. new SparqlStudio(el, { yasqe: (parent, conf) => new SparqlEditor(parent, conf) })",
+          "pass it as the `editor` factory, e.g. new SparqlStudio(el, { editor: (parent, conf) => new SparqlEditor(parent, conf) })",
       );
     }
     this.yasqeWrapperEl = document.createElement("div");
     // Per-tab config SparqlStudio injects into the editor. Editor-specific options (theme, language
     // server, ...) are the consumer's responsibility, wired inside their factory.
     const yasqeConf = {
-      persistenceId: null, // yasgui handles persistent storing, per tab
-      consumeShareLink: null, // handled by the parent yasgui instance, not yasqe
+      persistenceId: null, // sparqlStudio handles persistent storing, per tab
+      consumeShareLink: null, // handled by the parent sparqlStudio instance, not yasqe
       createShareableLink: () => this.getActiveTab()?.getShareableLink() || "",
       requestConfig: () => (this.getActiveTab()?.getProcessedRequestConfig() ?? {}) as any,
       // SparqlStudio owns language server settings persistence (one set per server, shared across tabs).
       getLanguageServerSettings: (label: string) => this.persistentConfig.getLanguageServerSettings(label),
     };
     this.editor = this.config.editor(this.yasqeWrapperEl, yasqeConf);
-    this.setupGlobalYasqeListeners();
+    this.setupGlobalEditorListeners();
   }
 
   /** Notify the consumer that the active endpoint changed (single SparqlStudio-level hook for all tabs). */
@@ -244,38 +244,38 @@ export class SparqlStudio extends EventEmitter {
     return true;
   }
 
-  private setupGlobalYasqeListeners() {
-    const yasqe = this.editor;
-    if (!yasqe) return;
+  private setupGlobalEditorListeners() {
+    const editor = this.editor;
+    if (!editor) return;
     // SparqlEditor events are emitted instance-first: (yasqe, ...payload). We route them to the active tab.
-    yasqe.on("blur", () => this.getActiveTab()?.handleYasqeBlur(yasqe));
-    yasqe.on("query", () => {
+    editor.on("blur", () => this.getActiveTab()?.handleBlur(editor));
+    editor.on("query", () => {
       const tab = this.getActiveTab();
       this.queryingTab = tab;
-      tab?.handleYasqeQuery(yasqe);
+      tab?.handleQuery(editor);
     });
-    yasqe.on("queryBefore", () => this.getActiveTab()?.handleYasqeQueryBefore());
-    yasqe.on("queryAbort", () => {
-      (this.queryingTab || this.getActiveTab())?.handleYasqeQueryAbort();
+    editor.on("queryBefore", () => this.getActiveTab()?.handleQueryBefore());
+    editor.on("queryAbort", () => {
+      (this.queryingTab || this.getActiveTab())?.handleQueryAbort();
       this.queryingTab = undefined;
     });
-    yasqe.on("resize", (_yasqe: any, newSize: any) => this.getActiveTab()?.handleYasqeResize(yasqe, newSize));
-    yasqe.on("autocompletionShown", (_yasqe: any, widget: any) =>
-      this.getActiveTab()?.handleAutocompletionShown(yasqe, widget),
+    editor.on("resize", (_yasqe: any, newSize: any) => this.getActiveTab()?.handleResize(editor, newSize));
+    editor.on("autocompletionShown", (_yasqe: any, widget: any) =>
+      this.getActiveTab()?.handleAutocompletionShown(editor, widget),
     );
-    yasqe.on("autocompletionClose", () => this.getActiveTab()?.handleAutocompletionClose(yasqe));
-    yasqe.on("queryResponse", (_yasqe: any, response: any, duration: any) => {
-      (this.queryingTab || this.getActiveTab())?.handleQueryResponse(yasqe, response, duration);
+    editor.on("autocompletionClose", () => this.getActiveTab()?.handleAutocompletionClose(editor));
+    editor.on("queryResponse", (_yasqe: any, response: any, duration: any) => {
+      (this.queryingTab || this.getActiveTab())?.handleQueryResponse(editor, response, duration);
       this.queryingTab = undefined;
     });
     // Remember the user's language server choice per endpoint
-    yasqe.on("languageServerChange", (_yasqe: any, def: { label: string }) => {
+    editor.on("languageServerChange", (_yasqe: any, def: { label: string }) => {
       if (this.applyingStoredLs) return;
       const endpoint = this.getActiveTab()?.getEndpoint();
       if (endpoint && def?.label) this.persistentConfig.setLanguageServerForEndpoint(endpoint, def.label);
     });
     // Remember the settings the user applies in a language server's settings panel (one set per server)
-    yasqe.on("languageServerSettingsChange", (_yasqe: any, label: string, values: Record<string, unknown>) => {
+    editor.on("languageServerSettingsChange", (_yasqe: any, label: string, values: Record<string, unknown>) => {
       if (label) this.persistentConfig.setLanguageServerSettings(label, values);
     });
   }
@@ -300,8 +300,8 @@ export class SparqlStudio extends EventEmitter {
   public updateEditorsContent(tab: Tab) {
     if (!this.editor) return;
     const tabConfig = tab.getPersistedJson();
-    this.editor.setValue(tabConfig.yasqe.value);
-    this.editor.setSize(tabConfig.yasqe.editorHeight || this.editor.config.editorHeight);
+    this.editor.setValue(tabConfig.editor.value);
+    this.editor.setSize(tabConfig.editor.editorHeight || this.editor.config.editorHeight);
     this.editor.config.requestConfig = () => tab.getProcessedRequestConfig() as any;
     this.editor.config.createShareableLink = () => tab.getShareableLink();
     this.emitEndpointChange(tab.getEndpoint());
@@ -373,7 +373,7 @@ export class SparqlStudio extends EventEmitter {
   /**
    * Checks if two persistent tab configuration are the same based.
    * It isnt a strict equality, as falsy values (e.g. a header that isnt set in one tabjson) isnt taken into consideration
-   * Things like the yasr response are also not taken into consideration
+   * Things like the sparqlResults response are also not taken into consideration
    * @param tab1 Base comparable object
    * @param tab2 Second comparable object
    */
@@ -394,20 +394,20 @@ export class SparqlStudio extends EventEmitter {
      * Check yasqe settings
      */
     if (sameRequest) {
-      sameRequest = (<Array<keyof PersistedTabJson["yasqe"]>>["endpoint", "value"]).every(
-        (key) => tab1.yasqe[key] === tab2.yasqe[key],
+      sameRequest = (<Array<keyof PersistedTabJson["editor"]>>["endpoint", "value"]).every(
+        (key) => tab1.editor[key] === tab2.editor[key],
       );
     }
 
     /**
-     * Check yasr settings
+     * Check sparqlResults settings
      */
     if (sameRequest) {
       sameRequest =
-        tab1.yasr.settings.selectedPlugin === tab2.yasr.settings.selectedPlugin &&
+        tab1.results.settings.selectedPlugin === tab2.results.settings.selectedPlugin &&
         isEqual(
-          tab1.yasr.settings.pluginsConfig?.[tab1.yasr.settings?.selectedPlugin || ""],
-          tab2.yasr.settings.pluginsConfig?.[tab2.yasr.settings?.selectedPlugin || ""],
+          tab1.results.settings.pluginsConfig?.[tab1.results.settings?.selectedPlugin || ""],
+          tab2.results.settings.pluginsConfig?.[tab2.results.settings?.selectedPlugin || ""],
         );
     }
 
@@ -439,7 +439,7 @@ export class SparqlStudio extends EventEmitter {
     if (panel) this.tabPanelsEl.removeChild(panel);
   }
   /**
-   * Adds a tab to yasgui
+   * Adds a tab to SPARQL Studio
    * @param setActive if the tab should become active when added
    * @param [partialTabConfig]  config to add to the Tab
    * @param [opts] extra options, atIndex, at which position the tab should be added, avoidDuplicateTabs: if the config already exists make that tab active

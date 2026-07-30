@@ -7,9 +7,9 @@ import parse from "autosuggest-highlight/parse";
 import DOMPurify from "dompurify";
 
 //Export this here instead of from our custom-types folder of autocomplete-js
-//as this interface is exported via the yasgui config. The custom typings are
-//not exported as part of the yasgui typings, so we'd get typing errors.
-//instead, include this interface in the yasgui typings itself by defining it here
+//as this interface is exported via the sparqlStudio config. The custom typings are
+//not exported as part of the sparqlStudio typings, so we'd get typing errors.
+//instead, include this interface in the sparqlStudio typings itself by defining it here
 interface AutocompleteItem<T> {
   index: number; //index of suggestion in array of suggestions
   value: T; //suggestion object
@@ -135,7 +135,7 @@ export class EndpointSelect extends EventEmitter {
         render: true,
         destination: this.inputField,
         container: (element) => {
-          // Remove id, there can be multiple yasgui's active on one page, we can't delete since the library will then add the default
+          // Remove id, there can be multiple sparqlStudio's active on one page, we can't delete since the library will then add the default
           element.id = "";
           addClass(element, "autocompleteList");
         },

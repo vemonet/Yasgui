@@ -2,7 +2,7 @@
 
 `requestConfig` controls how queries are sent to the endpoint. It is accepted by both [SparqlEditor](./sparql-editor) and [SparqlStudio](./sparql-studio) (where it sets the default for every tab).
 
-Every field may be a value **or** a `(yasqe) => value` function, so you can compute it per request.
+Every field may be a value **or** a `(sparqlEditor) => value` function, so you can compute it per request.
 
 ```ts
 new SparqlStudio(el, {
@@ -26,7 +26,7 @@ new SparqlStudio(el, {
 | `args` | `[]` | extra `{ name, value }` request args |
 | `headers` | `{}` | extra HTTP headers |
 | `withCredentials` | `false` | send credentials (cookies) with the request |
-| `adjustQueryBeforeRequest` | `false` | `(yasqe) => string` to rewrite the query before sending |
+| `adjustQueryBeforeRequest` | `false` | `(sparqlEditor) => string` to rewrite the query before sending |
 
 ::: tip CORS
 If the endpoint does not return CORS headers, set a `corsProxy` on SparqlStudio rather than fighting the request config. See [SparqlStudio · CORS](./sparql-studio#cors).

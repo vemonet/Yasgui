@@ -1,6 +1,6 @@
 <script lang="ts">
 // Module-level singleton: lives outside setup() so it survives SPA navigations
-let yasgui: any = null;
+let sparqlStudio: any = null;
 </script>
 
 <script setup lang="ts">
@@ -16,7 +16,7 @@ function syncTheme(dark: boolean) {
   const theme = dark ? "dark" : "light";
   // The surrounding chrome CSS keys off [data-theme] on <html>.
   document.documentElement.dataset.theme = theme;
-  yasgui?.editor?.setTheme?.(theme);
+  sparqlStudio?.editor?.setTheme?.(theme);
 }
 
 // isDark is a writable (useDark-backed) ref; flipping it toggles the .dark class,
@@ -38,9 +38,9 @@ onMounted(async () => {
 
   syncTheme(isDark.value);
 
-  if (yasgui) {
+  if (sparqlStudio) {
     // Re-attach the existing rootEl instead of re-initializing Monaco.
-    container.value!.appendChild(yasgui.rootEl);
+    container.value!.appendChild(sparqlStudio.rootEl);
     loading.value = false;
     return;
   }
@@ -55,10 +55,10 @@ onMounted(async () => {
 
   const onReady = (client: any) => {
     qlueLs.configureSettings(client, qlueLs.defaultSettings);
-    qlueLs.configureBackend(client, yasgui?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
+    qlueLs.configureBackend(client, sparqlStudio?.getTab()?.getEndpoint() ?? DEMO_ENDPOINT);
   };
   const onEndpointChange = (client: any, endpoint: string) => qlueLs.configureBackend(client, endpoint);
-  yasgui = new SparqlStudio(container.value!, {
+  sparqlStudio = new SparqlStudio(container.value!, {
     requestConfig: { endpoint: DEMO_ENDPOINT },
     // The editor factory builds a Monaco editor, wiring in the theme + the available LSP workers.
     editor: (parent: HTMLElement, conf: any) =>
@@ -96,27 +96,27 @@ watch(isDark, (dark) => syncTheme(dark));
 
 onBeforeUnmount(() => {
   // Detach from the DOM but keep the instance alive for the next visit.
-  yasgui?.rootEl?.remove();
+  sparqlStudio?.rootEl?.remove();
 });
 </script>
 
 <template>
   <ClientOnly>
-    <div class="yasgui-demo">
-      <div v-show="loading" class="yasgui-demo__loading">Loading the SPARQL editor…</div>
-      <div ref="container" class="yasgui-demo__root"></div>
-      <div class="yasgui-demo__theme-bar">
-        <span class="yasgui-demo__help" tabindex="0" role="button" aria-label="Editor help">
-          <span class="yasgui-demo__help-icon" aria-hidden="true">?</span>
-          <span class="yasgui-demo__help-pop" role="tooltip">
+    <div class="sparql-demo">
+      <div v-show="loading" class="sparql-demo__loading">Loading the SPARQL editor…</div>
+      <div ref="container" class="sparql-demo__root"></div>
+      <div class="sparql-demo__theme-bar">
+        <span class="sparql-demo__help" tabindex="0" role="button" aria-label="Editor help">
+          <span class="sparql-demo__help-icon" aria-hidden="true">?</span>
+          <span class="sparql-demo__help-pop" role="tooltip">
             <strong>Using Monaco editor.</strong>
             Right-click in the editor to see the actions menu.<br />
             Change and configure the language server from there.
           </span>
         </span>
-        <a class="yasgui-demo__nav-btn" :href="withBase('/codemirror')">CodeMirror editor</a>
+        <a class="sparql-demo__nav-btn" :href="withBase('/codemirror')">CodeMirror editor</a>
         <button
-          class="yasgui-demo__theme-toggle"
+          class="sparql-demo__theme-toggle"
           :title="isDark ? 'Switch to light theme' : 'Switch to dark theme'"
           :aria-label="isDark ? 'Switch to light theme' : 'Switch to dark theme'"
           @click="toggleTheme"
@@ -133,22 +133,22 @@ onBeforeUnmount(() => {
       </div>
     </div>
     <template #fallback>
-      <div class="yasgui-demo">
-        <div class="yasgui-demo__loading">Loading the SPARQL editor…</div>
+      <div class="sparql-demo">
+        <div class="sparql-demo__loading">Loading the SPARQL editor…</div>
       </div>
     </template>
   </ClientOnly>
 </template>
 
 <style scoped>
-.yasgui-demo {
+.sparql-demo {
   width: 100%;
   min-height: 70vh;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
 }
-.yasgui-demo__theme-bar {
+.sparql-demo__theme-bar {
   margin-top: auto;
   display: flex;
   align-items: center;
@@ -156,7 +156,7 @@ onBeforeUnmount(() => {
   gap: 10px;
   padding: 12px 14px;
 }
-.yasgui-demo__help {
+.sparql-demo__help {
   position: relative;
   width: 34px;
   height: 34px;
@@ -171,17 +171,17 @@ onBeforeUnmount(() => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   transition: border-color 0.2s, color 0.2s;
 }
-.yasgui-demo__help:hover,
-.yasgui-demo__help:focus-visible {
+.sparql-demo__help:hover,
+.sparql-demo__help:focus-visible {
   border-color: var(--vp-c-brand-1);
   color: var(--vp-c-brand-1);
 }
-.yasgui-demo__help-icon {
+.sparql-demo__help-icon {
   font-size: 16px;
   font-weight: 700;
   line-height: 1;
 }
-.yasgui-demo__help-pop {
+.sparql-demo__help-pop {
   position: absolute;
   bottom: calc(100% + 10px);
   left: 0;
@@ -201,17 +201,17 @@ onBeforeUnmount(() => {
   transition: opacity 0.15s;
   z-index: 1100;
 }
-.yasgui-demo__help:hover .yasgui-demo__help-pop,
-.yasgui-demo__help:focus-within .yasgui-demo__help-pop {
+.sparql-demo__help:hover .sparql-demo__help-pop,
+.sparql-demo__help:focus-within .sparql-demo__help-pop {
   opacity: 1;
   visibility: visible;
 }
-.yasgui-demo__help-pop strong {
+.sparql-demo__help-pop strong {
   display: block;
   margin-bottom: 4px;
   color: var(--vp-c-text-1);
 }
-.yasgui-demo__nav-btn {
+.sparql-demo__nav-btn {
   height: 34px;
   display: inline-flex;
   align-items: center;
@@ -227,11 +227,11 @@ onBeforeUnmount(() => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   transition: border-color 0.2s, color 0.2s;
 }
-.yasgui-demo__nav-btn:hover {
+.sparql-demo__nav-btn:hover {
   border-color: var(--vp-c-brand-1);
   color: var(--vp-c-brand-1);
 }
-.yasgui-demo__theme-toggle {
+.sparql-demo__theme-toggle {
   width: 34px;
   height: 34px;
   display: inline-flex;
@@ -245,16 +245,16 @@ onBeforeUnmount(() => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
   transition: border-color 0.2s, color 0.2s;
 }
-.yasgui-demo__theme-toggle:hover {
+.sparql-demo__theme-toggle:hover {
   border-color: var(--vp-c-brand-1);
   color: var(--vp-c-brand-1);
 }
-.yasgui-demo__theme-toggle svg {
+.sparql-demo__theme-toggle svg {
   width: 18px;
   height: 18px;
   fill: currentColor;
 }
-.yasgui-demo__loading {
+.sparql-demo__loading {
   display: flex;
   align-items: center;
   justify-content: center;

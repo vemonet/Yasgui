@@ -25,14 +25,30 @@ function getDefaults(): PersistedJson {
   };
 }
 
+/**
+ * In-place, idempotent migration of legacy (Yasgui-era) per-tab keys `yasqe`/`yasr`
+ * to the current `editor`/`results`. Applied to every stored tab and the last-closed tab.
+ */
+function migrateLegacyTabKeys(json: PersistedJson) {
+  const migrateTab = (tab: any) => {
+    if (!tab || typeof tab !== "object") return;
+    if (tab.yasqe !== undefined && tab.editor === undefined) tab.editor = tab.yasqe;
+    if (tab.yasr !== undefined && tab.results === undefined) tab.results = tab.yasr;
+    delete tab.yasqe;
+    delete tab.yasr;
+  };
+  if (json.tabConfig) Object.keys(json.tabConfig).forEach((id) => migrateTab(json.tabConfig[id]));
+  if (json.lastClosedTab?.tab) migrateTab(json.lastClosedTab.tab);
+}
+
 export default class PersistentConfig {
   private persistedJson!: PersistedJson;
   private storageId: string | undefined;
-  private yasgui: SparqlStudio;
+  private sparqlStudio: SparqlStudio;
   private storage: YStorage;
-  constructor(yasgui: SparqlStudio) {
-    this.yasgui = yasgui;
-    this.storageId = this.yasgui.getStorageId(this.yasgui.config.persistenceLabelConfig);
+  constructor(sparqlStudio: SparqlStudio) {
+    this.sparqlStudio = sparqlStudio;
+    this.storageId = this.sparqlStudio.getStorageId(this.sparqlStudio.config.persistenceLabelConfig);
     this.storage = new YStorage(storageNamespace);
     this.fromStorage();
     this.registerListeners();
@@ -104,11 +120,11 @@ export default class PersistentConfig {
     this.toStorage();
   }
   private registerListeners() {
-    this.yasgui.on("tabChange", (_yasgui, tab) => {
+    this.sparqlStudio.on("tabChange", (_sparqlStudio, tab) => {
       this.persistedJson.tabConfig[tab.getId()] = tab.getPersistedJson();
       this.toStorage();
     });
-    this.yasgui.on("endpointHistoryChange", (_yasgui, history) => {
+    this.sparqlStudio.on("endpointHistoryChange", (_sparqlStudio, history) => {
       this.persistedJson.endpointHistory = history;
       this.toStorage();
     });
@@ -118,12 +134,18 @@ export default class PersistentConfig {
     this.storage.set(
       this.storageId,
       this.persistedJson,
-      this.yasgui.config.persistencyExpire,
+      this.sparqlStudio.config.persistencyExpire,
       this.handleLocalStorageQuotaFull,
     );
   }
   private fromStorage(): PersistedJson {
     this.persistedJson = this.storage.get<PersistedJson>(this.storageId) || getDefaults();
+    /**
+     * Migrate persisted state written by older (Yasgui-era) versions: the per-tab keys used to be
+     * `yasqe` / `yasr`; they are now `editor` / `results`. Runs in place and is idempotent, so a
+     * user's saved tabs, queries and last results survive the upgrade.
+     */
+    migrateLegacyTabKeys(this.persistedJson);
     /**
      * Modify some settings for backwards compatability
      */

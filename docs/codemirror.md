@@ -1,11 +1,11 @@
 ---
 layout: page
-pageClass: yasgui-home
+pageClass: sparql-studio-home
 sidebar: false
 aside: false
 navbar: false
 ---
 
-<div class="yasgui-home-demo">
+<div class="sparql-studio-home-demo">
   <YasguiCmDemo />
 </div>

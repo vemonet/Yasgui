@@ -12,7 +12,7 @@ import * as queryString from "query-string";
 import type { IEditor, RequestConfig, RequestArgs } from "./yasqe";
 
 /** A request config, or a function returning one (resolved against the editor at request time). */
-export type YasqeAjaxConfig = RequestConfig<IEditor> | ((yasqe: IEditor) => RequestConfig<IEditor>);
+export type EditorAjaxConfig = RequestConfig<IEditor> | ((yasqe: IEditor) => RequestConfig<IEditor>);
 
 /** A fully-resolved request, ready to be turned into a `fetch` call. */
 export interface PopulatedAjaxConfig {
@@ -24,42 +24,42 @@ export interface PopulatedAjaxConfig {
   withCredentials: boolean;
 }
 
-function getRequestConfigSettings(yasqe: IEditor, conf?: YasqeAjaxConfig): RequestConfig<IEditor> {
+function getRequestConfigSettings(editor: IEditor, conf?: EditorAjaxConfig): RequestConfig<IEditor> {
   if (isFunction(conf)) {
-    return conf(yasqe) as RequestConfig<IEditor>;
+    return conf(editor) as RequestConfig<IEditor>;
   }
   return (conf ?? {}) as RequestConfig<IEditor>;
 }
 
-export function getAjaxConfig(yasqe: IEditor, _config?: YasqeAjaxConfig): PopulatedAjaxConfig | undefined {
+export function getAjaxConfig(editor: IEditor, _config?: EditorAjaxConfig): PopulatedAjaxConfig | undefined {
   const config: RequestConfig<IEditor> = merge(
     {},
-    getRequestConfigSettings(yasqe, yasqe.config.requestConfig as YasqeAjaxConfig),
-    getRequestConfigSettings(yasqe, _config),
+    getRequestConfigSettings(editor, editor.config.requestConfig as EditorAjaxConfig),
+    getRequestConfigSettings(editor, _config),
   );
   if (!config.endpoint || config.endpoint.length == 0) return; // nothing to query!
 
-  const queryMode = yasqe.getQueryMode();
-  const endpoint = isFunction(config.endpoint) ? config.endpoint(yasqe) : config.endpoint;
+  const queryMode = editor.getQueryMode();
+  const endpoint = isFunction(config.endpoint) ? config.endpoint(editor) : config.endpoint;
   const reqMethod: "GET" | "POST" =
-    queryMode == "update" ? "POST" : isFunction(config.method) ? config.method(yasqe) : config.method;
-  const headers = isFunction(config.headers) ? config.headers(yasqe) : config.headers;
-  const withCredentials = isFunction(config.withCredentials) ? config.withCredentials(yasqe) : config.withCredentials;
+    queryMode == "update" ? "POST" : isFunction(config.method) ? config.method(editor) : config.method;
+  const headers = isFunction(config.headers) ? config.headers(editor) : config.headers;
+  const withCredentials = isFunction(config.withCredentials) ? config.withCredentials(editor) : config.withCredentials;
   return {
     reqMethod,
     url: endpoint,
-    args: getUrlArguments(yasqe, config),
+    args: getUrlArguments(editor, config),
     headers: headers,
-    accept: getAcceptHeader(yasqe, config),
+    accept: getAcceptHeader(editor, config),
     withCredentials,
   };
 }
 
-export async function executeQuery(yasqe: IEditor, config?: YasqeAjaxConfig): Promise<any> {
+export async function executeQuery(editor: IEditor, config?: EditorAjaxConfig): Promise<any> {
   const queryStart = Date.now();
   try {
-    yasqe.emit("queryBefore", config);
-    const populatedConfig = getAjaxConfig(yasqe, config);
+    editor.emit("queryBefore", config);
+    const populatedConfig = getAjaxConfig(editor, config);
     if (!populatedConfig) {
       return; // Nothing to query
     }
@@ -96,7 +96,7 @@ export async function executeQuery(yasqe: IEditor, config?: YasqeAjaxConfig): Pr
       populatedConfig.url = url.toString();
     }
     const request = new Request(populatedConfig.url, fetchOptions);
-    yasqe.emit("query", request, abortController);
+    editor.emit("query", request, abortController);
     const response = await fetch(request);
     if (!response.ok) {
       throw new Error((await response.text()) || response.statusText);
@@ -110,21 +110,21 @@ export async function executeQuery(yasqe: IEditor, config?: YasqeAjaxConfig): Pr
       type: response.type,
       content: await response.text(),
     };
-    yasqe.emit("queryResponse", queryResponse, Date.now() - queryStart);
-    yasqe.emit("queryResults", queryResponse.content, Date.now() - queryStart);
+    editor.emit("queryResponse", queryResponse, Date.now() - queryStart);
+    editor.emit("queryResults", queryResponse.content, Date.now() - queryStart);
     return queryResponse;
   } catch (e) {
     if (e instanceof Error && e.message === "Aborted") {
       // The query was aborted. We should not do or draw anything
     } else {
-      yasqe.emit("queryResponse", e, Date.now() - queryStart);
+      editor.emit("queryResponse", e, Date.now() - queryStart);
     }
-    yasqe.emit("error", e);
+    editor.emit("error", e);
     throw e;
   }
 }
 
-export function getUrlArguments(yasqe: IEditor, _config?: YasqeAjaxConfig): RequestArgs {
+export function getUrlArguments(yasqe: IEditor, _config?: EditorAjaxConfig): RequestArgs {
   const queryMode = yasqe.getQueryMode();
 
   const data: RequestArgs = {};
@@ -165,7 +165,7 @@ export function getUrlArguments(yasqe: IEditor, _config?: YasqeAjaxConfig): Requ
   return data;
 }
 
-export function getAcceptHeader(yasqe: IEditor, _config?: YasqeAjaxConfig) {
+export function getAcceptHeader(yasqe: IEditor, _config?: EditorAjaxConfig) {
   const config: RequestConfig<IEditor> = getRequestConfigSettings(yasqe, _config);
   let acceptHeader = null;
   if (yasqe.getQueryMode() == "update") {
@@ -183,7 +183,7 @@ export function getAcceptHeader(yasqe: IEditor, _config?: YasqeAjaxConfig) {
   return acceptHeader;
 }
 
-export function getAsCurlString(yasqe: IEditor, _config?: YasqeAjaxConfig): string {
+export function getAsCurlString(yasqe: IEditor, _config?: EditorAjaxConfig): string {
   const ajaxConfig = getAjaxConfig(yasqe, getRequestConfigSettings(yasqe, _config));
   if (!ajaxConfig) return "";
   let url = ajaxConfig.url;

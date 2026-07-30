@@ -60,7 +60,7 @@ export class SparqlResults extends EventEmitter {
     super();
     if (!parent) throw new Error("No parent passed as argument. Dont know where to draw YASR");
     this.rootEl = document.createElement("div");
-    this.rootEl.className = "yasr";
+    this.rootEl.className = "sparql-results";
     parent.appendChild(this.rootEl);
     this.config = merge({}, SparqlResults.defaults, conf);
 
@@ -68,13 +68,13 @@ export class SparqlResults extends EventEmitter {
     this.storage = new YStorage(SparqlResults.storageNamespace);
     this.getConfigFromStorage();
     this.headerEl = document.createElement("div");
-    this.headerEl.className = "yasr_header";
+    this.headerEl.className = "sparql-results_header";
     this.rootEl.appendChild(this.headerEl);
     this.fallbackInfoEl = document.createElement("div");
-    this.fallbackInfoEl.className = "yasr_fallback_info";
+    this.fallbackInfoEl.className = "sparql-results_fallback_info";
     this.rootEl.appendChild(this.fallbackInfoEl);
     this.resultsEl = document.createElement("div");
-    this.resultsEl.className = "yasr_results";
+    this.resultsEl.className = "sparql-results_results";
     this.resultsEl.id = uniqueId("resultsId");
     this.rootEl.appendChild(this.resultsEl);
     this.initializePlugins();
@@ -142,7 +142,9 @@ export class SparqlResults extends EventEmitter {
     if (this.plugins[this.getSelectedPluginName()]) {
       return this.plugins[this.getSelectedPluginName()];
     }
-    console.warn(`Tried using plugin ${this.getSelectedPluginName()}, but seems this plugin isnt registered in yasr.`);
+    console.warn(
+      `Tried using plugin ${this.getSelectedPluginName()}, but seems this plugin isnt registered in SPARQL Results.`,
+    );
   }
   /**
    * Update selectors, based on whether they can actuall draw something, and which plugin is currently selected
@@ -275,7 +277,7 @@ export class SparqlResults extends EventEmitter {
   private pluginSelectorsEl!: HTMLUListElement;
   drawPluginSelectors() {
     this.pluginSelectorsEl = document.createElement("ul");
-    this.pluginSelectorsEl.className = "yasr_btnGroup";
+    this.pluginSelectorsEl.className = "sparql-results_btnGroup";
     const pluginOrder = this.config.pluginOrder;
     Object.keys(this.config.plugins)
       .sort()
@@ -292,7 +294,7 @@ export class SparqlResults extends EventEmitter {
       if (plugin.hideFromSelection) continue;
       const name = plugin.label || pluginName;
       const button = document.createElement("button");
-      addClass(button, "yasr_btn", "select_" + pluginName);
+      addClass(button, "sparql-results_btn", "select_" + pluginName);
       button.title = name;
       button.type = "button";
       button.setAttribute("aria-label", `Shows ${name} view`);
@@ -349,8 +351,8 @@ export class SparqlResults extends EventEmitter {
     addClass(spaceElement, "space_element");
     this.headerEl.appendChild(spaceElement);
     this.pluginControls = document.createElement("div");
-    this.pluginControls.setAttribute("id", "yasr_plugin_control");
-    addClass(this.pluginControls, "yasr_plugin_control");
+    this.pluginControls.setAttribute("id", "sparql-results_plugin_control");
+    addClass(this.pluginControls, "sparql-results_plugin_control");
     this.pluginControls.setAttribute("aria-controls", this.resultsEl.id);
     this.headerEl.appendChild(this.pluginControls);
   }
@@ -365,7 +367,7 @@ export class SparqlResults extends EventEmitter {
   private downloadBtn: HTMLAnchorElement | undefined;
   private drawDownloadIcon() {
     this.downloadBtn = document.createElement("a");
-    addClass(this.downloadBtn, "yasr_btn", "yasr_downloadIcon", "btn_icon");
+    addClass(this.downloadBtn, "sparql-results_btn", "sparql-results_downloadIcon", "btn_icon");
     this.downloadBtn.download = ""; // should default to the file name of the blob
     this.downloadBtn.setAttribute("aria-label", "Download Results");
     this.downloadBtn.setAttribute("tabindex", "0"); // anchor elements with no href are not automatically included in the tabindex
@@ -390,7 +392,7 @@ export class SparqlResults extends EventEmitter {
   private dataElement!: HTMLDivElement;
   private drawResponseInfo() {
     this.dataElement = document.createElement("div");
-    addClass(this.dataElement, "yasr_response_chip");
+    addClass(this.dataElement, "sparql-results_response_chip");
     this.headerEl.appendChild(this.dataElement);
     this.updateResponseInfo();
   }
@@ -447,9 +449,9 @@ export class SparqlResults extends EventEmitter {
   private documentationLink!: HTMLAnchorElement;
   private drawDocumentationButton() {
     this.documentationLink = document.createElement("a");
-    addClass(this.documentationLink, "yasr_btn", "yasr_external_ref_btn");
+    addClass(this.documentationLink, "sparql-results_btn", "sparql-results_external_ref_btn");
     this.documentationLink.appendChild(drawSvgStringAsElement(drawFontAwesomeIconAsSvg(faQuestionCircle)));
-    this.documentationLink.href = "https://docs.triply.cc/yasgui/";
+    this.documentationLink.href = "https://sparql.studio/docs/introduction";
     this.documentationLink.target = "_blank";
     this.documentationLink.rel = "noopener noreferrer";
     this.headerEl.appendChild(this.documentationLink); // We can do this as long as the help-element is the last item in the row
@@ -570,7 +572,7 @@ export interface PluginConfig {
   enabled?: boolean;
 }
 export interface Config {
-  persistenceId: ((yasr: SparqlResults) => string) | string | null;
+  persistenceId: ((sparqlResults: SparqlResults) => string) | string | null;
   persistenceLabelResponse: string;
   persistenceLabelConfig: string;
   maxPersistentResponseSize: number;
@@ -581,7 +583,7 @@ export interface Config {
   pluginOrder: string[];
   defaultPlugin: string;
 
-  prefixes: Prefixes | ((yasr: SparqlResults) => Prefixes);
+  prefixes: Prefixes | ((sparqlResults: SparqlResults) => Prefixes);
 
   /**
    * Custom renderers for errors.

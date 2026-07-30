@@ -12,28 +12,28 @@ const check =
   '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" x="0" y="0" width="30" height="30" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve"><path d="M14.301,49.982l22.606,17.047L84.361,4.903c2.614-3.733,7.76-4.64,11.493-2.026l0.627,0.462 c3.732,2.614,4.64,7.758,2.025,11.492l-51.783,79.77c-1.955,2.791-3.896,3.762-7.301,3.988c-3.405,0.225-5.464-1.039-7.508-3.084 L2.447,61.814c-3.263-3.262-3.263-8.553,0-11.814l0.041-0.019C5.75,46.718,11.039,46.718,14.301,49.982z"/></svg>';
 
 export default class Boolean implements Plugin<PluginConfig> {
-  private yasr: SparqlResults;
+  private sparqlResults: SparqlResults;
   public priority = 10;
   hideFromSelection = true;
-  constructor(yasr: SparqlResults) {
-    this.yasr = yasr;
+  constructor(sparqlResults: SparqlResults) {
+    this.sparqlResults = sparqlResults;
   }
   draw() {
     const el = document.createElement("div");
     el.className = "booleanResult";
 
-    const boolVal = this.yasr.results?.getBoolean();
+    const boolVal = this.sparqlResults.results?.getBoolean();
     el.appendChild(drawSvgStringAsElement(boolVal ? check : cross));
     const textEl = document.createElement("span");
     textEl.textContent = boolVal ? "True" : "False";
     el.appendChild(textEl);
 
-    this.yasr.resultsEl.appendChild(el);
+    this.sparqlResults.resultsEl.appendChild(el);
   }
   canHandleResults() {
     return (
-      !!this.yasr.results?.getBoolean &&
-      (this.yasr.results.getBoolean() === true || this.yasr.results.getBoolean() == false)
+      !!this.sparqlResults.results?.getBoolean &&
+      (this.sparqlResults.results.getBoolean() === true || this.sparqlResults.results.getBoolean() == false)
     );
   }
   getIcon() {

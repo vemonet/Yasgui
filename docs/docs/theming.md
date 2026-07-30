@@ -17,7 +17,7 @@ The built-in CSS auto-adapts to dark mode:
 ```ts
 function setTheme(theme: "light" | "dark") {
   document.documentElement.dataset.theme = theme; // drives the chrome CSS
-  yasgui.editor?.setTheme(theme);                   // drives the Monaco editor
+  sparqlStudio.editor?.setTheme(theme);                   // drives the Monaco editor
 }
 ```
 

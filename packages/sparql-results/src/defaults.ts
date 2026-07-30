@@ -1,11 +1,11 @@
 import { Config } from "./";
 export default function get(): Config {
   return {
-    persistenceId: function (yasr) {
+    persistenceId: function (sparqlResults) {
       //Traverse parents untl we've got an id
       // Get matching parent elements
       var id = "";
-      var elem: any = yasr.rootEl;
+      var elem: any = sparqlResults.rootEl;
       if ((<any>elem).id) id = (<any>elem).id;
       for (; elem && elem !== <any>document; elem = elem.parentNode) {
         if (elem) {
@@ -13,7 +13,7 @@ export default function get(): Config {
           break;
         }
       }
-      return "yasr_" + id;
+      return "sparql-results_" + id;
     },
     getPlainQueryLinkToEndpoint: undefined,
     persistencyExpire: 60 * 60 * 24 * 30,

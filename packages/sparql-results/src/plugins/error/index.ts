@@ -7,19 +7,19 @@ import { addClass } from "@rdfjs/sparql-utils";
 import "./index.scss";
 
 export default class Error implements Plugin<never> {
-  private yasr: SparqlResults;
-  constructor(yasr: SparqlResults) {
-    this.yasr = yasr;
+  private sparqlResults: SparqlResults;
+  constructor(sparqlResults: SparqlResults) {
+    this.sparqlResults = sparqlResults;
   }
   canHandleResults() {
-    return !!this.yasr.results && !!this.yasr.results.getError();
+    return !!this.sparqlResults.results && !!this.sparqlResults.results.getError();
   }
   private getTryBtn(link: string) {
     const tryBtn = document.createElement("a");
     tryBtn.href = link;
     tryBtn.rel = "noopener noreferrer";
     tryBtn.target = "_blank";
-    tryBtn.className = "yasr_tryQuery";
+    tryBtn.className = "sparql-results_tryQuery";
     tryBtn.textContent = "Try query in a new browser window";
     return tryBtn;
   }
@@ -57,16 +57,16 @@ export default class Error implements Plugin<never> {
   async draw() {
     const el = document.createElement("div");
     el.className = "errorResult";
-    this.yasr.resultsEl.appendChild(el);
+    this.sparqlResults.resultsEl.appendChild(el);
 
-    const error = this.yasr.results?.getError();
+    const error = this.sparqlResults.results?.getError();
     if (!error) return;
     const header = document.createElement("div");
     header.className = "errorHeader";
     el.appendChild(header);
 
     // Try whether a custom rendering of the error exists
-    const newMessage = await this.yasr.renderError(error);
+    const newMessage = await this.sparqlResults.renderError(error);
     if (newMessage) {
       const customMessage = document.createElement("div");
       customMessage.className = "redOutline";
@@ -88,8 +88,8 @@ export default class Error implements Plugin<never> {
       statusTextEl.textContent = statusText;
 
       header.appendChild(statusTextEl);
-      if (this.yasr.config.getPlainQueryLinkToEndpoint) {
-        const link = this.yasr.config.getPlainQueryLinkToEndpoint();
+      if (this.sparqlResults.config.getPlainQueryLinkToEndpoint) {
+        const link = this.sparqlResults.config.getPlainQueryLinkToEndpoint();
         if (link) header.appendChild(this.getTryBtn(link));
       }
 
@@ -103,8 +103,8 @@ export default class Error implements Plugin<never> {
         textContainer.appendChild(errTextEl);
       }
     } else {
-      if (this.yasr.config.getPlainQueryLinkToEndpoint) {
-        const link = this.yasr.config.getPlainQueryLinkToEndpoint();
+      if (this.sparqlResults.config.getPlainQueryLinkToEndpoint) {
+        const link = this.sparqlResults.config.getPlainQueryLinkToEndpoint();
         if (link) header.appendChild(this.getTryBtn(link));
       }
       if (!error.text || error.text.indexOf("Request has been terminated") >= 0) {

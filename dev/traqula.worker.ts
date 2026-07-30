@@ -1,7 +1,7 @@
 /**
  * Traqula SPARQL 1.2 language server running as a Web Worker.
  *
- * Consumer-side config: yasqe is language server agnostic and just receives this worker.
+ * Consumer-side config: `sparqlEditor` is language server agnostic and just receives this worker.
  * This is a pure-JS parser (no WASM): it runs the @traqula SPARQL 1.2 parser on every document
  * change and reports syntax errors as LSP diagnostics. It provides no completions.
  */

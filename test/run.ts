@@ -6,15 +6,15 @@ import * as http from "http";
 import * as chai from "chai";
 import { it, describe, before, beforeEach, after, afterEach } from "mocha";
 const expect = chai.expect;
-import Yasqe from "@rdfjs/sparql-editor-monaco";
+import SparqlEditor from "@rdfjs/sparql-editor-monaco";
 import { setup, destroy, closePage, getPage, wait } from "./utils";
 
 declare var window: Window & {
-  Yasqe: typeof Yasqe;
-  yasqe: Yasqe;
+  SparqlEditor: typeof SparqlEditor;
+  sparqlEditor: SparqlEditor;
 };
 
-describe("Yasqe", function () {
+describe("SparqlEditor", function () {
   // Define global variables
   let browser: puppeteer.Browser;
   let page: puppeteer.Page;
@@ -27,7 +27,7 @@ describe("Yasqe", function () {
    */
   async function type(text: string) {
     await page.keyboard.type(text);
-    await page.waitForFunction(`window.yasqe.getValue().indexOf("${text}") >= 0`, { timeout: 600 });
+    await page.waitForFunction(`window.sparqlEditor.getValue().indexOf("${text}") >= 0`, { timeout: 600 });
   }
   before(async function () {
     const refs = await setup(this, path.resolve("./build"));
@@ -39,7 +39,7 @@ describe("Yasqe", function () {
     page = await getPage(browser, "editor.html");
     await page.evaluate(() => localStorage.clear());
     // Wait for the Monaco editor async init to finish (editor is created in initEditor() which is not awaited in the constructor)
-    await page.waitForFunction(() => !!(window as any).yasqe?.editor, { timeout: 15000 });
+    await page.waitForFunction(() => !!(window as any).sparqlEditor?.editor, { timeout: 15000 });
   });
 
   afterEach(async () => {
@@ -52,7 +52,7 @@ describe("Yasqe", function () {
 
   it("get a value", async function () {
     const value = await page.evaluate(() => {
-      return window.yasqe.getValue();
+      return window.sparqlEditor.getValue();
     });
     expect(value).to.contain("SELECT");
   });
@@ -85,7 +85,7 @@ describe("Yasqe", function () {
     beforeEach(async function () {
       this.timeout(15000);
       // qlue-ls logs "initialization completed" once ready; poll until language client is live
-      await page.waitForFunction(() => !!(window as any).yasqe?.getLanguageClient?.(), {
+      await page.waitForFunction(() => !!(window as any).sparqlEditor?.getLanguageClient?.(), {
         timeout: 12000,
         polling: 200,
       });
@@ -94,13 +94,13 @@ describe("Yasqe", function () {
     it("With literal", async function () {
       this.timeout(10000);
       const value = await page.evaluate(async () => {
-        window.yasqe.setValue(
+        window.sparqlEditor.setValue(
           `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> select * {   ?a rdf:b ?c ;     rdf:d "e" ;     rdf:f rdf:g .}`,
         );
         await new Promise((r) => setTimeout(r, 400));
-        await window.yasqe.editor?.getAction("editor.action.formatDocument")?.run();
+        await window.sparqlEditor.editor?.getAction("editor.action.formatDocument")?.run();
         await new Promise((r) => setTimeout(r, 1000));
-        return window.yasqe.getValue();
+        return window.sparqlEditor.getValue();
       });
       expect(value).to.equal(
         `PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nSELECT * {\n  ?a rdf:b ?c ;\n     rdf:d "e" ;\n     rdf:f rdf:g .\n}`,
@@ -109,11 +109,11 @@ describe("Yasqe", function () {
     it("With group concat", async function () {
       this.timeout(10000);
       const value = await page.evaluate(async () => {
-        window.yasqe.setValue(`select (group_concat(str(?a); separator='" "') as ?b) { }`);
+        window.sparqlEditor.setValue(`select (group_concat(str(?a); separator='" "') as ?b) { }`);
         await new Promise((r) => setTimeout(r, 400));
-        await window.yasqe.editor?.getAction("editor.action.formatDocument")?.run();
+        await window.sparqlEditor.editor?.getAction("editor.action.formatDocument")?.run();
         await new Promise((r) => setTimeout(r, 1000));
-        return window.yasqe.getValue();
+        return window.sparqlEditor.getValue();
       });
       expect(value).to.equal(`SELECT (GROUP_CONCAT(STR(?a); SEPARATOR='" "') AS ?b) {}`);
     });
@@ -124,7 +124,7 @@ describe("Yasqe", function () {
     // Each test gets a fresh page; wait for LSP per-page.
     beforeEach(async function () {
       this.timeout(15000);
-      await page.waitForFunction(() => !!(window as any).yasqe?.getLanguageClient?.(), {
+      await page.waitForFunction(() => !!(window as any).sparqlEditor?.getLanguageClient?.(), {
         timeout: 12000,
         polling: 200,
       });
@@ -136,16 +136,16 @@ describe("Yasqe", function () {
       this.timeout(10000);
       const query = `# prefix #\nPREFIX geo: <http://www.opengis.net/ont/geosparql#> select\n* where { `;
       await page.evaluate((q: string) => {
-        window.yasqe.setValue(q);
-        window.yasqe.focus();
-        const m = window.yasqe.editor?.getModel();
+        window.sparqlEditor.setValue(q);
+        window.sparqlEditor.focus();
+        const m = window.sparqlEditor.editor?.getModel();
         const lastLine = m?.getLineCount() ?? 1;
         // Move to end of last line so "foaf:" is typed in SPARQL triple position
-        window.yasqe.editor?.setPosition({ lineNumber: lastLine, column: m?.getLineMaxColumn(lastLine) ?? 1 });
+        window.sparqlEditor.editor?.setPosition({ lineNumber: lastLine, column: m?.getLineMaxColumn(lastLine) ?? 1 });
       }, query);
       await type("foaf:");
       await page.waitForFunction(
-        () => window.yasqe.getValue().indexOf("PREFIX foaf: <http://xmlns.com/foaf/0.1/>") >= 0,
+        () => window.sparqlEditor.getValue().indexOf("PREFIX foaf: <http://xmlns.com/foaf/0.1/>") >= 0,
         { polling: 10, timeout: 5000 },
       );
     });
@@ -155,14 +155,14 @@ describe("Yasqe", function () {
     // it.skip("should show prefix completions after adding new prefix", async () => {
     //   await page.evaluate(() => {
     //     const query = `# prefix #\nPREFIX geo: <http://www.opengis.net/ont/geosparql#> select\n* where { ?sub `;
-    //     window.yasqe.setValue(query);
-    //     window.yasqe.focus();
-    //     const m = window.yasqe.editor.getModel();
+    //     window.sparqlEditor.setValue(query);
+    //     window.sparqlEditor.focus();
+    //     const m = window.sparqlEditor.editor.getModel();
     //     const lastLine = m.getLineCount();
-    //     window.yasqe.editor.setPosition({ lineNumber: lastLine, column: m.getLineMaxColumn(lastLine) });
+    //     window.sparqlEditor.editor.setPosition({ lineNumber: lastLine, column: m.getLineMaxColumn(lastLine) });
     //   });
     //   await type("testa:");
-    //   await page.waitForFunction(() => window.yasqe.getValue().indexOf("PREFIX testa: <https://test.a.com/>") >= 0, {
+    //   await page.waitForFunction(() => window.sparqlEditor.getValue().indexOf("PREFIX testa: <https://test.a.com/>") >= 0, {
     //     polling: 10,
     //   });
     //   await waitForAutocompletionPopup();
@@ -172,14 +172,14 @@ describe("Yasqe", function () {
     // it.skip("path traversal should change the correct segment", async () => {
     //   const query = "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:/testa:someotherprop";
     //   await page.evaluate((q: string) => {
-    //     window.yasqe.setValue(q);
-    //     window.yasqe.focus();
-    //     window.yasqe.editor.setPosition({ lineNumber: 1, column: q.indexOf(":/testa:someotherprop") + 1 });
+    //     window.sparqlEditor.setValue(q);
+    //     window.sparqlEditor.focus();
+    //     window.sparqlEditor.editor.setPosition({ lineNumber: 1, column: q.indexOf(":/testa:someotherprop") + 1 });
     //   }, query);
     //   await issueAutocompletionKeyCombination();
     //   await waitForAutocompletionPopup();
     //   await page.keyboard.press("Enter");
-    //   const newValue = await page.evaluate(() => window.yasqe.getValue());
+    //   const newValue = await page.evaluate(() => window.sparqlEditor.getValue());
     //   expect(newValue).to.equal(
     //     "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:0/testa:someotherprop",
     //   );
@@ -188,9 +188,9 @@ describe("Yasqe", function () {
     // it.skip("path traversal should search with the correct path segment", async () => {
     //   const query = "PREFIX testa: <https://test.a.com/> select * where { ?s testa:someprop/testa:someotherprop/testa;";
     //   await page.evaluate((q: string) => {
-    //     window.yasqe.setValue(q);
-    //     window.yasqe.focus();
-    //     window.yasqe.editor.setPosition({ lineNumber: 1, column: q.indexOf(";") + 1 });
+    //     window.sparqlEditor.setValue(q);
+    //     window.sparqlEditor.focus();
+    //     window.sparqlEditor.editor.setPosition({ lineNumber: 1, column: q.indexOf(";") + 1 });
     //   }, query);
     //   await issueAutocompletionKeyCombination();
     //   try {

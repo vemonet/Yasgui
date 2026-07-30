@@ -7,7 +7,7 @@ Delimiters used by datatables
 - underscores
 */
 
-.yasr {
+.sparql-results {
   // Row-number (first) column: center it, overriding DataTables' automatic numeric right-align.
   // Not nested under .dataTables_wrapper because DataTables 2.x wraps the table in .dt-layout-* instead.
   table.dataTable td.rowNumberCol {

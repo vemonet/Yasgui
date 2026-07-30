@@ -1,5 +1,5 @@
-.yasr {
-  .yasr_results {
+.sparql-results {
+  .sparql-results_results {
     position: relative;
     .cm-editor {
       border: 1px solid #d1d1d1;
@@ -38,7 +38,7 @@
       pointer-events: all;
       background: linear-gradient(to right, transparent, white 5%, white 95%, transparent 100%);
     }
-    .yasr_btn.overlay_btn {
+    .sparql-results_btn.overlay_btn {
       border: 1px solid #337ab7;
       background: white;
       color: #337ab7;

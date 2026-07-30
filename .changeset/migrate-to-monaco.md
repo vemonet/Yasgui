@@ -37,4 +37,6 @@
   - `@zazuko/yasr` -> `@rdfjs/sparql-results` (class `Yasr` -> `SparqlResults`)
   - `@zazuko/yasgui-utils` -> `@rdfjs/sparql-utils`
   - The `SparqlStudio` config keys `yasqe`/`yasr` are now `editor`/`results`
-  - Kept unchanged for backward compatibility: the CSS classes (`.yasqe`/`.yasr_*`), the localStorage storage keys (renaming would lose users' stored queries/tabs), and the Yasr plugin-registration entry points (`Yasr.registerPlugin`, `SparqlStudio.Yasr`, `window.Yasr`) so existing Yasr plugins keep working
+  - Rename `window.yasgui` & cie to `window.sparqlStudio`
+  - Rename CSS classes (`.yasgui* -> `.sparqlStudio*`)
+- add `postcss-nested` to flatten nested CSS

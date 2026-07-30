@@ -191,6 +191,7 @@ export const fallbackPrefixMap: PrefixMap = {
   xsd: "http://www.w3.org/2001/XMLSchema#",
 };
 
+// TODO: in qlue-ls 3+ the var are renamed to `?qls_entity`, `?qls_label`, `?qls_alias`, `?qls_count` (instead of `?qlue_ls_entity`, etc)
 /**
  * Default completion/hover query templates (qlue-ls Jinja-like templating) used to resolve term
  * completions against the endpoint. Generic enough to work on most rdfs:label-bearing datasets.
