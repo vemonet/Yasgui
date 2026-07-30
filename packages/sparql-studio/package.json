@@ -1,12 +1,14 @@
 {
   "name": "@rdfjs/sparql-studio",
   "description": "SPARQL Studio · a SPARQL query editor and results viewer (fork of Yasgui)",
-  "version": "4.6.1",
+  "version": "5.0.0",
   "type": "module",
   "main": "build/sparql-studio.js",
   "module": "build/sparql-studio.js",
   "types": "build/ts/src/index.d.ts",
-  "files": ["build"],
+  "files": [
+    "build"
+  ],
   "exports": {
     ".": {
       "types": "./build/ts/src/index.d.ts",
@@ -34,8 +36,8 @@
   },
   "dependencies": {
     "@tarekraafat/autocomplete.js": "^7.2.0",
-    "@rdfjs/sparql-utils": "^4.6.1",
-    "@rdfjs/sparql-results": "^4.6.1",
+    "@rdfjs/sparql-utils": "^5.0.0",
+    "@rdfjs/sparql-results": "^5.0.0",
     "autosuggest-highlight": "^3.1.1",
     "blueimp-md5": "^2.12.0",
     "choices.js": "^9.0.1",
