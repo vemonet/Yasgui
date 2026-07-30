@@ -1,12 +1,14 @@
 {
   "name": "@rdfjs/sparql-editor-codemirror",
   "description": "SPARQL query editor for the web, based on CodeMirror 6 (fork of Yasqe)",
-  "version": "4.6.1",
+  "version": "5.0.0",
   "type": "module",
   "main": "build/sparql-editor-codemirror.js",
   "module": "build/sparql-editor-codemirror.js",
   "types": "build/ts/src/index.d.ts",
-  "files": ["build"],
+  "files": [
+    "build"
+  ],
   "exports": {
     ".": {
       "types": "./build/ts/src/index.d.ts",
@@ -45,7 +47,7 @@
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.28.0",
     "@lezer/highlight": "^1.2.3",
-    "@rdfjs/sparql-utils": "^4.6.1",
+    "@rdfjs/sparql-utils": "^5.0.0",
     "events": "^3.3.0",
     "lodash-es": "^4.18.1",
     "query-string": "^6.10.1"

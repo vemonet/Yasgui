@@ -1,12 +1,14 @@
 {
   "name": "@rdfjs/sparql-utils",
-  "version": "4.6.1",
+  "version": "5.0.0",
   "description": "Shared utilities for the SparqlStudio libraries",
   "type": "module",
   "main": "build/sparql-utils.js",
   "module": "build/sparql-utils.js",
   "types": "build/ts/src/index.d.ts",
-  "files": ["build"],
+  "files": [
+    "build"
+  ],
   "exports": {
     ".": {
       "types": "./build/ts/src/index.d.ts",
