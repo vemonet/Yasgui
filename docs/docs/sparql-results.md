@@ -8,7 +8,7 @@ The viewer began as Yasr. It keeps compatibility with existing Yasr plugins, but
 
 `@rdfjs/sparql-results` renders a SPARQL response, as a table, raw response, graph or map. Use it standalone when you have results from anywhere and want SparqlStudio's viewer without the editor.
 
-Wire it to a [SparqlEditor](./sparql-editor) instance (or feed it a response from any source):
+Wire it to a [SparqlEditor](./sparql-editor-monaco) instance (or feed it a response from any source):
 
 ```ts
 import SparqlEditor from "@rdfjs/sparql-editor-monaco";

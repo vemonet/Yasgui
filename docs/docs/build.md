@@ -1,6 +1,6 @@
 # Build from source
 
-The repository is an npm workspaces monorepo with five packages under `packages/`: `sparql-utils`, `sparql-editor-monaco`, `sparql-editor-codemirror`, `sparql-results` and `sparql-studio`.
+The repository is an npm workspaces monorepo with 5 packages under `packages/`: `sparql-utils`, `sparql-editor-monaco`, `sparql-editor-codemirror`, `sparql-results` and `sparql-studio`.
 
 Install:
 

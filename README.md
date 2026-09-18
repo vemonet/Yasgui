@@ -4,7 +4,7 @@ SPARQL Studio is a SPARQL query editor and results viewer for the web. It is a f
 
 Useful links:
 
-- Live demo: [sparql.studio](https://sparql.studio)
+- Web app: [sparql.studio](https://sparql.studio)
 - Documentation: [sparql.studio/docs/introduction](https://sparql.studio/docs/introduction)
 - Source code: [github.com/rdfjs/Yasgui](https://github.com/rdfjs/Yasgui)
 

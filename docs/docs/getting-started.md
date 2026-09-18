@@ -1,27 +1,31 @@
 # Getting started
 
-This guide embeds the full SparqlStudio app with the **qlue-ls** language server. If you only
-need the editor or the result viewer, see [Editor](./sparql-editor) and [Results](./sparql-results).
+To embed SPARQL Studio, choose an editor and a language server. This guide uses the hosted app's defaults:
+[Monaco](./sparql-editor-monaco) and [qlue-ls](./language-server#qlue-ls). You can use
+[CodeMirror 6](./sparql-editor-codemirror) with the same server configuration, or choose another
+[language server](./language-server).
+
+For standalone components, see the editor pages or [Results](./sparql-results).
 
 ## 1. Install
 
 ```bash
-npm i --save @rdfjs/sparql-studio
+npm i --save @rdfjs/sparql-studio @rdfjs/sparql-editor-monaco qlue-ls
 ```
 
-To use the qlue-ls language server, also add it and the Vite WASM plugin to **your app**:
+For Vite, add the WASM plugin used to load qlue-ls:
 
 ```bash
-npm i --save qlue-ls
 npm i -D vite-plugin-wasm
 ```
 
-> The `@rdfjs/*` packages are **ESM only** (Monaco loads its workers via `import.meta.url`, which UMD can't do), so using a modern bundler like [Vite](https://vite.dev) is recommended.
+The packages are ESM only. The examples below use Vite.
 
 Each package ships its own CSS that you must import once:
 
 ```js
 import "@rdfjs/sparql-studio/style.css";
+import "@rdfjs/sparql-editor-monaco/style.css";
 ```
 
 ## 2. Bundler setup (Vite)
@@ -43,14 +47,12 @@ export default defineConfig({
 ```
 
 ::: info No language server
-If you don't use a language server at all, none of this is needed, the editor still does syntax highlighting.
+Without a language server, both editors still provide syntax highlighting. The WASM setup is only needed for servers that use WebAssembly.
 :::
 
 ## 3. Set up the language server
 
-The language server runs in a **Web Worker**. The qlue-ls backend/settings plumbing ships with the package (the `qlueLs` helpers), so the only file you write is the worker itself, which is also the only file you change to switch to a different SPARQL language server later. You pass that worker straight to the editor: it waits for the worker to signal it is ready, then connects the LSP client for you, so no readiness wrapper is needed.
-
-See the [Language server](./language-server) page for details, here is the minimal setup:
+Create a worker that loads qlue-ls and forwards LSP messages. Both editors wait for its `ready` message before connecting.
 
 ```ts [qlue-ls.worker.ts]
 // @ts-ignore qlue-ls is loaded as a WASM module via vite-plugin-wasm
@@ -83,12 +85,19 @@ export {};
 
 ## 4. Mount SparqlStudio
 
-`SparqlStudio` is editor-independent, so you build the editor yourself. Pass the worker instance, the editor waits for its "ready" signal and connects the client. Per-entry hooks `(onReady, onEndpointChange)` fire only while that server is active.
+Add a container to your page:
+
+```html
+<div id="sparqlStudio"></div>
+```
+
+The `editor` factory creates an editor for each tab. Its `languageServers` entries define the workers and any server-specific setup:
 
 ```ts
 import SparqlStudio from "@rdfjs/sparql-studio";
 import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
 import "@rdfjs/sparql-studio/style.css";
+import "@rdfjs/sparql-editor-monaco/style.css";
 import QlueLsWorker from "./qlue-ls.worker?worker";
 
 const sparqlStudio = new SparqlStudio(document.getElementById("sparqlStudio")!, {
@@ -111,13 +120,12 @@ const sparqlStudio = new SparqlStudio(document.getElementById("sparqlStudio")!, 
 });
 ```
 
-::: tip Offering several servers
-Add more entries to `languageServers` to let users switch at runtime; with two or more, a switcher appears (right-click in Monaco, a dropdown in CodeMirror) and the choice is remembered per endpoint.
+::: info CodeMirror instead of Monaco
+Install `@rdfjs/sparql-editor-codemirror` in place of the Monaco package and change the editor and CSS imports to it. Import `qlueLs` from `@rdfjs/sparql-utils` (add it as a direct dependency). The factory and `languageServers` entries stay the same.
 :::
 
-::: info CodeMirror instead of Monaco
-The factory is also where you choose the editor implementation. To use the CodeMirror 6 editor, import `SparqlEditor` from `@rdfjs/sparql-editor-codemirror` instead. The `languageServers` config is identical, both editors take the same `worker` (Monaco connects a language client to it, CodeMirror builds an `LSPClient` from it internally). See [Language server](./language-server).
-:::
+To offer several servers, add entries to `languageServers`. Studio remembers the user's choice per endpoint.
+See [Language server](./language-server) for the available servers and their configuration.
 
 ## Framework integration
 
@@ -128,6 +136,7 @@ import { useEffect, useRef } from "react";
 import SparqlStudio from "@rdfjs/sparql-studio";
 import SparqlEditor from "@rdfjs/sparql-editor-monaco";
 import "@rdfjs/sparql-studio/style.css";
+import "@rdfjs/sparql-editor-monaco/style.css";
 
 export function Sparql() {
   const el = useRef<HTMLDivElement>(null);

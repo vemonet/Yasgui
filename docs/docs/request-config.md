@@ -1,6 +1,6 @@
 # Request configuration
 
-`requestConfig` controls how queries are sent to the endpoint. It is accepted by both [SparqlEditor](./sparql-editor) and [SparqlStudio](./sparql-studio) (where it sets the default for every tab).
+`requestConfig` controls how queries are sent to the endpoint. It is accepted by both [SparqlEditor](./sparql-editor-monaco) and [SparqlStudio](./sparql-studio) (where it sets the default for every tab).
 
 Every field may be a value **or** a `(sparqlEditor) => value` function, so you can compute it per request.
 

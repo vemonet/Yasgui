@@ -2,36 +2,40 @@
 
 ::: info Formerly Yasgui
 
-SPARQL Studio is a fork of [Yasgui](https://github.com/zazuko/Yasgui). Its CSS classes has been updated: `.yasgui*` -> `.sparql-studio*`.
+SPARQL Studio is a fork of [Yasgui](https://github.com/zazuko/Yasgui). Its CSS classes changed from `.yasgui*` to `.sparql-studio*`.
 
 :::
 
-`@rdfjs/sparql-studio` is the complete app: query tabs, an endpoint selector, and SparqlEditor + SparqlResults wired together. [Getting started](./getting-started) walks through mounting it end to end (including the language server worker); this page is the configuration reference.
+`@rdfjs/sparql-studio` manages query tabs, endpoints and results. You supply the editor and its language servers.
+[Getting started](./getting-started) shows a complete Monaco + qlue-ls setup; this page covers Studio configuration.
 
 ## The editor factory
 
-SparqlStudio is **editor-independent**: instead of an editor config object, you pass a factory `(parent, conf) => IEditor` that builds the editor. `conf` is the per-tab config SparqlStudio prepares (value, requestConfig, …); spread it, then add your own options:
+Pass a factory `(parent, conf) => IEditor` using either [Monaco](./sparql-editor-monaco) or [CodeMirror 6](./sparql-editor-codemirror). Studio calls it for each tab with that tab's query and request settings. Spread `conf` before adding your options:
 
 ```ts
 import SparqlStudio from "@rdfjs/sparql-studio";
 import SparqlEditor from "@rdfjs/sparql-editor-monaco";
 import "@rdfjs/sparql-studio/style.css";
+import "@rdfjs/sparql-editor-monaco/style.css";
 
 const sparqlStudio = new SparqlStudio(document.getElementById("sparqlStudio")!, {
   requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
-  editor: (parent, conf) => new SparqlEditor(parent, { ...conf /* + languageServers, theme, … */ }),
+  editor: (parent, conf) => new SparqlEditor(parent, { ...conf, theme: "dark" }),
 });
 ```
 
-The factory is where you choose the editor implementation (Monaco `@rdfjs/sparql-editor-monaco` or CodeMirror `@rdfjs/sparql-editor-codemirror`) and list its [language servers](./language-server), theme and [editor options](./editor-options). `sparqlStudio.editor.getLanguageClient()` returns the active language client so you can send any LSP request. With two or more `languageServers`, a switcher lets users pick one and SparqlStudio remembers the choice **per endpoint**.
+Add `languageServers` to the editor options for completion, diagnostics and other server features.
+Both editors accept the same [server entries](./language-server#configuration). With several entries,
+users can switch servers and Studio remembers their choice per endpoint. Without a server, the example above provides syntax highlighting and query execution.
 
 ## Configuration
 
 | option | type | description |
 | --- | --- | --- |
 | `requestConfig` | `RequestConfig` | default endpoint & request settings (see [Request configuration](./request-config)) |
-| `onEndpointChange` | `(client, endpoint) => void` | called when the active endpoint changes |
-| `editor` | `SparqlEditorFactory` = `(parent, conf) => IEditor` | editor factory: build the editor (Monaco `@rdfjs/sparql-editor-monaco` or CodeMirror `@rdfjs/sparql-editor-codemirror`) and wire in its LSP, theme, etc. |
+| `onEndpointChange` | `(sparqlStudio, endpoint) => void` | called when the active endpoint changes; server-specific hooks belong in `languageServers` |
+| `editor` | `SparqlEditorFactory` = `(parent, conf) => IEditor` | required factory that creates the editor for each tab |
 | `results` | `Partial<SparqlResults config>` | result-viewer config |
 | `corsProxy` | `string` | optional CORS proxy URL |
 | `persistenceId` | `string \| fn \| null` | localStorage namespace; `null` disables persistence |
@@ -41,8 +45,6 @@ The factory is where you choose the editor implementation (Monaco `@rdfjs/sparql
 SparqlStudio works in tabs; each tab owns its query, endpoint, editor and results. Drive it after construction:
 
 ```ts
-const sparqlStudio = new SparqlStudio(el, { requestConfig: { endpoint } });
-
 // Tabs
 const tab = sparqlStudio.addTab(true, { ...SparqlStudio.Tab.getDefaults(), name: "My query" }); // true = make active
 sparqlStudio.getTab();          // the active tab (or a tab id: getTab("tab_id"))
@@ -59,7 +61,7 @@ tab.close();
 
 ## Events
 
-SparqlStudio extends an event emitter; handlers are **instance-first** (`(sparqlStudio, …)`).
+SparqlStudio extends an event emitter; handlers are **instance-first** (`(sparqlStudio, ...)`).
 
 | event | payload | fires when |
 | --- | --- | --- |
@@ -81,6 +83,7 @@ The endpoint selector can suggest endpoints from a catalogue you supply via `end
 
 ```ts
 new SparqlStudio(el, {
+  editor: (parent, conf) => new SparqlEditor(parent, conf),
   endpointCatalogueOptions: {
     getData: () => [
       { endpoint: "https://sparql.dblp.org/sparql" },
@@ -107,7 +110,10 @@ To hide the selector entirely (fixed endpoint), set the endpoint in `requestConf
 Public endpoints usually send the right CORS headers. For endpoints that don't, set a `corsProxy`:
 
 ```ts
-new SparqlStudio(el, { corsProxy: "https://corsproxy.example/?" });
+new SparqlStudio(el, {
+  editor: (parent, conf) => new SparqlEditor(parent, conf),
+  corsProxy: "https://corsproxy.example/?",
+});
 ```
 
 The proxy URL is prepended to the request URL.

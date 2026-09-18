@@ -2,7 +2,7 @@
 
 Yasr renders a SPARQL response through one of several plugins. The right plugin is picked automatically from the query type (`SELECT`, `ASK`, `CONSTRUCT`, `DESCRIBE`), the response content type and the data structure, but you can switch manually with the tabs above the result area. Your choice is kept per tab.
 
-The **Table**, **Boolean**, **Response** and **Error** plugins are built in. **Graph** and **Geo** are community plugins registered by the demo (see [Yasr](./sparql-results#result-view-plugins)).
+The **Table**, **Boolean**, **Response** and **Error** plugins are built in. **Graph** and **Geo** are community plugins included in the [hosted app](/) (see [Yasr](./sparql-results#result-view-plugins)).
 
 ## Configuring plugins
 

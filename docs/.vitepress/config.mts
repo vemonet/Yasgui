@@ -80,7 +80,8 @@ export default defineConfig({
           text: "Packages",
           items: [
             { text: "SPARQL Studio", link: "/docs/sparql-studio" },
-            { text: "SPARQL Editor", link: "/docs/sparql-editor" },
+            { text: "SPARQL Studio Monaco", link: "/docs/sparql-editor-monaco" },
+            { text: "SPARQL Studio CodeMirror 6", link: "/docs/sparql-editor-codemirror" },
             { text: "SPARQL Results", link: "/docs/sparql-results" },
           ],
         },
@@ -97,8 +98,8 @@ export default defineConfig({
         {
           text: "Reference",
           items: [
-            { text: "Build from source", link: "/docs/build" },
             { text: "API reference", link: "/api/" },
+            { text: "Build from source", link: "/docs/build" },
           ],
         },
       ],

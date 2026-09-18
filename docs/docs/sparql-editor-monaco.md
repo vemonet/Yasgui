@@ -1,12 +1,21 @@
-# SPARQL Editor
+# Monaco editor
 
 ::: info Previously Yasqe
 
-The editor began as Yasqe. Its CSS classes has been updated: `.yasqe*` -> `.sparql-editor*`.
+The editor began as Yasqe. Its CSS classes changed from `.yasqe*` to `.sparql-editor*`.
 
 :::
 
-`@rdfjs/sparql-editor-monaco` is the SPARQL query editor on its own, the Monaco editor plus an optional language client. Use it when you want only the editor, without tabs or the result viewer.
+`@rdfjs/sparql-editor-monaco` provides a standalone SPARQL editor built on Monaco, the editor used by VS Code.
+Use it on its own or in a [Studio editor factory](./sparql-studio#the-editor-factory).
+For CodeMirror, see the [CodeMirror 6 editor](./sparql-editor-codemirror).
+
+```bash
+npm i --save @rdfjs/sparql-editor-monaco qlue-ls
+```
+
+This example uses qlue-ls. Create the worker and configure Vite as shown in
+[Getting started](./getting-started#_2-bundler-setup-vite), then mount the editor into `<div id="editor"></div>`:
 
 ```ts
 import SparqlEditor, { qlueLs } from "@rdfjs/sparql-editor-monaco";
@@ -14,7 +23,7 @@ import "@rdfjs/sparql-editor-monaco/style.css";
 import QlueLsWorker from "./qlue-ls.worker?worker";
 
 const endpoint = "https://sparql.dblp.org/sparql";
-const editor = new SparqlEditor(document.getElementById("yasqe")!, {
+const editor = new SparqlEditor(document.getElementById("editor")!, {
   value: "SELECT * WHERE { ?s ?p ?o } LIMIT 10",
   requestConfig: { endpoint },
   languageServers: [
@@ -32,14 +41,11 @@ const editor = new SparqlEditor(document.getElementById("yasqe")!, {
 });
 
 editor.on("query", (editor, req) => console.log("running", req));
-editor.on("queryResponse", (yasqe, response, duration) => console.log(response, duration));
+editor.on("queryResponse", (editor, response, duration) => console.log(response, duration));
 ```
 
-With an empty `languageServers`, Yasqe still works as a syntax-highlighted editor, you just don't get completion, diagnostics or formatting. The `languageServers` array, its per-server `onReady` / `onEndpointChange` hooks, the runtime switcher and helpers like `getLanguageClient()` / `setLanguageServer()` / `notifyEndpointChange()` are all covered in [Language server](./language-server), this is the same config the full app uses.
-
-::: warning Events are instance-first
-Editor events are emitted **instance-first**, handlers receive `(yasqeInstance, ...payload)`. For example `queryResponse` is `(yasqe, response, duration)`.
-:::
+Omit `languageServers` for syntax highlighting without completion, diagnostics or formatting.
+See [Language server](./language-server) for other servers, lifecycle hooks and runtime switching.
 
 ## Common config
 
@@ -75,6 +81,7 @@ editor.getLanguageServers();             // [{ label, description? }]
 editor.getActiveLanguageServer();        // active index
 await editor.setLanguageServer("Qlue-ls"); // by label or index
 editor.notifyEndpointChange(endpoint);   // re-fire the active server's onEndpointChange
+editor.destroy();                        // release the editor when unmounting
 ```
 
 ## Events
@@ -97,7 +104,7 @@ editor.on("queryResponse", (editor, response, duration) => console.log(response,
 
 ## Keyboard shortcuts
 
-On top of all the standard [Monaco / VS Code](https://code.visualstudio.com/docs/getstarted/keybindings) bindings (multi-cursor, `Ctrl/Cmd + /` to toggle comments, **Format Document** from the right-click menu, …), the editor adds:
+On top of all the standard [Monaco / VS Code](https://code.visualstudio.com/docs/getstarted/keybindings) bindings (multi-cursor, `Ctrl/Cmd + /` to toggle comments, **Format Document** from the right-click menu, ...), the editor adds:
 
 | shortcut | action |
 | --- | --- |
