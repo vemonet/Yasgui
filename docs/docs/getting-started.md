@@ -6,25 +6,22 @@ need the editor or the result viewer, see [Editor](./sparql-editor) and [Results
 ## 1. Install
 
 ```bash
-npm install @rdfjs/sparql-studio
+npm i --save @rdfjs/sparql-studio
 ```
 
 To use the qlue-ls language server, also add it and the Vite WASM plugin to **your app**:
 
 ```bash
-npm install qlue-ls
-npm install -D vite-plugin-wasm
+npm i --save qlue-ls
+npm i -D vite-plugin-wasm
 ```
 
-The `@rdfjs/*` packages are **self-contained ESM bundles** (Monaco and the language client are bundled in), you do **not** need to install `monaco-editor`. They are **ESM only** (Monaco loads its workers via `import.meta.url`, which UMD can't do), so use a modern bundler (Vite recommended).
+> The `@rdfjs/*` packages are **ESM only** (Monaco loads its workers via `import.meta.url`, which UMD can't do), so using a modern bundler like [Vite](https://vite.dev) is recommended.
 
 Each package ships its own CSS that you must import once:
 
 ```js
 import "@rdfjs/sparql-studio/style.css";
-// or for standalone use:
-// import "@rdfjs/sparql-editor-monaco/style.css";
-// import "@rdfjs/sparql-results/style.css";
 ```
 
 ## 2. Bundler setup (Vite)

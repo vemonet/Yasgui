@@ -79,7 +79,7 @@
   "dependencies": {
     "@traqula/chevrotain": "^1.1.0",
     "@traqula/parser-sparql-1-2": "^1.1.4",
-    "qlue-ls": "^2.8.2",
+    "qlue-ls": "^3.10.0",
     "swls-wasm": "^0.3.1"
   }
 }

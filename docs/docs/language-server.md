@@ -96,6 +96,11 @@ The qlue-ls `BackendConfiguration` (what `createBackendConf` builds) is flat and
 | `queries` | — | completion-query templates, keyed by qlue-ls `CompletionTemplate` (`subjectCompletion`, `predicateCompletionContextSensitive`, `objectCompletionContextSensitive`, …). Needed for **term** completion. An empty object still gives prefix/keyword completion. |
 | `engine`, `requestMethod`, `healthCheckUrl` | — | optional |
 
+Custom completion queries must return each entity once and bind it as `?qls_entity`. They may also bind
+`?qls_label`, `?qls_alias`, `?qls_description`, and `?qls_count`. The alias must be a single value, not a
+`GROUP_CONCAT` list; when aliases are searched, use an aggregate such as `SAMPLE(?alias) AS ?qls_alias` after
+filtering and group by the entity. qlue-ls uses `?qls_count` to rank results.
+
 ::: tip Auto-discovering prefixes
 `configureBackend` / `createBackendConf` call `fetchPrefixMap` for you when you don't pass a `prefixMap`: many endpoints expose their prefixes via `sh:namespace` / `sh:prefix`, and `qlueLs` falls back to `fallbackPrefixMap` (a broad set of common vocab prefixes) when none are returned.
 :::
