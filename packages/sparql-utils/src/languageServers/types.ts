@@ -67,11 +67,11 @@ export interface LanguageServerDef<Y = any> {
    * it, CodeMirror builds an `LSPClient` from it internally.
    */
   worker: Worker | (() => Worker | Promise<Worker>);
-  /** LSP language id sent to the server. Defaults to `"sparql"`. */
+  /** CodeMirror LSP language id override. Defaults to `"sparql"`; Monaco always uses `"sparql"`. */
   languageId?: string;
   /**
-   * Document URI for this editor. Provide a function to derive a unique URI per editor (e.g. one
-   * per SparqlStudio tab). Defaults to an auto-generated unique URI.
+   * CodeMirror document URI override. Provide a function to derive a unique URI per editor.
+   * Defaults to an auto-generated unique URI. Monaco always assigns its own unique URI.
    */
   documentUri?: string | ((yasqe: Y) => string);
   /**

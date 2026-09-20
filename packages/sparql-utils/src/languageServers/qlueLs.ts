@@ -447,7 +447,7 @@ export function configureSettings(client: QlueLsClient, settings: DeepPartial<Se
 
 // Avoid re-registering the same backend repeatedly when configureBackend is called on every change.
 // Keyed per-client so switching between several ls instances (each its own client) still works
-const lastBackendByClient = new WeakMap<QlueLsClient, string>();
+const lastBackendByClient = new WeakMap<QlueLsClient, { endpoint: string }>();
 
 /**
  * Register a SPARQL endpoint with the qlue-ls client and make it the default backend (so completions
@@ -460,14 +460,17 @@ export async function configureBackend(
   endpoint: string,
   options: BackendOptions = {},
 ): Promise<void> {
-  if (!client || !endpoint || lastBackendByClient.get(client) === endpoint) return;
-  lastBackendByClient.set(client, endpoint);
+  if (!client || !endpoint || lastBackendByClient.get(client)?.endpoint === endpoint) return;
+  const registration = { endpoint };
+  lastBackendByClient.set(client, registration);
   try {
     const backend = await createBackendConf(endpoint, options);
+    // Prefix discovery may finish after the user has selected another endpoint.
+    if (lastBackendByClient.get(client) !== registration) return;
     notify(client, "qlueLs/addBackend", backend);
     notify(client, "qlueLs/updateDefaultBackend", { backendName: backend.name });
   } catch (error) {
-    lastBackendByClient.delete(client); // allow retry
+    if (lastBackendByClient.get(client) === registration) lastBackendByClient.delete(client); // allow retry
     console.error("Failed to configure qlue-ls backend for", endpoint, error);
   }
 }

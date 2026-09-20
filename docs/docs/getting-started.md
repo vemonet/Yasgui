@@ -91,7 +91,7 @@ Add a container to your page:
 <div id="sparqlStudio"></div>
 ```
 
-The `editor` factory creates an editor for each tab. Its `languageServers` entries define the workers and any server-specific setup:
+The `editor` factory creates one editor that Studio reuses across tabs. Its `languageServers` entries define the workers and any server-specific setup:
 
 ```ts
 import SparqlStudio from "@rdfjs/sparql-studio";

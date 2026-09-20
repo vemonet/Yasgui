@@ -66,6 +66,7 @@ import {
   openSettingsPanel,
   unflatten,
   defaultsFromSchema,
+  waitWorkerReady,
 } from "@rdfjs/sparql-utils";
 import type {
   DeepPartial,
@@ -216,6 +217,9 @@ export class SparqlEditor extends EventEmitter implements IEditor {
   private activeClient?: LSPClient;
   /** Resolved LSPClient per server index, so switching back is instant (clients are heavy/WASM). */
   private lsClients = new Map<number, LSPClient>();
+  private lsWorkers = new Map<number, Worker>();
+  private readonly lsAbort = new AbortController();
+  private destroyed = false;
   /** Serializes language server switches so concurrent calls (init + a restored preference) don't race. */
   private lsSwitchQueue: Promise<void> = Promise.resolve();
   /** Index of the most recently requested language server. A queued activation whose index no longer
@@ -251,6 +255,9 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     this.config = merge({}, SparqlEditor.defaults, mergeableConf) as Config;
     if (extensions) this.config.extensions = extensions as Extension[];
     if (languageServers) this.config.languageServers = languageServers as Config["languageServers"];
+    for (const server of this.config.languageServers ?? []) {
+      if (typeof server.worker !== "function") void waitWorkerReady(server.worker, this.lsAbort.signal).catch(() => {});
+    }
     this.storage = new YStorage(SparqlEditor.storageNamespace);
 
     // Restore persisted query
@@ -482,21 +489,25 @@ export class SparqlEditor extends EventEmitter implements IEditor {
    * emits `languageServerChange`. The query/document is preserved.
    */
   public setLanguageServer(target: string | number): Promise<void> {
+    if (this.destroyed) return Promise.reject(new Error("Editor has been destroyed"));
     const servers = this.config.languageServers ?? [];
     const index = typeof target === "number" ? target : servers.findIndex((s) => s.label === target);
-    if (index < 0 || index >= servers.length) {
+    if (!Number.isInteger(index) || index < 0 || index >= servers.length) {
       console.warn("Unknown language server:", target);
       return Promise.resolve();
     }
     this.requestedLanguageServerIndex = index;
     // Swallow a prior switch's failure so it doesn't block this one (the chain is reused).
     this.lsSwitchQueue = this.lsSwitchQueue.catch(() => {}).then(() => this.activateLanguageServer(index));
+    this.lsSwitchQueue.catch((error) => {
+      if (!this.destroyed) this.showNotification("languageServer", String(error));
+    });
     return this.lsSwitchQueue;
   }
 
   private async activateLanguageServer(index: number): Promise<void> {
     const servers = this.config.languageServers ?? [];
-    if (!servers.length) return;
+    if (this.destroyed || !servers.length) return;
     if (index !== this.requestedLanguageServerIndex) return;
     if (index === this.activeLanguageServerIndex && this.activeClient) return;
     const def = servers[index];
@@ -513,8 +524,23 @@ export class SparqlEditor extends EventEmitter implements IEditor {
         return;
       }
       // Bail if a newer switch superseded this one while the worker/client was starting.
-      if (index !== this.requestedLanguageServerIndex) return;
-      client = await connectLanguageClient(worker);
+      if (this.destroyed || index !== this.requestedLanguageServerIndex) {
+        worker.terminate();
+        return;
+      }
+      this.lsWorkers.set(index, worker);
+      try {
+        client = await connectLanguageClient(worker, this.lsAbort.signal);
+      } catch (error) {
+        worker.terminate();
+        this.lsWorkers.delete(index);
+        throw error;
+      }
+      if (this.destroyed) {
+        client.disconnect();
+        worker.terminate();
+        return;
+      }
       this.lsClients.set(index, client);
     }
     if (index !== this.requestedLanguageServerIndex) return;
@@ -1174,12 +1200,12 @@ export class SparqlEditor extends EventEmitter implements IEditor {
    */
   private setupLanguageServerErrorNotifications(client: LSPClient) {
     const notify = (message: string) => {
+      if (this.destroyed || this.activeClient !== client) return;
       if (!this.lsErrorNotification) this.lsErrorNotification = createLspErrorNotification(this.rootEl);
       this.lsErrorNotification.show(message);
     };
     const tapped = client as LSPClient & { __yasqeErrorListeners?: ((message: string) => void)[] };
     if (tapped.__yasqeErrorListeners) {
-      tapped.__yasqeErrorListeners.push(notify);
       return;
     }
     const listeners: ((message: string) => void)[] = [notify];
@@ -1216,13 +1242,30 @@ export class SparqlEditor extends EventEmitter implements IEditor {
 
   /* Destroy */
   public destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.requestedLanguageServerIndex = -1;
+    this.activeLanguageServerIndex = -1;
     this.abortQuery();
+    this.lsSettingsPanelDispose?.();
+    this.lsErrorNotification?.destroy();
     this.removeAllListeners();
     this.resizeWrapper?.removeEventListener("mousedown", this.initDrag, false);
     this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor);
     window.removeEventListener("hashchange", this.handleHashChange);
     if (this.lsMenuOutsideClick) document.body.removeEventListener("click", this.lsMenuOutsideClick, true);
+    document.documentElement.removeEventListener("mousemove", this.doDrag, false);
+    document.documentElement.removeEventListener("mouseup", this.stopDrag, false);
     this.cm.destroy();
+    this.lsAbort.abort();
+    for (const client of this.lsClients.values()) client.disconnect();
+    for (const worker of this.lsWorkers.values()) worker.terminate();
+    for (const server of this.config.languageServers ?? []) {
+      if (typeof server.worker !== "function") server.worker.terminate();
+    }
+    this.lsClients.clear();
+    this.lsWorkers.clear();
+    this.activeClient = undefined;
     this.rootEl.remove();
   }
 

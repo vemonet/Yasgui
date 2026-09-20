@@ -1,12 +1,12 @@
-# What is SPARQL Studio?
+# SPARQL Studio
 
-SPARQL Studio is a web interface for writing SPARQL queries, running them against an endpoint and exploring the results.
+Web interface for writing SPARQL queries, running them against an endpoint and exploring the results.
 
 Directly use the app with [Monaco](/) or [CodeMirror 6](/codemirror). Use the packages to embed the full app, or use its editors and results viewer separately.
 
 ## Choose your editor
 
-Use [Monaco](./sparql-editor-monaco), the editor behind VS Code, or [CodeMirror 6](./sparql-editor-codemirror). Both support query execution, sharing, light and dark themes, and the same language server configuration. Studio creates an editor for each tab through a factory you supply.
+Use [Monaco](./sparql-editor-monaco), the editor behind VS Code, or [CodeMirror 6](./sparql-editor-codemirror). Both support query execution, sharing, light and dark themes, and the same language server configuration. Studio uses a factory you supply to create one editor, shared across query tabs.
 
 ## Choose your language server
 

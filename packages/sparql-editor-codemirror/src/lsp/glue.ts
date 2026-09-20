@@ -73,9 +73,12 @@ async function toDiagnostic(plugin: LSPPlugin, item: any): Promise<Diagnostic> {
 export function pullDiagnostics(delay = 400): LSPClientExtension {
   const editorExtension = ViewPlugin.define((view) => {
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let generation = 0;
+    let destroyed = false;
     const run = async () => {
       const plugin = LSPPlugin.get(view);
-      if (!plugin) return;
+      if (destroyed || !plugin) return;
+      const requestGeneration = generation;
       // Only pull when the server advertises pull diagnostics. Push-only servers (e.g. swls) would
       // answer `textDocument/diagnostic` with "Method not found"; their diagnostics arrive via
       // `publishDiagnostics`, which `languageServerExtensions()` already handles.
@@ -85,8 +88,10 @@ export function pullDiagnostics(delay = 400): LSPClientExtension {
         const result: any = await plugin.client.request("textDocument/diagnostic", {
           textDocument: { uri: plugin.uri },
         });
+        if (destroyed || requestGeneration !== generation) return;
         const items: any[] = result?.items ?? [];
         const diagnostics = await Promise.all(items.map((item) => toDiagnostic(plugin, item)));
+        if (destroyed || requestGeneration !== generation) return;
         view.dispatch(setDiagnostics(view.state, diagnostics));
       } catch {
         // server not ready / request cancelled, retry on next edit
@@ -96,11 +101,13 @@ export function pullDiagnostics(delay = 400): LSPClientExtension {
     return {
       update(u: ViewUpdate) {
         if (u.docChanged) {
+          generation++;
           if (timer) clearTimeout(timer);
           timer = setTimeout(run, delay);
         }
       },
       destroy() {
+        destroyed = true;
         if (timer) clearTimeout(timer);
       },
     };
@@ -159,17 +166,24 @@ export function semanticTokens(delay = 200): LSPClientExtension {
   const requester = ViewPlugin.fromClass(
     class {
       timer: ReturnType<typeof setTimeout> | undefined;
+      generation = 0;
+      destroyed = false;
       constructor(readonly view: EditorView) {
         void this.run();
       }
       update(u: ViewUpdate) {
-        if (u.docChanged) this.schedule();
+        if (u.docChanged) {
+          this.generation++;
+          this.schedule();
+        }
       }
       schedule() {
         if (this.timer) clearTimeout(this.timer);
         this.timer = setTimeout(() => void this.run(), delay);
       }
       async run() {
+        if (this.destroyed) return;
+        const requestGeneration = this.generation;
         const plugin = LSPPlugin.get(this.view);
         const legend = plugin?.client.serverCapabilities?.semanticTokensProvider?.legend;
         if (!plugin || !legend) return;
@@ -178,7 +192,7 @@ export function semanticTokens(delay = 200): LSPClientExtension {
           const res: any = await plugin.client.request("textDocument/semanticTokens/full", {
             textDocument: { uri: plugin.uri },
           });
-          if (!res?.data) return;
+          if (this.destroyed || requestGeneration !== this.generation || !res?.data) return;
           this.view.dispatch({
             effects: setSemanticTokens.of(decodeSemanticTokens(res.data, this.view, legend.tokenTypes)),
           });
@@ -187,6 +201,7 @@ export function semanticTokens(delay = 200): LSPClientExtension {
         }
       }
       destroy() {
+        this.destroyed = true;
         if (this.timer) clearTimeout(this.timer);
       }
     },

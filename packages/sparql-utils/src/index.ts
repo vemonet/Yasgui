@@ -26,6 +26,7 @@ export {
   getSparqlBlockFoldingRanges,
 } from "./yasqe";
 export * as qlueLs from "./languageServers/qlueLs";
+export { waitWorkerReady as waitWorkerReady, waitLanguageServerReady } from "./languageServers/worker";
 // export type {
 //   Settings,
 //   FormatSettings,

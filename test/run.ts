@@ -36,7 +36,7 @@ describe("SparqlEditor", function () {
   });
 
   beforeEach(async () => {
-    page = await getPage(browser, "editor.html");
+    page = await getPage(browser, "editor_results.html");
     await page.evaluate(() => localStorage.clear());
     // Wait for the Monaco editor async init to finish (editor is created in initEditor() which is not awaited in the constructor)
     await page.waitForFunction(() => !!(window as any).sparqlEditor?.editor, { timeout: 15000 });
@@ -56,6 +56,79 @@ describe("SparqlEditor", function () {
     });
     expect(value).to.contain("SELECT");
   });
+
+  for (const editorName of ["Monaco", "CodeMirror"]) {
+    it(`${editorName}: releases language server workers when destroyed`, async () => {
+      if (editorName === "CodeMirror") {
+        await page.goto(page.url().replace("editor_results.html", "codemirror.html"));
+        await page.waitForFunction(() => !!(window as any).sparqlStudio?.editor);
+      }
+      const result = await page.evaluate(async (name) => {
+        const studio = (window as any).sparqlStudio;
+        const editor = name === "Monaco" ? window.sparqlEditor : studio.editor;
+        await editor.setLanguageServer(0);
+        const workers: Worker[] = name === "Monaco" ? [editor.lsWorker] : [...editor.lsWorkers.values()];
+        let terminated = 0;
+        for (const worker of workers) {
+          const terminate = worker.terminate.bind(worker);
+          worker.terminate = () => {
+            terminated++;
+            terminate();
+          };
+        }
+        if (studio) studio.destroy();
+        else editor.destroy();
+        editor.destroy(); // Unmount cleanup can be called more than once.
+        return {
+          workers: workers.length,
+          terminated,
+          connected: !!editor.getLanguageClient(),
+          mounted: editor.rootEl.isConnected,
+        };
+      }, editorName);
+      expect(result.workers).to.be.greaterThan(0);
+      expect(result.terminated).to.equal(result.workers);
+      expect(result.connected).to.equal(false);
+      expect(result.mounted).to.equal(false);
+    });
+
+    it(`${editorName}: discards a worker returned after unmount`, async () => {
+      if (editorName === "CodeMirror") {
+        await page.goto(page.url().replace("editor_results.html", "codemirror.html"));
+        await page.waitForFunction(() => !!(window as any).sparqlStudio?.editor);
+      }
+      const terminated = await page.evaluate(async (name) => {
+        const editor: any = name === "Monaco" ? window.sparqlEditor : (window as any).sparqlStudio.editor;
+        await editor.setLanguageServer(0);
+        let resolveWorker: (worker: any) => void;
+        let started: () => void;
+        const starting = new Promise<void>((resolve) => {
+          started = resolve;
+        });
+        editor.config.languageServers.push({
+          label: "delayed",
+          worker: () => {
+            started();
+            return new Promise((resolve) => {
+              resolveWorker = resolve;
+            });
+          },
+        });
+        const switching = editor.setLanguageServer("delayed");
+        await starting;
+        editor.destroy();
+        let released = false;
+        resolveWorker!({
+          terminate() {
+            released = true;
+          },
+        });
+        await switching;
+        return released;
+      }, editorName);
+      expect(terminated).to.equal(true);
+    });
+  }
 
   // async function waitForAutocompletionPopup(shouldNotHaveLength?: number): Promise<number | undefined> {
   //   if (shouldNotHaveLength !== undefined) {

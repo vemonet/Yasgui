@@ -242,7 +242,7 @@ export interface LanguageServerInfo {
 }
 
 /**
- * Factory that builds an editor instance into `parent`, given the per-tab config SparqlStudio injects.
+ * Factory that builds an editor instance into `parent`, given the shared config SparqlStudio injects. Called once per Studio instance.
  * SparqlStudio is editor-independent: the consumer imports an editor (e.g. `@rdfjs/sparql-editor-monaco` or
  * `@rdfjs/sparql-editor-codemirror`) and supplies one of these as `config.editor`.
  */

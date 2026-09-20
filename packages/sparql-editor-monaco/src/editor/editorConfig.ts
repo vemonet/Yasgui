@@ -1,3 +1,4 @@
+import { waitWorkerReady, waitLanguageServerReady } from "@rdfjs/sparql-utils";
 /**
  * Monaco Editor setup with SPARQL syntax highlighting.
  *
@@ -31,6 +32,7 @@ export const SPARQL_THEME_LIGHT = "sparql-light";
 export const SPARQL_THEME_DARK = "sparql-dark";
 
 const LANGUAGE_ID = "sparql";
+let documentCounter = 0;
 
 // Registered once for the language (not per editor) so the brace-block ranges are added on top of
 // whatever the language server reports. qlue-ls only folds the PREFIX/BASE prologue, so this is what
@@ -72,32 +74,17 @@ export interface SparqlThemeOverrides {
  * this for the active language server (it may switch between several), so it is decoupled from the
  * editor setup in {@link startMonacoEditor}. The returned wrapper is already started.
  */
-/**
- * Resolve once a freshly created LSP worker signals it is ready, so the client never sends
- * `initialize`/`didOpen` before the worker has installed its message handler. WASM-backed workers
- * (qlue-ls, swls, ...) set their handler only AFTER an async `import()` / WASM init; a client
- * connecting too early races that setup and corrupts message ordering. By convention these workers
- * post `{ type: "ready" }` (or the bare string `"ready"`) once set up. `addEventListener` (not
- * `onmessage=`) so it never clobbers the handler the client attaches later.
- */
-function awaitWorkerReady(worker: Worker): Promise<void> {
-  return new Promise((resolve) => {
-    const onReady = (event: MessageEvent) => {
-      if (event.data?.type === "ready" || event.data === "ready") {
-        worker.removeEventListener("message", onReady);
-        resolve();
-      }
-    };
-    worker.addEventListener("message", onReady);
-  });
-}
 
-export async function connectLanguageClient(lsWorker: Worker): Promise<LanguageClientWrapper> {
-  await awaitWorkerReady(lsWorker);
+export async function connectLanguageClient(
+  lsWorker: Worker,
+  signal: AbortSignal,
+  documentUri: string,
+): Promise<LanguageClientWrapper> {
+  await waitWorkerReady(lsWorker, signal);
   const languageClientConfig: LanguageClientConfig = {
     languageId: LANGUAGE_ID,
     clientOptions: {
-      documentSelector: [{ language: LANGUAGE_ID }],
+      documentSelector: [{ language: LANGUAGE_ID, pattern: Uri.parse(documentUri).path }],
       workspaceFolder: {
         index: 0,
         name: "workspace",
@@ -139,8 +126,18 @@ export async function connectLanguageClient(lsWorker: Worker): Promise<LanguageC
     },
   };
   const lcWrapper = new LanguageClientWrapper(languageClientConfig);
-  await lcWrapper.start();
-  return lcWrapper;
+  const onAbort = () => void lcWrapper.dispose().catch(() => {});
+  signal.addEventListener("abort", onAbort, { once: true });
+  try {
+    if (signal.aborted) throw new DOMException("Editor destroyed", "AbortError");
+    await waitLanguageServerReady(lcWrapper.start(), signal);
+    return lcWrapper;
+  } catch (error) {
+    await lcWrapper.dispose().catch(() => {});
+    throw error;
+  } finally {
+    signal.removeEventListener("abort", onAbort);
+  }
 }
 
 /**
@@ -231,7 +228,7 @@ export async function startMonacoEditor(
   const editorAppConfig: EditorAppConfig = {
     codeResources: {
       modified: {
-        uri: "query.rq",
+        uri: `file:///sparql-studio/query-${++documentCounter}.rq`,
         text: initialValue,
       },
     },

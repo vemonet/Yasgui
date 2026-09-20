@@ -238,9 +238,11 @@ export class SparqlStudio extends EventEmitter {
     const activeIdx = yasqe.getActiveLanguageServer?.() ?? -1;
     if (activeIdx >= 0 && servers[activeIdx]?.label === label) return false;
     this.applyingStoredLs = true;
-    void Promise.resolve(yasqe.setLanguageServer(label)).finally(() => {
-      this.applyingStoredLs = false;
-    });
+    void Promise.resolve(yasqe.setLanguageServer(label))
+      .catch((error) => console.warn("Failed to restore language server:", error))
+      .finally(() => {
+        this.applyingStoredLs = false;
+      });
     return true;
   }
 
@@ -490,6 +492,8 @@ export class SparqlStudio extends EventEmitter {
     }
   }
   public destroy() {
+    this.editor?.destroy?.();
+    this.editor = undefined;
     this.removeAllListeners();
     this.tabElements.destroy();
     for (const tabId in this._tabs) {

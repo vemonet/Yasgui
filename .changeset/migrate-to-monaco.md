@@ -19,7 +19,7 @@
   - Generic settings panel generated from a JSON schema, with a callback to apply settings to the active server
   - Improved display of error messages coming from the language server
   - Ship qlue-ls plumbing (settings, types, backend/endpoint registration, prefix discovery, completion-query templates) in utils under the `qlueLs` namespace, so consumers can wire it up easily
-  - The demo implements 3 language servers: **qlue-ls** (WASM, endpoint-powered completions), **swls** (WASM, semantic web language server) and **Traqula** (JS SPARQL 1.2 parser, diagnostics only)
+  - The app implements 3 language servers: **qlue-ls** (WASM, endpoint-powered completions), **swls** (WASM, semantic web language server) and **Traqula** (JS SPARQL 1.2 parser, diagnostics only)
 - App and editor improvements
   - Enable light/dark theme
   - Add a "Share query URL" entry to the Monaco right-click menu (under Execute query) bound to Cmd/Ctrl+S
@@ -28,8 +28,8 @@
   - Improve the partial config implementation (`DeepPartial`)
   - Enable importing the main JS and CSS from `@rdfjs/sparql-studio` and `@rdfjs/sparql-studio/style.css`
 - Docs
-  - Add a documentation website built with VitePress (served from https://sparql.studio), with an auto-generated API reference (TypeDoc)
-  - The home page is the full app with the 3 language servers, a second page demos the CodeMirror editor
+  - Add a documentation website built with VitePress (served from https://sparql.studio), with an API reference auto-generated using TypeDoc
+  - The home page is the full app with monaco editor and the 3 language servers, a second page provides the app with the CodeMirror editor
 - Drop UMD support: the libraries are now ESM-only (Monaco loads its workers/wasm via `import.meta.url`, which UMD cannot express). ESM imports work in plain HTML `<script type="module">` in every browsers.
 - Rename the packages and exported classes:
   - `@zazuko/yasgui` -> `@rdfjs/sparql-studio` (class `Yasgui` -> `SparqlStudio`)

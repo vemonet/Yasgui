@@ -43,7 +43,7 @@ import type { editor } from "monaco-editor";
 import { MonacoLanguageClient } from "monaco-languageclient";
 export type { SparqlThemeOverrides } from "./editor/editorConfig";
 export { qlueLs } from "@rdfjs/sparql-utils";
-import { openSettingsPanel, unflatten, defaultsFromSchema } from "@rdfjs/sparql-utils";
+import { openSettingsPanel, unflatten, defaultsFromSchema, waitWorkerReady } from "@rdfjs/sparql-utils";
 import type {
   LanguageServerDef as SharedLanguageServerDef,
   LanguageServerSettingsSchema,
@@ -136,6 +136,10 @@ export class SparqlEditor extends EventEmitter {
    * matches this has been superseded (e.g. the constructor's default 0 followed by a restored
    * preference); it bails before any worker/client setup so we never start a server just to dispose it. */
   private requestedLanguageServerIndex = -1;
+  private destroyed = false;
+  private readonly lsAbort = new AbortController();
+  private lsWorker?: Worker;
+  private editorApp?: import("monaco-languageclient/editorApp").EditorApp;
   /** Monaco's internal menu API, used to render the nested "Language servers" right-click submenu.
    * `undefined` = not loaded yet, `null` = unavailable (then we fall back to flat context-menu actions). Loaded once, lazily.
    */
@@ -167,6 +171,7 @@ export class SparqlEditor extends EventEmitter {
   public async initEditor(el: HTMLElement, conf: PartialConfig = {}) {
     try {
       const { startMonacoEditor } = await import("./editor/editorConfig");
+      if (this.destroyed) return;
       // Language servers are provided by the consumer (yasqe is LS-agnostic). The editor is built
       // here without a server; the active language client is connected separately (see
       // setLanguageServer) so the consumer can configure several and switch between them. With none
@@ -178,6 +183,11 @@ export class SparqlEditor extends EventEmitter {
         this.config.editorOptions,
         this.config.themes,
       );
+      if (this.destroyed) {
+        await result.editorApp.dispose();
+        return;
+      }
+      this.editorApp = result.editorApp;
       this.editor = result.editorApp.getEditor();
       this.vscodeApi = result.apiWrapper;
 
@@ -188,6 +198,7 @@ export class SparqlEditor extends EventEmitter {
       }
 
       const monaco = await import("monaco-editor");
+      if (this.destroyed) return;
       // Run the query on Cmd/Ctrl+Enter
       this.editor?.addAction({
         id: "sparql-editor-run-query",
@@ -343,23 +354,28 @@ export class SparqlEditor extends EventEmitter {
    * Switches are serialized so concurrent calls (e.g. init + a restored preference) run in order.
    */
   public setLanguageServer(target: string | number): Promise<void> {
+    if (this.destroyed) return Promise.reject(new Error("Editor has been destroyed"));
     const servers = this.config.languageServers ?? [];
     const index = typeof target === "number" ? target : servers.findIndex((s) => s.label === target);
-    if (index < 0 || index >= servers.length) {
+    if (!Number.isInteger(index) || index < 0 || index >= servers.length) {
       console.warn("Unknown language server:", target);
       return Promise.resolve();
     }
     this.requestedLanguageServerIndex = index;
     // Swallow a prior switch's failure so it doesn't block this one (the chain is reused).
     this.lsSwitchQueue = this.lsSwitchQueue.catch(() => {}).then(() => this.activateLanguageServer(index));
+    // Internal callers (initialization and menus) also need rejected startups to be handled.
+    this.lsSwitchQueue.catch((error) => {
+      if (!this.destroyed) this.showNotification("languageServer", String(error));
+    });
     return this.lsSwitchQueue;
   }
 
   private async activateLanguageServer(index: number): Promise<void> {
     // Wait for the editor before touching language clients / context-menu actions.
-    await this.ready.catch(() => {});
+    await this.ready;
     const servers = this.config.languageServers ?? [];
-    if (!servers.length) return;
+    if (this.destroyed || !servers.length) return;
     if (index !== this.requestedLanguageServerIndex) return;
     if (index === this.activeLanguageServerIndex && this.languageClientWrapper) return;
     const def = servers[index];
@@ -375,15 +391,37 @@ export class SparqlEditor extends EventEmitter {
       }
       this.languageClientWrapper = undefined;
     }
+    this.lsWorker?.terminate();
+    this.lsWorker = undefined;
+    this.activeLanguageServerIndex = -1;
+    if (this.destroyed) return;
     // Resolve the target server's worker (instance or factory) and connect a language client to it.
     const worker = typeof def.worker === "function" ? await def.worker() : def.worker;
+    if (this.destroyed || index !== this.requestedLanguageServerIndex) {
+      worker?.terminate();
+      return;
+    }
     if (!worker) {
       console.warn("Language server provided no worker:", def.label);
       return;
     }
+    this.lsWorker = worker;
     this.setupLanguageServerErrorNotifications(worker);
-    const { connectLanguageClient } = await import("./editor/editorConfig");
-    this.languageClientWrapper = await connectLanguageClient(worker);
+    try {
+      const { connectLanguageClient } = await import("./editor/editorConfig");
+      if (this.destroyed) return;
+      const wrapper = await connectLanguageClient(worker, this.lsAbort.signal, this.editor!.getModel()!.uri.toString());
+      if (this.destroyed || index !== this.requestedLanguageServerIndex) {
+        await wrapper.dispose();
+        worker.terminate();
+        return;
+      }
+      this.languageClientWrapper = wrapper;
+    } catch (error) {
+      worker.terminate();
+      if (this.lsWorker === worker) this.lsWorker = undefined;
+      throw error;
+    }
     this.activeLanguageServerIndex = index;
     const client = this.getLanguageClient();
     if (client && def.onReady) def.onReady(toLspConnection(client), this);
@@ -421,6 +459,7 @@ export class SparqlEditor extends EventEmitter {
    * reachable; otherwise falls back to a flat list of actions.
    */
   private updateLanguageServerMenu() {
+    if (this.destroyed) return;
     for (const d of this.lsMenuDisposables) {
       try {
         d.dispose();
@@ -659,6 +698,10 @@ export class SparqlEditor extends EventEmitter {
     delete mergeableConf.languageServers;
     this.config = merge({}, SparqlEditor.defaults, mergeableConf);
     if (languageServers) this.config.languageServers = languageServers as LanguageServerDef[];
+    // A supplied worker may become ready before Monaco finishes its asynchronous setup.
+    for (const server of this.config.languageServers ?? []) {
+      if (typeof server.worker !== "function") void waitWorkerReady(server.worker, this.lsAbort.signal).catch(() => {});
+    }
 
     // Initialize the editor and then setup everything else. Exposed as `ready` so consumers can
     // await initialization; swallow here to avoid an unhandled rejection when they don't.
@@ -902,12 +945,14 @@ export class SparqlEditor extends EventEmitter {
     const chip = document.createElement("div");
     addClass(chip, "resizeChip");
     this.resizeWrapper.appendChild(chip);
-    this.resizeWrapper.addEventListener("mousedown", this.initDrag.bind(this), false);
-    this.resizeWrapper.addEventListener("dblclick", this.expandEditor.bind(this));
+    this.resizeWrapper.addEventListener("mousedown", this.boundInitDrag, false);
+    this.resizeWrapper.addEventListener("dblclick", this.boundExpandEditor);
     this.rootEl.appendChild(this.resizeWrapper);
   }
   private boundDoDrag = (event: MouseEvent) => this.doDrag(event);
   private boundStopDrag = () => this.stopDrag();
+  private boundInitDrag = (event: MouseEvent) => this.initDrag(event);
+  private boundExpandEditor = () => this.expandEditor();
   private initDrag(event: MouseEvent) {
     event.preventDefault();
     document.documentElement.addEventListener("mousemove", this.boundDoDrag, false);
@@ -1021,6 +1066,7 @@ export class SparqlEditor extends EventEmitter {
     // Expected-during-typing codes (qlue-ls uses string codes; standard LSP uses these numbers).
     const ignoredCodes = new Set<number | string>([-32800, -32801, "RequestCancelled", "ContentModified"]);
     worker.addEventListener("message", (event: MessageEvent) => {
+      if (this.destroyed || this.lsWorker !== worker) return;
       let data: any = event.data;
       if (typeof data === "string") {
         try {
@@ -1197,19 +1243,39 @@ export class SparqlEditor extends EventEmitter {
   }
 
   public destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    this.requestedLanguageServerIndex = -1;
+    this.activeLanguageServerIndex = -1;
+    this.lsSettingsPanelDispose?.();
+    this.lsErrorNotification?.destroy();
+    this.lsAbort.abort();
+    void this.languageClientWrapper?.dispose().catch(() => {});
+    this.languageClientWrapper = undefined;
+    this.lsWorker?.terminate();
+    this.lsWorker = undefined;
+    for (const server of this.config.languageServers ?? []) {
+      if (typeof server.worker !== "function") server.worker.terminate();
+    }
+    for (const disposable of this.lsMenuDisposables) disposable.dispose();
+    this.lsMenuDisposables = [];
     // Abort running query
     this.markerListener?.dispose();
     this.diagnosticGlyphs?.clear();
     this.abortQuery();
     this.unregisterEventListeners();
-    this.resizeWrapper?.removeEventListener("mousedown", this.initDrag.bind(this), false);
-    this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor.bind(this));
+    this.removeAllListeners();
+    this.resizeWrapper?.removeEventListener("mousedown", this.boundInitDrag, false);
+    this.resizeWrapper?.removeEventListener("dblclick", this.boundExpandEditor);
     // Clean up any remaining drag listeners
-    document.documentElement.removeEventListener("mousemove", this.doDrag.bind(this), false);
-    document.documentElement.removeEventListener("mouseup", this.stopDrag.bind(this), false);
+    document.documentElement.removeEventListener("mousemove", this.boundDoDrag, false);
+    document.documentElement.removeEventListener("mouseup", this.boundStopDrag, false);
     window.removeEventListener("hashchange", this.handleHashChange);
     window.removeEventListener("beforeunload", this.handleBeforeUnload);
     document.removeEventListener("visibilitychange", this.handleVisibilityChange);
+    void this.editorApp?.dispose().catch(() => {});
+    this.editorApp = undefined;
+    this.editor = undefined;
     this.rootEl.remove();
   }
 

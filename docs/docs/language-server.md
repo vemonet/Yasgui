@@ -123,13 +123,15 @@ Import `SparqlEditor` and its CSS from your chosen [Monaco](./sparql-editor-mona
 | `onReady(connection, editor)` | Configure the server when it becomes active |
 | `onEndpointChange(connection, endpoint, editor)` | Update the active server when the endpoint changes |
 | `configSchema`, `configCallback` | Define a settings panel and apply its values to the server |
-| `languageId`, `documentUri` | Optional LSP document identity; defaults to `sparql` and a unique URI per editor |
+| `languageId`, `documentUri` | CodeMirror document identity overrides; defaults to `sparql` and a unique URI per editor. Monaco uses `sparql` and an automatically assigned URI. |
 
 Hooks receive an editor-independent connection with `sendRequest` and `sendNotification`. Only the active server's hooks run. Studio also has a separate app-wide `onEndpointChange(studio, endpoint)` callback.
 
 ### Switching servers
 
 The first entry starts on load. With two or more entries, Monaco offers a context-menu switcher and CodeMirror a toolbar dropdown. Studio remembers the choice per endpoint. Worker factories run only when their server is activated.
+
+Use worker factories when offering several servers. Monaco terminates the outgoing worker and creates a new one when switching back; CodeMirror keeps inactive clients cached. Destroying either editor releases all its workers, including supplied instances. Startup and initialization each time out after 30 seconds; `setLanguageServer()` rejects on failure and the editor shows a notification.
 
 ```ts
 editor.getLanguageServers();              // labels and descriptions

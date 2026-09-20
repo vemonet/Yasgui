@@ -11,7 +11,7 @@ SPARQL Studio is a fork of [Yasgui](https://github.com/zazuko/Yasgui). Its CSS c
 
 ## The editor factory
 
-Pass a factory `(parent, conf) => IEditor` using either [Monaco](./sparql-editor-monaco) or [CodeMirror 6](./sparql-editor-codemirror). Studio calls it for each tab with that tab's query and request settings. Spread `conf` before adding your options:
+Pass a factory `(parent, conf) => IEditor` using either [Monaco](./sparql-editor-monaco) or [CodeMirror 6](./sparql-editor-codemirror). Studio calls it once, then updates the shared editor's query and request settings when users switch tabs. Spread `conf` before adding your options:
 
 ```ts
 import SparqlStudio from "@rdfjs/sparql-studio";
@@ -35,14 +35,14 @@ users can switch servers and Studio remembers their choice per endpoint. Without
 | --- | --- | --- |
 | `requestConfig` | `RequestConfig` | default endpoint & request settings (see [Request configuration](./request-config)) |
 | `onEndpointChange` | `(sparqlStudio, endpoint) => void` | called when the active endpoint changes; server-specific hooks belong in `languageServers` |
-| `editor` | `SparqlEditorFactory` = `(parent, conf) => IEditor` | required factory that creates the editor for each tab |
+| `editor` | `SparqlEditorFactory` = `(parent, conf) => IEditor` | required factory that creates the shared editor |
 | `results` | `Partial<SparqlResults config>` | result-viewer config |
 | `corsProxy` | `string` | optional CORS proxy URL |
 | `persistenceId` | `string \| fn \| null` | localStorage namespace; `null` disables persistence |
 
 ## Programmatic API
 
-SparqlStudio works in tabs; each tab owns its query, endpoint, editor and results. Drive it after construction:
+SparqlStudio works in tabs; each tab owns its query, endpoint and results; the editor is shared. Drive it after construction:
 
 ```ts
 // Tabs
