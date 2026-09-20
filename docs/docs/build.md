@@ -31,9 +31,23 @@ npm run build
 For each package, `build:lib` emits into `packages/<pkg>/build`:
 
 - ESM (`*.js`), the main entry point.
+- UMD (`*.umd.js`) for every package except Monaco.
 - CSS (`*.css`).
 - TypeScript declarations.
 - The editor / language server worker assets.
+
+UMD bundles include their dependencies and expose these browser globals:
+
+| Package | Global | Constructor |
+| --- | --- | --- |
+| `sparql-studio` | `SparqlStudio` | `SparqlStudio.SparqlStudio` |
+| `sparql-editor-codemirror` | `SparqlEditorCodeMirror` | `SparqlEditorCodeMirror.SparqlEditor` |
+| `sparql-results` | `SparqlResults` | `SparqlResults.SparqlResults` |
+| `sparql-utils` | `SparqlUtils` | Utilities such as `SparqlUtils.qlueLs` |
+
+`main`, `module` and the root `import` export point to ESM. `unpkg`, `jsdelivr` and the `./umd` subpath point to UMD. These `.umd.js` files are for browser script loaders; packages retain `"type": "module"`, so they are not Node.js `require()` entry points.
+
+The build runs ESM first, then UMD with `BUILD_FORMAT=umd`. CodeMirror dependencies stay external in ESM for extension compatibility and are bundled in UMD. Monaco remains ESM-only because its worker and WASM assets use `import.meta.url`.
 
 ::: info Assets bundling
 Asset URLs use a relative base (`base: "./"`) so they resolve in any consuming bundler.

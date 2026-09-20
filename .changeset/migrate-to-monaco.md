@@ -30,7 +30,7 @@
 - Docs
   - Add a documentation website built with VitePress (served from https://sparql.studio), with an API reference auto-generated using TypeDoc
   - The home page is the full app with monaco editor and the 3 language servers, a second page provides the app with the CodeMirror editor
-- Drop UMD support: the libraries are now ESM-only (Monaco loads its workers/wasm via `import.meta.url`, which UMD cannot express). ESM imports work in plain HTML `<script type="module">` in every browsers.
+- Keep Monaco ESM-only because its workers/WASM use `import.meta.url`. Studio, CodeMirror, Results and Utils also ship self-contained `.umd.js` bundles for script tags, with `unpkg`, `jsdelivr` and `./umd` distribution entries. ESM remains the default for imports and supports external CodeMirror extensions.
 - Rename the packages and exported classes:
   - `@zazuko/yasgui` -> `@rdfjs/sparql-studio` (class `Yasgui` -> `SparqlStudio`)
   - `@zazuko/yasqe` -> `@rdfjs/sparql-editor-monaco` and a new `@rdfjs/sparql-editor-codemirror` (class `Yasqe` -> `SparqlEditor`)

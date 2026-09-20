@@ -5,6 +5,8 @@
   "type": "module",
   "main": "build/sparql-editor-codemirror.js",
   "module": "build/sparql-editor-codemirror.js",
+  "unpkg": "build/sparql-editor-codemirror.umd.js",
+  "jsdelivr": "build/sparql-editor-codemirror.umd.js",
   "types": "build/ts/src/index.d.ts",
   "files": ["build"],
   "exports": {
@@ -13,6 +15,7 @@
       "import": "./build/sparql-editor-codemirror.js"
     },
     "./style.css": "./build/sparql-editor-codemirror.css",
+    "./umd": "./build/sparql-editor-codemirror.umd.js",
     "./*": "./*"
   },
   "license": "MIT",

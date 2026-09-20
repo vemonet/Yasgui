@@ -7,6 +7,7 @@ import * as chai from "chai";
 import { it, describe, before, beforeEach, after, afterEach } from "mocha";
 const expect = chai.expect;
 import SparqlEditor from "@rdfjs/sparql-editor-monaco";
+import type { PartialConfig as CodeMirrorConfig } from "@rdfjs/sparql-editor-codemirror";
 import { setup, destroy, closePage, getPage, wait } from "./utils";
 
 declare var window: Window & {
@@ -55,6 +56,48 @@ describe("SparqlEditor", function () {
       return window.sparqlEditor.getValue();
     });
     expect(value).to.contain("SELECT");
+  });
+
+  it("loads the UMD packages as plain scripts and mounts Studio with CodeMirror", async () => {
+    // A fresh same-origin document keeps localStorage available without loading the ESM app.
+    await page.goto(new URL("/umd.html", page.url()).href);
+    await page.setContent('<div id="studio"></div><div id="results"></div>');
+    const errors: string[] = [];
+    page.on("pageerror", (error) => errors.push(String(error)));
+    for (const name of ["sparql-utils", "sparql-editor-codemirror", "sparql-results", "sparql-studio"]) {
+      await page.addScriptTag({ path: path.resolve(`packages/${name}/build/${name}.umd.js`) });
+    }
+    const result = await page.evaluate(async () => {
+      const globals = window as any;
+      const studio = new globals.SparqlStudio.SparqlStudio(document.getElementById("studio"), {
+        persistenceId: null,
+        editor: (parent: HTMLElement, conf: CodeMirrorConfig) =>
+          new globals.SparqlEditorCodeMirror.SparqlEditor(parent, conf),
+      });
+      const query = "SELECT * WHERE { ?s ?p ?o } LIMIT 10";
+      studio.editor.setValue(query);
+      const results = new globals.SparqlResults.SparqlResults(document.getElementById("results"), {
+        persistenceId: null,
+      });
+      const drawn = new Promise<void>((resolve) => results.once("drawn", resolve));
+      results.setResponse({
+        head: { vars: ["label"] },
+        results: { bindings: [{ label: { type: "literal", value: "UMD result" } }] },
+      });
+      await drawn;
+      const value = {
+        query: studio.editor.getValue(),
+        rendered: document.getElementById("results")!.textContent!.includes("UMD result"),
+        utils: typeof globals.SparqlUtils.qlueLs.configureBackend,
+      };
+      studio.destroy();
+      results.destroy();
+      return value;
+    });
+    expect(result.query).to.equal("SELECT * WHERE { ?s ?p ?o } LIMIT 10");
+    expect(result.rendered).to.equal(true);
+    expect(result.utils).to.equal("function");
+    expect(errors).to.deep.equal([]);
   });
 
   for (const editorName of ["Monaco", "CodeMirror"]) {

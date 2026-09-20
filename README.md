@@ -4,7 +4,7 @@ SPARQL Studio is a SPARQL query editor and results viewer for the web. It is a f
 
 Useful links:
 
-- Web app: [sparql.studio](https://sparql.studio)
+- Web app: [**sparql.studio**](https://sparql.studio)
 - Documentation: [sparql.studio/docs/introduction](https://sparql.studio/docs/introduction)
 - Source code: [github.com/rdfjs/Yasgui](https://github.com/rdfjs/Yasgui)
 
@@ -13,7 +13,7 @@ Useful links:
 | Package                            | Description                                            |
 | ---------------------------------- | ------------------------------------------------------ |
 | `@rdfjs/sparql-studio`             | Full app: tabbed editor + results (formerly Yasgui)    |
-| `@rdfjs/sparql-editor-monaco`      | SPARQL query editor based on Monaco (formerly Yasqe)   |
+|`@rdfjs/sparql-editor-monaco`| SPARQL query editor based on Monaco (formerly Yasqe)   |
 | `@rdfjs/sparql-editor-codemirror`  | SPARQL query editor based on CodeMirror 6              |
 | `@rdfjs/sparql-results`            | SPARQL results viewer (formerly Yasr)                  |
 | `@rdfjs/sparql-utils`              | Shared utilities                                       |

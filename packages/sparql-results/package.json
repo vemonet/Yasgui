@@ -5,6 +5,8 @@
   "type": "module",
   "main": "build/sparql-results.js",
   "module": "build/sparql-results.js",
+  "unpkg": "build/sparql-results.umd.js",
+  "jsdelivr": "build/sparql-results.umd.js",
   "types": "build/ts/src/index.d.ts",
   "files": [
     "build"
@@ -16,6 +18,7 @@
     },
     "./index.js": "./build/sparql-results.js",
     "./style.css": "./build/sparql-results.css",
+    "./umd": "./build/sparql-results.umd.js",
     "./*": "./*"
   },
   "license": "MIT",
@@ -50,7 +53,6 @@
     "@fortawesome/free-solid-svg-icons": "^5.14.0",
     "@json2csv/plainjs": "^7.0.4",
     "@rdfjs/sparql-utils": "^4.6.2",
-    "@rdfjs/sparql-editor-monaco": "^4.6.2",
     "colors": "^1.4.0",
     "column-resizer": "^1.4.0",
     "datatables.net": "^2.0.5",

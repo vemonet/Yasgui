@@ -5,6 +5,8 @@
   "type": "module",
   "main": "build/sparql-studio.js",
   "module": "build/sparql-studio.js",
+  "unpkg": "build/sparql-studio.umd.js",
+  "jsdelivr": "build/sparql-studio.umd.js",
   "types": "build/ts/src/index.d.ts",
   "files": [
     "build"
@@ -16,6 +18,7 @@
     },
     "./index.js": "./build/sparql-studio.js",
     "./style.css": "./build/sparql-studio.css",
+    "./umd": "./build/sparql-studio.umd.js",
     "./*": "./*"
   },
   "license": "MIT",

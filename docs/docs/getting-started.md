@@ -19,7 +19,7 @@ For Vite, add the WASM plugin used to load qlue-ls:
 npm i -D vite-plugin-wasm
 ```
 
-The packages are ESM only. The examples below use Vite.
+Monaco is ESM-only. The other packages also ship [UMD bundles](#without-a-bundler-codemirror) for plain script tags. The examples below use ESM with Vite.
 
 Each package ships its own CSS that you must import once:
 
@@ -126,6 +126,27 @@ Install `@rdfjs/sparql-editor-codemirror` in place of the Monaco package and cha
 
 To offer several servers, add entries to `languageServers`. Studio remembers the user's choice per endpoint.
 See [Language server](./language-server) for the available servers and their configuration.
+
+## Without a bundler (CodeMirror)
+
+Load the CodeMirror editor and Studio bundles with their styles:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rdfjs/sparql-studio/build/sparql-studio.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@rdfjs/sparql-editor-codemirror/build/sparql-editor-codemirror.css" />
+<script src="https://cdn.jsdelivr.net/npm/@rdfjs/sparql-editor-codemirror/build/sparql-editor-codemirror.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@rdfjs/sparql-studio/build/sparql-studio.umd.js"></script>
+
+<div id="sparqlStudio"></div>
+<script>
+  const studio = new SparqlStudio.SparqlStudio(document.getElementById("sparqlStudio"), {
+    requestConfig: { endpoint: "https://sparql.dblp.org/sparql" },
+    editor: (parent, conf) => new SparqlEditorCodeMirror.SparqlEditor(parent, conf),
+  });
+</script>
+```
+
+Pin matching package versions in production. This example supports query editing and execution without a language server. To add one, pass `languageServers` through the editor factory with a worker URL you host; see [Language server](./language-server). Use ESM when adding external CodeMirror extensions, so they share the editor's CodeMirror dependencies.
 
 ## Framework integration
 
