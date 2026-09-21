@@ -975,14 +975,14 @@ export class SparqlEditor extends EventEmitter implements IEditor {
         });
         menu!.appendChild(item);
       });
-      // "Configure <active server>…" only when the active server exposes a settings schema.
+      // "Configure <active server>" only when the active server exposes a settings schema.
       const active = servers[this.activeLanguageServerIndex];
       if (active?.configSchema && active.configCallback) {
         const configItem = document.createElement("button");
         configItem.className = "sparql-editor_lsMenuItem sparql-editor_lsMenuConfigure";
         const label = document.createElement("span");
         label.className = "sparql-editor_lsMenuLabel";
-        label.textContent = `Configure ${active.label}…`;
+        label.textContent = `Configure ${active.label}`;
         configItem.appendChild(label);
         configItem.addEventListener("click", (e) => {
           e.stopPropagation();

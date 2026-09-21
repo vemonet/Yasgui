@@ -88,7 +88,7 @@ export interface LanguageServerDef<Y = any> {
   onEndpointChange?: (connection: LspConnection, endpoint: string, yasqe: Y) => void;
   /**
    * Describes the server's tunable settings (a small JSON-schema subset). When present (together
-   * with {@link configCallback}), a "Configure …" entry appears in the editor's language-server
+   * with {@link configCallback}), a "Configure" entry appears in the editor's language-server
    * menu and opens a modal rendered from this schema.
    */
   configSchema?: LanguageServerSettingsSchema;

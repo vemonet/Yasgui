@@ -1,16 +1,17 @@
 # SPARQL Studio
 
-Web interface for writing SPARQL queries, running them against an endpoint and exploring the results.
+A web interface for writing SPARQL queries, running them against an endpoint and exploring the results.
 
-Directly use the app with [Monaco](/) or [CodeMirror 6](/codemirror). Use the packages to embed the full app, or use its editors and results viewer separately.
+- Directly use the app with [Monaco](/) or [CodeMirror 6](/codemirror) editor.
+- Use the packages to embed the full app, or embed its editors and results viewer separately.
 
 ## Choose your editor
 
-Use [Monaco](./sparql-editor-monaco), the editor behind VS Code, or [CodeMirror 6](./sparql-editor-codemirror). Both support query execution, sharing, light and dark themes, and the same language server configuration. Studio uses a factory you supply to create one editor, shared across query tabs.
+Use [Monaco](./sparql-editor-monaco), the editor behind VSCode, or [CodeMirror 6](./sparql-editor-codemirror). Both support query execution, themes, and the same language server configuration. Studio uses a factory you supply to create one editor, shared across query tabs.
 
 ## Choose your language server
 
-Completion, diagnostics, formatting and other language features depend on the server you connect. The hosted app offers qlue-ls, swls and a Traqula parser adapter; see the [feature comparison and setup](./language-server). Both editors also provide syntax highlighting without a server.
+Completion, diagnostics, formatting and other language features depend on the server you connect. The hosted app offers qlue-ls, swls and a Traqula parser adapter, see the [feature comparison and setup](./language-server). Both editors also provide syntax highlighting without a server.
 
 ## Query and explore
 

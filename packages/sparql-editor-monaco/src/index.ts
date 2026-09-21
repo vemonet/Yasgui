@@ -56,6 +56,11 @@ export type { LanguageServerSettingsSchema, SettingFieldSchema, LspConnection } 
  * `@rdfjs/sparql-utils` so the SAME object also works with `@rdfjs/sparql-editor-codemirror`. */
 export type LanguageServerDef = SharedLanguageServerDef<SparqlEditor>;
 
+/** Group our own context-menu entries (run, share, language server) live in. Monaco always sorts
+ * "navigation" first, so this keeps them at the top of the right-click menu. Their orders stay below
+ * Monaco's own entries in that group (Go to Definition is 1.1, Peek 100), which are left untouched. */
+const LS_MENU_GROUP = "navigation";
+
 /** Adapt a Monaco `MonacoLanguageClient` to the editor-agnostic {@link LspConnection} handed to
  * language server hooks. Cached per client so identity-based de-dup (e.g. qlue-ls's backend cache,
  * keyed on the connection object) keeps working across repeated hook calls. */
@@ -205,7 +210,7 @@ export class SparqlEditor extends EventEmitter {
         label: "Run SPARQL Query",
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
         // Show it in the right-click context menu, at the top
-        contextMenuGroupId: "navigation",
+        contextMenuGroupId: LS_MENU_GROUP,
         contextMenuOrder: 0,
         run: () => {
           this.query().catch(() => {}); // catch to avoid unhandled rejection
@@ -216,10 +221,10 @@ export class SparqlEditor extends EventEmitter {
       // "save page" dialog). Shown in the right-click menu right under "Run SPARQL Query".
       this.editor?.addAction({
         id: "sparql-editor-share-query",
-        label: "Share query URL",
+        label: "Share Query URL",
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
-        contextMenuGroupId: "navigation",
-        contextMenuOrder: 1,
+        contextMenuGroupId: LS_MENU_GROUP,
+        contextMenuOrder: 0.1,
         run: () => {
           this.saveQuery();
           this.openSharePopup();
@@ -534,13 +539,12 @@ export class SparqlEditor extends EventEmitter {
     const { MenuRegistry, MenuId, CommandsRegistry, ContextKeyExpr } = api;
     if (!this.lsSubmenuId) this.lsSubmenuId = new MenuId(`yasqeLanguageServers_${this.menuInstanceId}`);
     const submenu = this.lsSubmenuId;
-    // Parent entry under the editor context menu; its title is the category label.
     this.lsMenuDisposables.push(
       MenuRegistry.appendMenuItem(MenuId.EditorContext, {
         submenu,
-        title: "Language server",
-        group: "navigation",
-        order: 2,
+        title: "Language Server",
+        group: LS_MENU_GROUP,
+        order: 0.2,
       }),
     );
     servers.forEach((s, i) => {
@@ -564,16 +568,16 @@ export class SparqlEditor extends EventEmitter {
         }),
       );
     });
-    // "Configure <active server>..." only when the active server exposes a settings schema.
+    // "Configure <active server>" displayed only when the active server exposes a settings schema
     const activeServer = servers[this.activeLanguageServerIndex];
     if (activeServer?.configSchema && activeServer.configCallback) {
       const configId = `yasqe.languageServer.${this.menuInstanceId}.configure`;
       this.lsMenuDisposables.push(CommandsRegistry.registerCommand(configId, () => this.openLanguageServerSettings()));
       this.lsMenuDisposables.push(
-        MenuRegistry.appendMenuItem(submenu, {
-          command: { id: configId, title: `Configure ${activeServer.label}…` },
-          group: "zz_configure",
-          order: 0,
+        MenuRegistry.appendMenuItem(MenuId.EditorContext, {
+          command: { id: configId, title: `Configure ${activeServer.label}` },
+          group: LS_MENU_GROUP,
+          order: 0.3,
         }),
       );
     }
@@ -587,8 +591,8 @@ export class SparqlEditor extends EventEmitter {
       const action = this.editor?.addAction({
         id: `sparql-editor-language-server-${i}`,
         label,
-        contextMenuGroupId: "navigation",
-        contextMenuOrder: 2 + i,
+        contextMenuGroupId: LS_MENU_GROUP,
+        contextMenuOrder: 0.2 + i / 100,
         run: () => {
           this.setLanguageServer(i).catch(() => {});
         },
@@ -599,9 +603,9 @@ export class SparqlEditor extends EventEmitter {
     if (activeServer?.configSchema && activeServer.configCallback) {
       const action = this.editor?.addAction({
         id: `sparql-editor-language-server-configure`,
-        label: `Configure ${activeServer.label}…`,
-        contextMenuGroupId: "navigation",
-        contextMenuOrder: 2 + servers.length,
+        label: `Configure ${activeServer.label}`,
+        contextMenuGroupId: LS_MENU_GROUP,
+        contextMenuOrder: 0.2 + servers.length / 100,
         run: () => this.openLanguageServerSettings(),
       });
       if (action) this.lsMenuDisposables.push(action);

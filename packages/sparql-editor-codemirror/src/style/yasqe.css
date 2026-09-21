@@ -1,3 +1,68 @@
+/* CSS Custom Properties for sparql-editor theming (light defaults) */
+:root {
+  --sparql-editor-text: #000000;
+  --sparql-editor-border: #d1d1d1;
+  --sparql-editor-notification-bg: #eeeeee;
+  --sparql-editor-notification-text: #999999;
+  --sparql-editor-tooltip-bg: rgba(0, 0, 0, 0.8);
+  --sparql-editor-tooltip-text: #ffffff;
+  --sparql-editor-error: #ff0000;
+  --sparql-editor-btn-bg: #ffffff;
+  --sparql-editor-btn-text: #333333;
+  --sparql-editor-btn-border: #cccccc;
+  --sparql-editor-btn-hover-bg: #ebebeb;
+  --sparql-editor-btn-hover-border: #adadad;
+  --sparql-editor-accent: #337ab7;
+  --sparql-editor-accent-text: #ffffff;
+  --sparql-editor-popup-bg: #ffffff;
+  --sparql-editor-popup-border: #e3e3e3;
+  --sparql-editor-icon: #505050;
+}
+
+/* Dark values, shared by the explicit toggle and the OS preference below */
+html[data-theme="dark"] {
+  --sparql-editor-text: #d4d4d4;
+  --sparql-editor-border: #3e3e3e;
+  --sparql-editor-notification-bg: #2d2d30;
+  --sparql-editor-notification-text: #cccccc;
+  --sparql-editor-tooltip-bg: rgba(255, 255, 255, 0.1);
+  --sparql-editor-tooltip-text: #ffffff;
+  --sparql-editor-error: #ff6b6b;
+  --sparql-editor-btn-bg: #2d2d30;
+  --sparql-editor-btn-text: #d4d4d4;
+  --sparql-editor-btn-border: #3e3e3e;
+  --sparql-editor-btn-hover-bg: #3e3e3e;
+  --sparql-editor-btn-hover-border: #555555;
+  --sparql-editor-accent: #4fc3f7;
+  --sparql-editor-accent-text: #1e1e1e;
+  --sparql-editor-popup-bg: #2d2d30;
+  --sparql-editor-popup-border: #3e3e3e;
+  --sparql-editor-icon: #cccccc;
+}
+
+/* Auto dark mode following the OS/browser preference, unless the user forced light */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --sparql-editor-text: #d4d4d4;
+    --sparql-editor-border: #3e3e3e;
+    --sparql-editor-notification-bg: #2d2d30;
+    --sparql-editor-notification-text: #cccccc;
+    --sparql-editor-tooltip-bg: rgba(255, 255, 255, 0.1);
+    --sparql-editor-tooltip-text: #ffffff;
+    --sparql-editor-error: #ff6b6b;
+    --sparql-editor-btn-bg: #2d2d30;
+    --sparql-editor-btn-text: #d4d4d4;
+    --sparql-editor-btn-border: #3e3e3e;
+    --sparql-editor-btn-hover-bg: #3e3e3e;
+    --sparql-editor-btn-hover-border: #555555;
+    --sparql-editor-accent: #4fc3f7;
+    --sparql-editor-accent-text: #1e1e1e;
+    --sparql-editor-popup-bg: #2d2d30;
+    --sparql-editor-popup-border: #3e3e3e;
+    --sparql-editor-icon: #cccccc;
+  }
+}
+
 .sparql-editor {
   position: relative;
 }
