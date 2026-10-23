@@ -67,6 +67,7 @@ import {
   unflatten,
   defaultsFromSchema,
   waitWorkerReady,
+  createLanguageServerControls,
 } from "@rdfjs/sparql-utils";
 import type {
   DeepPartial,
@@ -80,6 +81,7 @@ import type {
   LanguageServerDef as SharedLanguageServerDef,
   LanguageServerSettingsSchema,
   LspConnection,
+  LanguageServerControls,
 } from "@rdfjs/sparql-utils";
 export type { QueryType, RequestConfig, PlainRequestConfig, Prefixes } from "@rdfjs/sparql-utils";
 export type { LanguageServerSettingsSchema, SettingFieldSchema, LspConnection } from "@rdfjs/sparql-utils";
@@ -226,10 +228,10 @@ export class SparqlEditor extends EventEmitter implements IEditor {
    * matches this has been superseded (e.g. the constructor's default 0 followed by a restored
    * preference); it bails before any client setup so we never start a server just to dispose it. */
   private requestedLanguageServerIndex = -1;
-  /** The language server switcher button (only drawn when 2+ servers are configured). */
-  private lsSelectEl?: HTMLButtonElement;
-  /** Document-level click handler that closes the open switcher menu (removed on destroy). */
-  private lsMenuOutsideClick?: (e: MouseEvent) => void;
+  /** Language server dropdown + configure button in the buttons row (shared with the Monaco editor). */
+  private lsControls?: LanguageServerControls;
+  /** The `.sparql-editor_buttons` row; the share popup is appended to and positioned within it. */
+  private buttonsEl?: HTMLDivElement;
   /** Dispose handle for an open settings panel, so a second open (or a server switch) closes the first. */
   private lsSettingsPanelDispose?: () => void;
 
@@ -290,6 +292,9 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     }
 
     this.drawButtons();
+    // Mirrors the Monaco editor's "ready": deferred so listeners attached right after the
+    // constructor returns still receive it.
+    queueMicrotask(() => this.emit("ready"));
 
     // Activate the first configured language server (the consumer may switch between several).
     if (this.config.languageServers?.length) void this.setLanguageServer(0);
@@ -564,7 +569,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     });
     if (def.onReady) def.onReady(toLspConnection(client), this);
     this.applyPersistedLanguageServerSettings(def, client);
-    this.updateLanguageServerDropdown();
+    this.lsControls?.update();
     this.emit("languageServerChange", { label: def.label, description: def.description }, index);
   }
 
@@ -774,37 +779,41 @@ export class SparqlEditor extends EventEmitter implements IEditor {
   public autocomplete(_fromAutoShow = false): void {}
 
   /* Buttons */
+  /** The action buttons row (run, share, format, language server controls). SparqlStudio moves it
+   * into its control bar, next to the endpoint input. */
+  public getButtonsElement(): HTMLElement | undefined {
+    return this.buttonsEl;
+  }
+
   private drawButtons() {
     const buttons = document.createElement("div");
     buttons.className = "sparql-editor_buttons";
+    this.buttonsEl = buttons;
     this.rootEl.appendChild(buttons);
 
-    // Language-server switcher, leftmost in the button bar (only when 2+ servers are configured).
-    this.drawLanguageServerDropdown(buttons);
-
-    if (this.config.pluginButtons) {
-      const pluginButtons = this.config.pluginButtons();
-      if (pluginButtons) {
-        if (Array.isArray(pluginButtons)) {
-          for (const b of pluginButtons) buttons.append(b);
-        } else {
-          buttons.appendChild(pluginButtons);
-        }
-      }
+    if (this.config.showQueryButton) {
+      this.queryBtn = document.createElement("button");
+      addClass(this.queryBtn, "sparql-editor_queryButton");
+      const queryEl = drawSvgStringAsElement(imgs.query);
+      addClass(queryEl, "queryIcon");
+      this.queryBtn.appendChild(queryEl);
+      // Shown instead of the play icon while a query runs: a stop square in a spinning ring
+      const stopEl = drawSvgStringAsElement(imgs.stop);
+      addClass(stopEl, "stopIcon");
+      this.queryBtn.appendChild(stopEl);
+      const warningIcon = drawSvgStringAsElement(imgs.warning);
+      addClass(warningIcon, "warningIcon");
+      this.queryBtn.appendChild(warningIcon);
+      this.queryBtn.onclick = () => {
+        if (this.config.queryingDisabled) return;
+        if (this.req) this.abortQuery();
+        else this.query().catch(() => {});
+      };
+      this.queryBtn.title = "Run query";
+      this.queryBtn.setAttribute("aria-label", "Run query");
+      buttons.appendChild(this.queryBtn);
+      this.updateQueryButton();
     }
-
-    // Format button: pretty-print the query via the language server (no-op without one).
-    {
-      const svgFormat = drawSvgStringAsElement(imgs.format);
-      const formatBtn = document.createElement("button");
-      formatBtn.className = "sparql-editor_format";
-      formatBtn.title = "Format query (Shift+Alt+F)";
-      formatBtn.setAttribute("aria-label", "Format query");
-      formatBtn.appendChild(svgFormat);
-      formatBtn.addEventListener("click", () => void this.format());
-      buttons.appendChild(formatBtn);
-    }
-
     if (this.config.createShareableLink) {
       const svgShare = drawSvgStringAsElement(imgs.share);
       const shareLinkWrapper = document.createElement("button");
@@ -875,9 +884,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
           input.value = this.getAsCurlString();
           input.focus();
         };
-        const svgPos = svgShare.getBoundingClientRect();
-        popup.style.top = svgShare.offsetTop + svgPos.height + "px";
-        popup.style.left = svgShare.offsetLeft + svgShare.clientWidth - popup.clientWidth + "px";
+        // Placement (under the buttons row, right-aligned) is handled in CSS
         input.focus();
       };
       shareLinkWrapper.addEventListener("click", showSharePopup);
@@ -886,25 +893,29 @@ export class SparqlEditor extends EventEmitter implements IEditor {
       });
     }
 
-    if (this.config.showQueryButton) {
-      this.queryBtn = document.createElement("button");
-      addClass(this.queryBtn, "sparql-editor_queryButton");
-      const queryEl = drawSvgStringAsElement(imgs.query);
-      addClass(queryEl, "queryIcon");
-      this.queryBtn.appendChild(queryEl);
-      const warningIcon = drawSvgStringAsElement(imgs.warning);
-      addClass(warningIcon, "warningIcon");
-      this.queryBtn.appendChild(warningIcon);
-      this.queryBtn.onclick = () => {
-        if (this.config.queryingDisabled) return;
-        if (this.req) this.abortQuery();
-        else this.query().catch(() => {});
-      };
-      this.queryBtn.title = "Run query";
-      this.queryBtn.setAttribute("aria-label", "Run query");
-      buttons.appendChild(this.queryBtn);
-      this.updateQueryButton();
+    // Format button: pretty-print the query via the language server (no-op without one).
+    {
+      const svgFormat = drawSvgStringAsElement(imgs.format);
+      const formatBtn = document.createElement("button");
+      formatBtn.className = "sparql-editor_format";
+      formatBtn.title = "Format query (Shift+Alt+F)";
+      formatBtn.setAttribute("aria-label", "Format query");
+      formatBtn.appendChild(svgFormat);
+      formatBtn.addEventListener("click", () => void this.format());
+      buttons.appendChild(formatBtn);
     }
+
+    if (this.config.pluginButtons) {
+      const pluginButtons = this.config.pluginButtons();
+      if (pluginButtons) {
+        if (Array.isArray(pluginButtons)) {
+          for (const b of pluginButtons) buttons.append(b);
+        } else {
+          buttons.appendChild(pluginButtons);
+        }
+      }
+    }
+    this.drawLanguageServerControls(buttons);
   }
   private updateQueryButton(status?: "valid" | "error") {
     if (!this.queryBtn) return;
@@ -913,8 +924,10 @@ export class SparqlEditor extends EventEmitter implements IEditor {
       this.queryBtn.title = this.config.queryingDisabled;
     } else {
       removeClass(this.queryBtn, "query_disabled");
-      this.queryBtn.title = "Run query";
-      this.queryBtn.setAttribute("aria-label", "Run query");
+      // While a query runs the button aborts it, and shows a stop square instead of the play icon
+      const label = this.req ? "Abort query" : "Run query";
+      this.queryBtn.title = label;
+      this.queryBtn.setAttribute("aria-label", label);
     }
     if (!status) status = this.queryValid ? "valid" : "error";
     if (status !== this.queryStatus) {
@@ -931,85 +944,25 @@ export class SparqlEditor extends EventEmitter implements IEditor {
   }
 
   /**
-   * Draw the language server switcher: a labelled dropdown button (showing the active server's
-   * label) that, when clicked, opens a menu listing each server with its label and a dimmed
-   * description. Only drawn when two or more servers are configured.
+   * Draw the language server controls (dropdown + configure button) at the end of the buttons row.
+   * The dropdown only shows with 2+ servers, the configure button only when the active server
+   * exposes a settings schema.
    */
-  private drawLanguageServerDropdown(buttons: HTMLElement) {
+  private drawLanguageServerControls(buttons: HTMLElement) {
     const servers = this.config.languageServers ?? [];
-    // Show the dropdown to switch servers (2+) or to expose a single server's settings panel.
-    const hasConfigurable = servers.some((s) => s.configSchema && s.configCallback);
-    if (servers.length < 2 && !hasConfigurable) return;
-    const select = document.createElement("button");
-    select.className = "sparql-editor_btn sparql-editor_lsSelect";
-    select.title = "Select language server";
-    select.setAttribute("aria-label", "Select language server");
-    this.lsSelectEl = select;
-    buttons.appendChild(select);
-
-    let menu: HTMLDivElement | undefined;
-    const closeMenu = () => {
-      menu?.remove();
-      menu = undefined;
-    };
-    const openMenu = () => {
-      menu = document.createElement("div");
-      menu.className = "sparql-editor_lsMenu";
-      servers.forEach((s, i) => {
-        const item = document.createElement("button");
-        item.className = "sparql-editor_lsMenuItem" + (i === this.activeLanguageServerIndex ? " active" : "");
-        const label = document.createElement("span");
-        label.className = "sparql-editor_lsMenuLabel";
-        label.textContent = s.label;
-        item.appendChild(label);
-        if (s.description) {
-          const desc = document.createElement("span");
-          desc.className = "sparql-editor_lsMenuDesc";
-          desc.textContent = s.description;
-          item.appendChild(desc);
-        }
-        item.addEventListener("click", (e) => {
-          e.stopPropagation();
-          closeMenu();
-          void this.setLanguageServer(i);
-        });
-        menu!.appendChild(item);
-      });
-      // "Configure <active server>" only when the active server exposes a settings schema.
-      const active = servers[this.activeLanguageServerIndex];
-      if (active?.configSchema && active.configCallback) {
-        const configItem = document.createElement("button");
-        configItem.className = "sparql-editor_lsMenuItem sparql-editor_lsMenuConfigure";
-        const label = document.createElement("span");
-        label.className = "sparql-editor_lsMenuLabel";
-        label.textContent = `Configure ${active.label}`;
-        configItem.appendChild(label);
-        configItem.addEventListener("click", (e) => {
-          e.stopPropagation();
-          closeMenu();
-          this.openLanguageServerSettings();
-        });
-        menu!.appendChild(configItem);
-      }
-      buttons.appendChild(menu);
-    };
-    select.addEventListener("click", (e) => {
-      e.stopPropagation();
-      if (menu) closeMenu();
-      else openMenu();
+    if (!servers.length) return;
+    this.lsControls = createLanguageServerControls({
+      container: buttons,
+      getServers: () =>
+        (this.config.languageServers ?? []).map((s) => ({ label: s.label, description: s.description })),
+      getActiveIndex: () => this.activeLanguageServerIndex,
+      isConfigurable: (i) => {
+        const def = (this.config.languageServers ?? [])[i];
+        return !!(def?.configSchema && def.configCallback);
+      },
+      onSelect: (i) => void this.setLanguageServer(i),
+      onConfigure: () => this.openLanguageServerSettings(),
     });
-    this.lsMenuOutsideClick = (e: MouseEvent) => {
-      if (menu && e.target !== select && !menu.contains(e.target as Node)) closeMenu();
-    };
-    document.body.addEventListener("click", this.lsMenuOutsideClick, true);
-    this.updateLanguageServerDropdown();
-  }
-
-  /** Refresh the switcher button label to reflect the active server. */
-  private updateLanguageServerDropdown() {
-    if (!this.lsSelectEl) return;
-    const active = (this.config.languageServers ?? [])[this.activeLanguageServerIndex];
-    this.lsSelectEl.textContent = active?.label ?? "Language server";
   }
 
   /* Resizer */
@@ -1253,7 +1206,7 @@ export class SparqlEditor extends EventEmitter implements IEditor {
     this.resizeWrapper?.removeEventListener("mousedown", this.initDrag, false);
     this.resizeWrapper?.removeEventListener("dblclick", this.expandEditor);
     window.removeEventListener("hashchange", this.handleHashChange);
-    if (this.lsMenuOutsideClick) document.body.removeEventListener("click", this.lsMenuOutsideClick, true);
+    this.lsControls?.destroy();
     document.documentElement.removeEventListener("mousemove", this.doDrag, false);
     document.documentElement.removeEventListener("mouseup", this.stopDrag, false);
     this.cm.destroy();

@@ -65,6 +65,7 @@ export class EndpointSelect extends EventEmitter {
   private value: string;
   private history: CatalogueItem[];
   private inputField!: HTMLInputElement;
+  private clearBtn?: HTMLButtonElement;
   constructor(initialValue: string, container: HTMLDivElement, options: EndpointSelectConfig, history: string[]) {
     super();
     this.container = container;
@@ -89,16 +90,22 @@ export class EndpointSelect extends EventEmitter {
     this.inputField.value = this.value;
     autocompleteWrapper.appendChild(this.inputField);
 
-    // Create clear button
+    // Clear button, sitting inside the input box on its right; hidden while the field is empty
     const clearBtn = document.createElement("button");
+    clearBtn.type = "button";
     clearBtn.title = "Clear endpoint";
+    clearBtn.setAttribute("aria-label", "Clear endpoint");
     addClass(clearBtn, "clearEndpointBtn");
     clearBtn.innerText = "\u2716\uFE0E"; // ✖ but monochrome
     clearBtn.addEventListener("click", () => {
       this.inputField.value = "";
       this.inputField.focus();
+      this.toggleClearButton();
     });
-    this.container.appendChild(clearBtn);
+    autocompleteWrapper.appendChild(clearBtn);
+    this.clearBtn = clearBtn;
+    this.inputField.addEventListener("input", () => this.toggleClearButton());
+    this.toggleClearButton();
 
     // Init autocomplete library
     new Autocomplete<CatalogueItem>({
@@ -293,6 +300,11 @@ export class EndpointSelect extends EventEmitter {
     if (autocompleteList) autocompleteList.innerHTML = "";
   };
 
+  /** Only show the clear button when there is something to clear. */
+  private toggleClearButton() {
+    if (this.clearBtn) this.clearBtn.hidden = !this.inputField.value;
+  }
+
   public setEndpoint(endpoint: string, endpointHistory?: string[]) {
     this.value = endpoint;
     if (endpointHistory) {
@@ -307,6 +319,7 @@ export class EndpointSelect extends EventEmitter {
       // Only set when the user is not using the widget at this time
       this.inputField.value = endpoint;
     }
+    this.toggleClearButton();
   }
   public destroy() {
     this.removeAllListeners();

@@ -19,6 +19,7 @@ import {
   getAcceptHeader,
   getAsCurlString,
   createLspErrorNotification,
+  createLanguageServerControls,
 } from "@rdfjs/sparql-utils";
 import { merge } from "lodash-es";
 import type {
@@ -44,6 +45,7 @@ import { MonacoLanguageClient } from "monaco-languageclient";
 export type { SparqlThemeOverrides } from "./editor/editorConfig";
 export { qlueLs } from "@rdfjs/sparql-utils";
 import { openSettingsPanel, unflatten, defaultsFromSchema, waitWorkerReady } from "@rdfjs/sparql-utils";
+import type { LanguageServerControls } from "@rdfjs/sparql-utils";
 import type {
   LanguageServerDef as SharedLanguageServerDef,
   LanguageServerSettingsSchema,
@@ -157,6 +159,8 @@ export class SparqlEditor extends EventEmitter {
   private readonly menuInstanceId = SparqlEditor.menuInstanceCounter++;
   /** The `.sparql-editor_buttons` container; the share popup is appended to and positioned within it. */
   private buttonsEl?: HTMLDivElement;
+  /** Language server dropdown + configure button in the buttons row (shared with the CodeMirror editor). */
+  private lsControls?: LanguageServerControls;
 
   private req?: Request;
   private abortController?: AbortController;
@@ -281,6 +285,10 @@ export class SparqlEditor extends EventEmitter {
       // the user's resized height instead of snapping back to the default.
       this.setSize(this.currentHeight ?? this.persistentConfig?.editorHeight ?? this.config.editorHeight);
       if (this.config.resizeable) this.drawResizer();
+
+      // The editor initializes asynchronously: tell hosts (e.g. SparqlStudio, which relocates the
+      // buttons row into its control bar) that the DOM is complete.
+      this.emit("ready");
     } catch (error) {
       console.error("Failed to initialize Monaco editor:", error);
       // Fallback to show error message in the element
@@ -432,6 +440,7 @@ export class SparqlEditor extends EventEmitter {
     if (client && def.onReady) def.onReady(toLspConnection(client), this);
     if (client) this.applyPersistedLanguageServerSettings(def, client);
     this.updateLanguageServerMenu();
+    this.lsControls?.update();
     this.emit("languageServerChange", { label: def.label, description: def.description }, index);
   }
 
@@ -884,11 +893,14 @@ export class SparqlEditor extends EventEmitter {
       popup?.appendChild(curlBtn);
     };
 
-    // Position below the buttons row, right-aligned to it (anchor on the query button when present).
-    const anchor: HTMLElement = this.queryBtn ?? buttons;
-    popup.style.top = anchor.offsetTop + anchor.offsetHeight + "px";
-    popup.style.left = anchor.offsetLeft + anchor.clientWidth - popup.clientWidth + "px";
+    // Placement (under the buttons row, right-aligned) is handled in CSS
     input.focus();
+  }
+
+  /** The action buttons row (run, share, language server controls). SparqlStudio moves it into its
+   * control bar, next to the endpoint input. */
+  public getButtonsElement(): HTMLElement | undefined {
+    return this.buttonsEl;
   }
 
   private drawButtons() {
@@ -896,18 +908,6 @@ export class SparqlEditor extends EventEmitter {
     buttons.className = "sparql-editor_buttons";
     this.buttonsEl = buttons;
     this.getWrapperElement().appendChild(buttons);
-
-    if (this.config.pluginButtons) {
-      const pluginButtons = this.config.pluginButtons();
-      if (!pluginButtons) return;
-      if (Array.isArray(pluginButtons)) {
-        for (const button of pluginButtons) {
-          buttons.append(button);
-        }
-      } else {
-        buttons.appendChild(pluginButtons);
-      }
-    }
 
     /**
      * Draw query btn
@@ -922,6 +922,11 @@ export class SparqlEditor extends EventEmitter {
       const queryEl = drawSvgStringAsElement(imgs.query);
       addClass(queryEl, "queryIcon");
       this.queryBtn.appendChild(queryEl);
+
+      // Shown instead of the play icon while a query runs: a stop square in a spinning ring
+      const stopEl = drawSvgStringAsElement(imgs.stop);
+      addClass(stopEl, "stopIcon");
+      this.queryBtn.appendChild(stopEl);
 
       const warningIcon = drawSvgStringAsElement(imgs.warning);
       addClass(warningIcon, "warningIcon");
@@ -940,6 +945,48 @@ export class SparqlEditor extends EventEmitter {
 
       buttons.appendChild(this.queryBtn);
       this.updateQueryButton();
+    }
+
+    // Share button: same popup as the right-click menu / Cmd+S
+    {
+      const shareBtn = document.createElement("button");
+      shareBtn.className = "sparql-editor_share";
+      shareBtn.title = "Share query URL";
+      shareBtn.setAttribute("aria-label", "Share query URL");
+      shareBtn.appendChild(drawSvgStringAsElement(imgs.share));
+      shareBtn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        this.saveQuery();
+        this.openSharePopup();
+      });
+      buttons.appendChild(shareBtn);
+    }
+
+    if (this.config.pluginButtons) {
+      const pluginButtons = this.config.pluginButtons();
+      if (pluginButtons) {
+        if (Array.isArray(pluginButtons)) {
+          for (const button of pluginButtons) buttons.append(button);
+        } else {
+          buttons.appendChild(pluginButtons);
+        }
+      }
+    }
+
+    // The same entries stay available in the right-click menu.
+    if (this.config.languageServers?.length) {
+      this.lsControls = createLanguageServerControls({
+        container: buttons,
+        getServers: () =>
+          (this.config.languageServers ?? []).map((s) => ({ label: s.label, description: s.description })),
+        getActiveIndex: () => this.activeLanguageServerIndex,
+        isConfigurable: (i) => {
+          const def = (this.config.languageServers ?? [])[i];
+          return !!(def?.configSchema && def.configCallback);
+        },
+        onSelect: (i) => void this.setLanguageServer(i),
+        onConfigure: () => this.openLanguageServerSettings(),
+      });
     }
   }
   private drawResizer() {
@@ -1004,8 +1051,10 @@ export class SparqlEditor extends EventEmitter {
       this.queryBtn.title = this.config.queryingDisabled;
     } else {
       removeClass(this.queryBtn, "query_disabled");
-      this.queryBtn.title = "Run query";
-      this.queryBtn.setAttribute("aria-label", "Run query");
+      // While a query runs the button aborts it, and shows a stop square instead of the play icon
+      const label = this.req ? "Abort query" : "Run query";
+      this.queryBtn.title = label;
+      this.queryBtn.setAttribute("aria-label", label);
     }
     if (!status) {
       status = this.queryValid ? "valid" : "error";
@@ -1253,6 +1302,7 @@ export class SparqlEditor extends EventEmitter {
     this.activeLanguageServerIndex = -1;
     this.lsSettingsPanelDispose?.();
     this.lsErrorNotification?.destroy();
+    this.lsControls?.destroy();
     this.lsAbort.abort();
     void this.languageClientWrapper?.dispose().catch(() => {});
     this.languageClientWrapper = undefined;

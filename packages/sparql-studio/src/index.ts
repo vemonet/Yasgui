@@ -250,6 +250,8 @@ export class SparqlStudio extends EventEmitter {
     const editor = this.editor;
     if (!editor) return;
     // SparqlEditor events are emitted instance-first: (yasqe, ...payload). We route them to the active tab.
+    // The editor may finish drawing after a tab was shown: move its buttons row into the control bar
+    editor.on("ready", () => this.getActiveTab()?.placeControlBarButtons());
     editor.on("blur", () => this.getActiveTab()?.handleBlur(editor));
     editor.on("query", () => {
       const tab = this.getActiveTab();

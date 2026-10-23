@@ -1,12 +1,21 @@
 .sparql-studio {
   .tabMenu {
+    // The panel slides in from the left: it is `left: <its own width>` translated by -100%, so the
+    // width and that offset must stay equal. On narrow screens it takes the panel width instead of
+    // a fixed 600px, which would otherwise scroll the page sideways.
+    --tabMenuWidth: 600px;
+    @media (max-width: 640px) {
+      --tabMenuWidth: 100%;
+    }
+
     background: #f5f5f5;
     z-index: 7;
     transition: all 0.5s;
     transform: translate3d(-100%, 0, 0) rotateY(90deg);
     transform-origin: 100% 50%;
     visibility: hidden;
-    width: 600px;
+    width: var(--tabMenuWidth);
+    box-sizing: border-box;
     border: 1px #ccc solid;
     position: absolute;
     top: 35px;
@@ -20,7 +29,7 @@
       visibility: visible;
       transform: translate3d(-100%, 0, 0) rotateY(0deg);
       transition: all 0.5s;
-      left: 600px;
+      left: var(--tabMenuWidth);
 
       // IE11 Hack
       @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {

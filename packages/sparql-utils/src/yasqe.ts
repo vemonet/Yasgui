@@ -214,6 +214,8 @@ export interface IEditor {
   off(eventName: string, handler: (...args: any[]) => void): any;
   emit(eventName: string | symbol, ...args: any[]): boolean;
 
+  /** The editor's action buttons row (run/share/language server), so hosts can relocate it. */
+  getButtonsElement?(): HTMLElement | undefined;
   /** Switch the editor theme. Optional: not every editor exposes runtime theme switching. */
   setTheme?(theme: "light" | "dark"): void | Promise<void>;
   destroy?(): void;

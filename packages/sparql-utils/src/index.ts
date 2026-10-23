@@ -53,6 +53,11 @@ export {
   defaultsFromSchema,
   type SettingsPanelOptions,
 } from "./languageServers/settingsPanel";
+export {
+  createLanguageServerControls,
+  type LanguageServerControls,
+  type LanguageServerControlsOptions,
+} from "./languageServers/controls";
 export * from "./errorNotification";
 export * from "./sparql";
 

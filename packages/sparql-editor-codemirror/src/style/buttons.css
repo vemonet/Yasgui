@@ -1,4 +1,4 @@
-.sparql-editor .sparql-editor_btn {
+.sparql-editor_btn {
   color: #333;
   border: 1px solid transparent;
   background-color: #fff;
@@ -15,223 +15,178 @@
   overflow: visible;
   box-sizing: border-box;
 }
-.sparql-editor .sparql-editor_btn.btn_icon {
+.sparql-editor_btn.btn_icon {
   padding: 4px 8px;
 }
-.sparql-editor .sparql-editor_btn[disabled],
-.sparql-editor .sparql-editor_btn.disabled {
+.sparql-editor_btn[disabled],
+.sparql-editor_btn.disabled {
   cursor: default;
   opacity: 0.5;
   filter: alpha(opacity=50);
   box-shadow: none;
 }
-.sparql-editor .sparql-editor_btn:hover {
+.sparql-editor_btn:hover {
   outline: 0;
   background-color: #ebebeb;
   border-color: #adadad;
 }
-.sparql-editor .sparql-editor_btn:focus,
-.sparql-editor .sparql-editor_btn.selected {
+.sparql-editor_btn:focus,
+.sparql-editor_btn.selected {
   color: #fff;
   outline: 0;
   background-color: #337ab7;
   border-color: #337ab7;
 }
-.sparql-editor .sparql-editor_btn.btn_icon:focus {
+.sparql-editor_btn.btn_icon:focus {
   color: #333;
   border: 1px solid transparent;
   background-color: #fff;
   border-color: #ccc;
 }
-.sparql-editor .sparql-editor_btn.sparql-editor_btn-sm {
+.sparql-editor_btn.sparql-editor_btn-sm {
   padding: 1px 5px;
   font-size: 12px;
   line-height: 1.5;
   border-radius: 3px;
 }
 
-.sparql-editor .sparql-editor_buttons {
+.sparql-editor_buttons {
   position: absolute;
   top: 10px;
   right: 20px;
   z-index: 5;
 }
-.sparql-editor .sparql-editor_buttons svg {
+.sparql-editor_buttons svg {
   fill: #505050;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_share,
-.sparql-editor .sparql-editor_buttons .sparql-editor_format {
+.sparql-editor_buttons .sparql-editor_share,
+.sparql-editor_buttons .sparql-editor_format {
   cursor: pointer;
   margin-top: 3px;
   display: inline-block;
   border: none;
   background: none;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_share svg,
-.sparql-editor .sparql-editor_buttons .sparql-editor_format svg {
+.sparql-editor_buttons .sparql-editor_share svg,
+.sparql-editor_buttons .sparql-editor_format svg {
   height: 25px;
   width: 25px;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_format svg {
+.sparql-editor_buttons .sparql-editor_format svg {
   height: 22px;
   width: 22px;
 }
-.sparql-editor .sparql-editor_buttons button {
+.sparql-editor_buttons button {
   vertical-align: top;
   margin-left: 5px;
 }
 
 /* Language-server switcher */
-.sparql-editor .sparql-editor_buttons .sparql-editor_lsSelect {
-  font-size: 12px;
-  line-height: 1.5;
-  padding: 2px 22px 2px 8px;
-  position: relative;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_lsSelect::after {
-  content: "";
+.sparql-editor_buttons .sparql-editor_sharePopup {
+  /* Hangs under the buttons row, right edges aligned */
   position: absolute;
-  right: 8px;
-  top: 50%;
-  margin-top: -2px;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-top: 5px solid currentColor;
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu {
-  position: absolute;
-  top: 28px;
-  left: 0;
-  z-index: 10;
-  min-width: 220px;
-  max-width: 360px;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 2px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  /* padding: 4px 0; */
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuItem {
-  display: block;
-  width: 100%;
-  margin: 0;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 0;
-  background: none;
-  text-align: left;
-  cursor: pointer;
-  white-space: normal;
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuItem:hover {
-  background-color: #ebebeb;
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuItem.active {
-  background-color: #e6f0fb;
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuLabel {
-  display: block;
-  font-weight: 600;
-  color: #333;
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuDesc {
-  display: block;
-  font-size: 11px;
-  color: #888;
-  margin-top: 2px;
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_sharePopup {
-  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
   padding: 4px;
-  margin-left: 0px;
   background-color: #fff;
   border: 1px solid #e3e3e3;
   border-radius: 2px;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.05);
   width: 600px;
+  max-width: 80vw;
   height: auto;
   display: flex;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_sharePopup .inputWrapper {
+.sparql-editor_buttons .sparql-editor_sharePopup .inputWrapper {
   flex-grow: 100;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_sharePopup input {
+.sparql-editor_buttons .sparql-editor_sharePopup input {
   float: left;
   width: 100%;
   border: 0px;
   box-sizing: border-box;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_sharePopup button {
+.sparql-editor_buttons .sparql-editor_sharePopup button {
   float: right;
   margin-left: 5px;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_sharePopup textarea {
+.sparql-editor_buttons .sparql-editor_sharePopup textarea {
   width: 100%;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton {
+.sparql-editor_buttons .sparql-editor_queryButton {
   display: inline-block;
   position: relative;
   border: none;
   background: none;
   padding: 0;
   cursor: pointer;
-  width: 40px;
-  height: 40px;
+  width: var(--queryButtonWidth, 40px);
+  height: var(--queryButtonHeight, 40px);
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton .queryIcon {
+.sparql-editor_buttons .sparql-editor_queryButton .queryIcon {
   display: block;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton .queryIcon svg {
-  width: 40px;
-  height: 40px;
+.sparql-editor_buttons .sparql-editor_queryButton .queryIcon svg {
+  width: var(--queryButtonWidth, 40px);
+  height: var(--queryButtonHeight, 40px);
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton .svgImg {
+.sparql-editor_buttons .sparql-editor_queryButton .svgImg {
   position: absolute;
   height: inherit;
   top: 0;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton.busy svg #loadingIcon {
-  stroke-dasharray: 100;
-  animation: dash 1.5s linear infinite;
-  stroke-width: 8px;
-  stroke: white;
-}
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton .warningIcon {
+/* While a query runs: a stop square wrapped in a spinning ring, click aborts the query */
+.sparql-editor_buttons .sparql-editor_queryButton .stopIcon {
   display: none;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton.query_error .warningIcon {
+.sparql-editor_buttons .sparql-editor_queryButton .stopIcon svg {
+  display: block;
+  width: var(--queryButtonWidth, 40px);
+  height: var(--queryButtonHeight, 40px);
+  fill: currentColor;
+}
+.sparql-editor_buttons .sparql-editor_queryButton .stopIcon .spinnerRing {
+  transform-origin: 50% 50%;
+  animation: rotate 1s linear infinite;
+}
+.sparql-editor_buttons .sparql-editor_queryButton.busy .queryIcon {
+  display: none;
+}
+.sparql-editor_buttons .sparql-editor_queryButton.busy .stopIcon {
+  display: block;
+}
+.sparql-editor_buttons .sparql-editor_queryButton .warningIcon {
+  display: none;
+}
+.sparql-editor_buttons .sparql-editor_queryButton.query_error .warningIcon {
   display: block;
   top: 5px;
   right: 0px;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton.query_error .warningIcon svg {
+.sparql-editor_buttons .sparql-editor_queryButton.query_error .warningIcon svg {
   width: 15px;
   height: 15px;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton.query_error .warningIcon svg g {
+.sparql-editor_buttons .sparql-editor_queryButton.query_error .warningIcon svg g {
   fill: red;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton.query_disabled {
+.sparql-editor_buttons .sparql-editor_queryButton.query_disabled {
   cursor: not-allowed;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton.query_disabled .queryIcon {
+.sparql-editor_buttons .sparql-editor_queryButton.query_disabled .queryIcon {
   opacity: 0.5;
   filter: alpha(opacity=50);
 }
 
 /* Subtle feedback on the icon buttons (execute, share, format): dim on hover */
-.sparql-editor .sparql-editor_buttons .sparql-editor_share,
-.sparql-editor .sparql-editor_buttons .sparql-editor_format,
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton {
+.sparql-editor_buttons .sparql-editor_share,
+.sparql-editor_buttons .sparql-editor_format,
+.sparql-editor_buttons .sparql-editor_queryButton {
   transition: filter 0.15s ease;
 }
-.sparql-editor .sparql-editor_buttons .sparql-editor_share:hover,
-.sparql-editor .sparql-editor_buttons .sparql-editor_format:hover,
-.sparql-editor .sparql-editor_buttons .sparql-editor_queryButton:not(.query_disabled):hover {
+.sparql-editor_buttons .sparql-editor_share:hover,
+.sparql-editor_buttons .sparql-editor_format:hover,
+.sparql-editor_buttons .sparql-editor_queryButton:not(.query_disabled):hover {
   filter: brightness(0.8);
 }
 
@@ -251,44 +206,28 @@
   }
 }
 
-[data-theme="dark"] .sparql-editor .sparql-editor_btn {
+[data-theme="dark"] .sparql-editor_btn {
   color: #ddd;
   background-color: #2a2a2a;
   border-color: #444;
 }
-[data-theme="dark"] .sparql-editor .sparql-editor_btn:hover {
+[data-theme="dark"] .sparql-editor_btn:hover {
   background-color: #333;
   border-color: #555;
 }
-[data-theme="dark"] .sparql-editor .sparql-editor_btn.btn_icon:focus {
+[data-theme="dark"] .sparql-editor_btn.btn_icon:focus {
   color: #ddd;
   background-color: #2a2a2a;
   border-color: #444;
 }
-[data-theme="dark"] .sparql-editor .sparql-editor_buttons svg {
+[data-theme="dark"] .sparql-editor_buttons svg {
   fill: #bbb;
 }
-[data-theme="dark"] .sparql-editor .sparql-editor_buttons .sparql-editor_sharePopup {
+[data-theme="dark"] .sparql-editor_buttons .sparql-editor_sharePopup {
   background-color: #2a2a2a;
   border-color: #444;
 }
-[data-theme="dark"] .sparql-editor .sparql-editor_buttons .sparql-editor_sharePopup input {
+[data-theme="dark"] .sparql-editor_buttons .sparql-editor_sharePopup input {
   background-color: #1e1e1e;
   color: #ddd;
-}
-[data-theme="dark"] .sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu {
-  background-color: #2a2a2a;
-  border-color: #444;
-}
-[data-theme="dark"] .sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuItem:hover {
-  background-color: #333;
-}
-[data-theme="dark"] .sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuItem.active {
-  background-color: #1f3a52;
-}
-[data-theme="dark"] .sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuLabel {
-  color: #ddd;
-}
-[data-theme="dark"] .sparql-editor .sparql-editor_buttons .sparql-editor_lsMenu .sparql-editor_lsMenuDesc {
-  color: #999;
 }

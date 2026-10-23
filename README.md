@@ -12,10 +12,10 @@ Useful links:
 
 | Package                            | Description                                            |
 | ---------------------------------- | ------------------------------------------------------ |
-| `@rdfjs/sparql-studio`             | Full app: tabbed editor + results (formerly Yasgui)    |
+|`@rdfjs/sparql-studio`| Full app: tabbed editor + results (formerly Yasgui)    |
 |`@rdfjs/sparql-editor-monaco`| SPARQL query editor based on Monaco (formerly Yasqe)   |
-| `@rdfjs/sparql-editor-codemirror`  | SPARQL query editor based on CodeMirror 6              |
-| `@rdfjs/sparql-results`            | SPARQL results viewer (formerly Yasr)                  |
+|`@rdfjs/sparql-editor-codemirror`| SPARQL query editor based on CodeMirror 6              |
+|`@rdfjs/sparql-results`| SPARQL results viewer (formerly Yasr)                  |
 | `@rdfjs/sparql-utils`              | Shared utilities                                       |
 
 ## Installation

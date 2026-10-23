@@ -123,7 +123,11 @@ export default class TabPanel {
     }
   }
   private toggleAriaSettings() {
-    this.settingsButton.setAttribute("aria-label", this.isOpen ? "Close settings" : "Open settings");
+    this.settingsButton.title = "Request configuration";
+    this.settingsButton.setAttribute(
+      "aria-label",
+      this.isOpen ? "Close request configuration" : "Open request configuration",
+    );
     this.settingsButton.setAttribute("aria-expanded", `${this.isOpen}`);
   }
   private setRequestMethod!: (method: Exclude<RequestConfig<any>["method"], Function>) => void;

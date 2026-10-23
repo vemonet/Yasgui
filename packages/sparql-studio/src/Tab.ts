@@ -126,6 +126,7 @@ export class Tab extends EventEmitter {
     this.sparqlStudio.tabElements.selectTab(this.persistentJson.id);
     // Move the single shared Monaco editor into this tab's wrapper and load this tab's content/endpoint
     if (this.editorWrapperEl) this.sparqlStudio.syncEditorsWithTab(this, this.editorWrapperEl);
+    this.placeControlBarButtons();
     if (this.editor) {
       this.editor.refresh();
       if (this.sparqlStudio.config.autofocus) this.editor.focus();
@@ -188,6 +189,48 @@ export class Tab extends EventEmitter {
     if (!this.rootEl || !this.controlBarEl)
       throw new Error("Need to initialize wrapper elements before drawing tab pabel");
     this.tabPanel = new TabPanel(this, this.rootEl, this.controlBarEl);
+  }
+
+  /**
+   * Lay out the control bar: endpoint input, then the action bar, then nothing else. The action bar
+   * is the editor's own buttons row, grouped into segmented sets of outlined buttons:
+   * run query · (format) · share + request configuration · language server + its settings.
+   * The editor (and its row) is shared between tabs, so this runs every time this tab is shown:
+   * the groups are built once, afterwards only this tab's request-configuration button is moved in.
+   */
+  public placeControlBarButtons() {
+    if (!this.controlBarEl) return;
+    const settingsButton = this.tabPanel?.settingsButton;
+    const buttons = this.editor?.getButtonsElement?.();
+    if (!buttons) {
+      // Editor not drawn yet (Monaco initializes asynchronously); it calls us back when ready
+      if (settingsButton) this.controlBarEl.appendChild(settingsButton);
+      return;
+    }
+    this.controlBarEl.appendChild(buttons);
+    let shareGroup: HTMLElement | undefined =
+      buttons.querySelector<HTMLElement>(".sparql-studio_btnGroup-share") ?? undefined;
+    if (!shareGroup) {
+      const group = (name: string, members: (Element | null | undefined)[]) => {
+        const present = members.filter((el): el is Element => !!el);
+        if (!present.length) return undefined;
+        const wrapper = document.createElement("div");
+        wrapper.className = `sparql-studio_btnGroup sparql-studio_btnGroup-${name}`;
+        buttons.appendChild(wrapper);
+        for (const el of present) wrapper.appendChild(el);
+        return wrapper;
+      };
+      group("run", [buttons.querySelector(":scope > .sparql-editor_queryButton")]);
+      group("format", [buttons.querySelector(":scope > .sparql-editor_format")]);
+      shareGroup = group("share", [buttons.querySelector(":scope > .sparql-editor_share")]);
+      // The language server controls already come in their own wrapper (it anchors their menu)
+      const lsControls = buttons.querySelector(":scope > .sparql-editor_lsControls");
+      if (lsControls) {
+        lsControls.classList.add("sparql-studio_btnGroup", "sparql-studio_btnGroup-ls");
+        buttons.appendChild(lsControls);
+      }
+    }
+    if (settingsButton) shareGroup?.appendChild(settingsButton);
   }
 
   private initEndpointSelectField() {

@@ -1,6 +1,7 @@
 .sparql-studio {
   .autocomplete {
-    padding: 3px 6px;
+    // Room on the right for the clear button sitting inside the box
+    padding: 3px 26px 3px 6px;
     margin: 4px 0px;
     border: 2px solid #ccc;
     border-radius: 4px;
@@ -17,8 +18,12 @@
     transition: border-color ease-in 200ms;
   }
   .autocompleteWrapper {
-    width: 100%;
-    max-width: 700px;
+    // Wide enough for most endpoint URLs, without eating the whole control bar.
+    // min-width 0 lets it shrink to whatever the container offers, so a narrow
+    // screen (or a narrow host column) never scrolls sideways.
+    flex: 1 1 32ch;
+    min-width: 0;
+    max-width: 44ch;
     margin-left: 10px;
     position: relative;
   }
@@ -100,24 +105,25 @@
   }
 
   .clearEndpointBtn {
-    border: 1px solid #d1d1d1;
-    background-color: #d1d1d1;
-    color: #505050;
-    border-radius: 3px;
+    // Inside the input box, against its right edge
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #888;
+    font-size: 12px;
+    line-height: 1;
+    padding: 2px 3px;
     cursor: pointer;
+    transition: color ease-in 200ms;
 
-    padding: 4px 8px;
-    margin: 4px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    opacity: 1;
-    transition: opacity ease-in 200ms;
-
+    &[hidden] {
+      display: none;
+    }
     &:hover {
-      opacity: 0.8;
+      color: #333;
     }
   }
 }

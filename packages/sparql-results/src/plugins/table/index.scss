@@ -92,6 +92,17 @@ Delimiters used by datatables
   .dt-container {
     font-size: 0.9em;
     min-width: 100%;
+
+    // A table wider than the panel (narrow screens, long IRIs) scrolls inside its own cell
+    // instead of making the whole page scroll horizontally.
+    .dt-layout-row.dt-layout-table {
+      max-width: 100%;
+    }
+    .dt-layout-cell.dt-layout-full {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
     .dataTable {
       min-width: 100%;
       box-sizing: border-box;
