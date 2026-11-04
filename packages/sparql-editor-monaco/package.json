@@ -1,7 +1,7 @@
 {
   "name": "@rdfjs/sparql-editor-monaco",
   "description": "SPARQL query editor for the web, based on the Monaco editor (fork of Yasqe)",
-  "version": "4.6.2",
+  "version": "5.0.0",
   "type": "module",
   "main": "build/sparql-editor-monaco.js",
   "module": "build/sparql-editor-monaco.js",
@@ -43,7 +43,7 @@
     "directory": "packages/sparql-editor-monaco"
   },
   "dependencies": {
-    "@rdfjs/sparql-utils": "^4.6.2",
+    "@rdfjs/sparql-utils": "^5.0.0",
     "@codingame/monaco-vscode-textmate-service-override": "^25.1.2",
     "lodash-es": "^4.18.1",
     "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@^25.1.2",
